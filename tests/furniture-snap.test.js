@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { calculateFurnitureSnap, wallSegmentsFromPlan } from '../src/furniture/core/snapEngine.js';
+const f=(id,cx,cy,w=400,d=300,rot=0)=>({id,cx,cy,w,d,rot});
+test('家具中心 X 軸吸附其他家具中心',()=>{const r=calculateFurnitureSnap(f('a',0,0),{x:990,y:0},[f('b',1000,0)],[],30,{wallSnap:false});assert.equal(r.x,1000);assert.ok(r.guides.some(g=>g.axis==='x'));});
+test('家具左右邊緣吸附',()=>{const r=calculateFurnitureSnap(f('a',0,0),{x:1390,y:0},[f('b',1000,0)],[],30,{wallSnap:false});assert.equal(r.x,1400);});
+test('可以關閉智慧吸附',()=>{const r=calculateFurnitureSnap(f('a',0,0),{x:990,y:0},[f('b',1000,0)],[],30,{wallSnap:false,furnitureSnap:false});assert.equal(r.x,990);assert.equal(r.guides.length,0);});
+test('水平牆含實際厚度的靠牆吸附',()=>{const walls=wallSegmentsFromPlan([[0,0,3000,200]]);const r=calculateFurnitureSnap(f('a',500,400),{x:500,y:402},[],walls,110,{furnitureSnap:false});assert.equal(r.y,350);assert.equal(r.guides[0].axis,'wall');});
+test('斜牆依牆面法線吸附',()=>{const walls=wallSegmentsFromPlan([],[{start:{x:0,y:0},end:{x:2000,y:2000},thickness:200}]);const r=calculateFurnitureSnap(f('a',0,0,200,200),{x:900,y:1100},[],walls,100,{furnitureSnap:false});assert.equal(r.guides[0].axis,'wall');});
+test('旋轉家具使用旋轉後外框投影',()=>{const r=calculateFurnitureSnap(f('a',0,0,400,200,90),{x:1000,y:0},[f('b',1000,0)],[],20,{wallSnap:false});assert.equal(r.x,1000);});

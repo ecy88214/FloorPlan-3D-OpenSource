@@ -1,0 +1,488 @@
+:root{
+  --bg:#f3efe7; --paper:#f7f4ee; --panel:#fffdf9; --line:#e3dccf; --ink:#2b2824; --muted:#8a8174;
+  --accent:#b5653a; --accent-soft:#f3e3d8; --teal:#2f5d62;
+}
+dialog{border:1px solid var(--line);border-radius:14px;padding:24px;max-width:520px;width:calc(100% - 40px);color:var(--ink);background:var(--panel)}
+dialog::backdrop{background:rgba(30,25,20,.35)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:none;touch-action:manipulation;
+  -webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;
+  font:13px/1.5 -apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif}
+button,input,select{font:inherit;color:inherit}
+.app{display:grid;grid-template-rows:auto minmax(0,1fr) 30px;grid-template-columns:236px minmax(0,1fr) 300px;height:100vh;height:100dvh;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input{-webkit-user-select:text;user-select:text}
+header{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 14px;
+  background:var(--panel);border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;margin-right:8px;line-height:1.25}
+.brand b{font-size:15px;letter-spacing:.5px}
+.brand span{color:var(--muted);font-size:12px}
+.grp{display:flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.layout-picker{gap:6px;padding:3px 7px;color:var(--muted);font-size:12px}
+.layout-picker select{border:0;background:transparent;color:var(--ink);font-weight:600;outline:0;cursor:pointer}
+.btn{border:0;background:transparent;padding:5px 9px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#f2ece2}
+.btn.on{background:var(--ink);color:#fff}
+.btn.chip.on{background:var(--accent-soft);color:var(--accent)}
+#langSel .btn{min-width:32px;font-weight:500}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{background:#9f5530}
+.btn.danger{color:#b3372a}
+.spacer{flex:1}
+aside{background:var(--panel);overflow:auto;border-right:1px solid var(--line)}
+aside.right{border-right:0;border-left:1px solid var(--line)}
+.lib h4{margin:0;padding:12px 14px 6px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:1px}
+.lib-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 10px 6px}
+/* 家具庫 Accordion：使用原生 details/summary，支援鍵盤與觸控。 */
+.lib-accordion{border-bottom:1px solid var(--line)}
+.lib-accordion-header{display:flex;align-items:center;gap:9px;padding:13px 13px;cursor:pointer;user-select:none;background:var(--panel);position:sticky;top:0;z-index:2;font-size:13px;font-weight:600;color:var(--ink);list-style:none}
+.lib-accordion-header::-webkit-details-marker{display:none}
+.lib-accordion-header::marker{content:''}
+.lib-accordion-header:hover{background:#f2ece2}
+.lib-accordion-header:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.lib-accordion-arrow{width:7px;height:7px;display:inline-block;flex:0 0 auto;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .18s ease}
+.lib-accordion[open] .lib-accordion-arrow{transform:rotate(45deg)}
+.lib-accordion-title{flex:1;min-width:0}
+.lib-accordion-count{font-size:11px;color:var(--muted);font-weight:500;border-radius:10px;padding:2px 7px;background:#f2eee9}
+.lib-accordion .lib-grid{padding:3px 10px 12px}
+@media (prefers-reduced-motion:reduce){.lib-accordion-arrow{transition:none}}
+
+.lib h4{position:sticky;top:0;z-index:1;background:var(--panel)}
+.item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 6px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;cursor:grab;user-select:none;touch-action:pan-y;transition:border-color .15s,transform .15s}
+.item.dragging{border-color:var(--accent);opacity:.5}
+@media (hover:hover){.item:hover{border-color:var(--accent);transform:translateY(-1px)}}
+#ghost{position:fixed;left:0;top:0;z-index:30;pointer-events:none;opacity:.8;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 10px rgba(40,30,20,.3))}
+#ghost svg{width:100%;height:100%;display:block;overflow:visible}
+.item svg{width:56px;height:44px}
+.item b{font-weight:500;font-size:12px}
+.item small{color:var(--muted);font-size:11px}
+.hint{padding:10px 14px 16px;color:var(--muted);font-size:12px}
+main{position:relative;overflow:hidden;background:var(--paper)}
+#plan{width:100%;height:100%;display:block;touch-action:none;cursor:default}
+#plan.panning{cursor:grabbing}
+#plan.tool-measure{cursor:crosshair}
+#plan .wall{pointer-events:all;cursor:pointer}
+#plan.tool-demolish .wall:hover{fill:#d9894f}
+#plan.tool-select .wall:hover{fill:#b5653a;opacity:.72}
+#plan.tool-demolish .wall:hover{fill:#d9894f}
+#plan.tool-select .room:hover{opacity:.82}
+#plan .furn{cursor:move}
+@media (hover:hover){#plan .furn:hover{filter:drop-shadow(0 0 2px rgba(181,101,58,.7))}}
+[data-handle]{cursor:pointer}
+[data-handle=size]{cursor:nwse-resize}
+.scalebar{position:absolute;left:14px;bottom:12px;background:rgba(255,253,249,.92);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px;font-size:12px;pointer-events:none}
+.scalebar .bar{height:6px;border:1.5px solid var(--ink);border-top:0;margin-top:3px}
+.modehint{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:5px 12px;border-radius:20px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none}
+.modehint.show{opacity:.9}
+footer{grid-column:1/-1;display:flex;gap:18px;align-items:center;padding:0 14px;background:var(--panel);overflow:hidden;white-space:nowrap;
+  border-top:1px solid var(--line);color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+#tip{overflow:hidden;text-overflow:ellipsis}
+footer b{color:var(--ink);font-weight:500}
+#panel section{padding:12px 16px;border-bottom:1px solid var(--line)}
+#panel h3{margin:0 0 8px;font-size:13px}
+#panel h3 small{color:var(--muted);font-weight:400;margin-left:6px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td{padding:4px 2px;border-bottom:1px dashed #eee6d9}
+td.r{text-align:right}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#faf5ee}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px}
+.total{display:flex;justify-content:space-between;margin-top:8px;font-size:14px}
+.total b{color:var(--accent)}
+.muted{color:var(--muted)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.form label.full{grid-column:1/-1}
+.form input,.form select{border:1px solid var(--line);border-radius:6px;padding:5px 7px;background:#fff;width:100%}
+.form input[type=color]{padding:2px;height:30px}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.actions .btn{border:1px solid var(--line);background:#fff}
+/* 所有操作區的主要動作按鈕：避免被 .actions .btn 的白色背景覆蓋。 */
+.actions .btn.primary{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+.actions .btn.primary:hover{
+  background:#9f5530;
+  color:#fff;
+  border-color:#9f5530;
+}
+.actions .btn.primary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+/* 房屋設定對話框：避免 .actions .btn 的白底覆蓋主要按鈕，造成白字看不見。 */
+#houseDialog .actions .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+#houseDialog .actions .btn.primary:hover{background:#9f5530;border-color:#9f5530}
+#houseDialog .actions .btn.primary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.mats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mat{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:6px;background:#fff;cursor:pointer;text-align:left}
+.mat.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.mat i{width:26px;height:26px;border-radius:5px;border:1px solid rgba(0,0,0,.12);flex:none}
+.mat span{font-size:12px;line-height:1.3}
+.mat small{display:block;color:var(--muted)}
+.kbd{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;color:var(--muted)}
+kbd{font:11px ui-monospace,Menlo,monospace;background:#f2ece2;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--ink)}
+.big{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.stats div{background:#faf6ef;border-radius:8px;padding:8px}
+.stats small{display:block;color:var(--muted);font-size:11px}
+#toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+  padding:8px 16px;border-radius:8px;opacity:0;transition:.25s;pointer-events:none;z-index:10}
+#toast.show{opacity:1;transform:translateX(-50%)}
+/* ---------- 2D / 3D 切換 ---------- */
+.seg{position:relative;padding:3px}
+.seg .btn{position:relative;z-index:1;width:82px;transition:color .45s}
+.seg .btn:hover{background:transparent}
+.seg .pill{position:absolute;left:3px;top:3px;bottom:3px;width:82px;border-radius:6px;background:var(--accent);
+  box-shadow:0 2px 6px rgba(181,101,58,.35);transition:transform .5s cubic-bezier(.65,0,.35,1)}
+.seg .btn[data-view="2d"],body.m3d .seg .btn[data-view="3d"]{color:#fff}
+body.m3d .seg .btn[data-view="2d"]{color:var(--ink)}
+body.m3d .seg .pill{transform:translateX(84px)}
+body.busy .seg{pointer-events:none}
+body.m3d .only2d,body:not(.m3d) .only3d{display:none!important}
+.only2d,.only3d{animation:fadeIn .45s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+#plan{transition:opacity .45s ease,transform .45s ease}
+main.is3d #plan{opacity:0;pointer-events:none}
+.scalebar{transition:opacity .3s}
+main.is3d .scalebar{opacity:0}
+#view3d{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s}
+main.is3d #view3d{opacity:1;visibility:visible;transition:opacity .45s ease}
+#view3d canvas{display:block;outline:none}
+#walkOverlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(30,28,25,.35);z-index:3;cursor:pointer}
+#walkOverlay>div{background:var(--panel);border-radius:14px;padding:22px 28px;text-align:center;max-width:360px}
+#walkOverlay h3{margin:0 0 6px}
+#walkOverlay p{margin:4px 0;color:var(--muted)}
+#cross{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;z-index:2;display:none;pointer-events:none}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff;box-shadow:0 0 2px #000}
+#cross:before{left:6px;top:0;width:2px;height:14px}#cross:after{top:6px;left:0;height:2px;width:14px}
+#hint3d{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(43,40,36,.82);color:#fff;border-radius:20px;
+  padding:5px 14px;font-size:12px;z-index:2;pointer-events:none;white-space:nowrap;transition:opacity .4s}
+main.animating #hint3d{opacity:0}
+.rlabel{font-size:12px;font-weight:600;color:#2b2824;background:rgba(255,253,249,.9);border:1px solid var(--line);
+  border-radius:12px;padding:2px 9px;white-space:nowrap;pointer-events:none}
+.rlabel small{font-weight:400;color:var(--muted);margin-left:4px}
+#roomList{padding:0 10px 6px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+#roomList button{display:flex;flex-direction:column;width:100%;border:1px solid var(--line);background:#fff;padding:5px 8px;border-radius:7px;cursor:pointer;text-align:left;line-height:1.3}
+#roomList button:hover{background:#f2ece2}
+#roomList button.on{background:var(--accent-soft);color:var(--accent)}
+#roomList small{color:var(--muted);font-variant-numeric:tabular-nums}
+.range{display:flex;align-items:center;gap:6px;padding:0 8px;color:var(--muted);font-size:12px}
+.range input{width:100px;accent-color:var(--accent)}
+.menu{position:relative}
+.menu summary{list-style:none;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px}
+.menu summary::-webkit-details-marker{display:none}
+.menu-pop{position:absolute;right:0;top:calc(100% + 6px);display:flex;flex-direction:column;min-width:150px;background:#fff;
+  border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 10px 30px rgba(40,30,20,.14);z-index:20;animation:fadeIn .2s ease}
+.menu-pop .btn{text-align:left}
+.range span{font-variant-numeric:tabular-nums;color:var(--ink)}
+/* ---------- 選取後的浮動工具條 ---------- */
+#fab{position:absolute;left:50%;bottom:16px;transform:translate(-50%,12px);display:flex;align-items:center;gap:4px;padding:5px;
+  background:rgba(255,253,249,.97);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 26px rgba(40,30,20,.16);
+  z-index:4;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility 0s linear .2s;max-width:calc(100% - 24px)}
+main.drawer-panel #fab{opacity:0;visibility:hidden}
+#fab.show{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s}
+#fab .name{padding:0 8px 0 6px;font-weight:600;max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#fab .btn{border:1px solid transparent}
+#fab .sep{width:1px;align-self:stretch;margin:4px 2px;background:var(--line)}
+/* ---------- 觸屏漫遊搖桿 ---------- */
+#joy{position:absolute;left:28px;bottom:28px;width:130px;height:130px;border-radius:50%;background:rgba(255,253,249,.25);
+  border:2px solid rgba(255,255,255,.7);box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:3;display:none;touch-action:none;backdrop-filter:blur(3px)}
+#joy i{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,253,249,.92);
+  box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none}
+#walkExit{position:absolute;right:16px;bottom:28px;z-index:3;display:none}
+/* ---------- 觸屏：加大點擊區域 ---------- */
+@media (pointer:coarse){
+  body{font-size:14px}
+  header{padding:8px 12px;gap:8px}
+  .grp{padding:3px;border-radius:10px}
+  .btn{padding:8px 12px;min-height:38px;border-radius:8px}
+  .seg .btn,.seg .pill{width:92px}
+  body.m3d .seg .pill{transform:translateX(94px)}
+  .menu summary{padding:9px 14px}
+  .menu-pop .btn{padding:11px 14px}
+  .item{padding:10px 4px 8px}
+  .form input,.form select{font-size:16px;padding:8px 9px}
+  .form input[type=color]{height:40px}
+  .actions .btn,#fab .btn{min-height:42px;padding:9px 14px}
+  td{padding:7px 2px}
+  #roomList button{padding:8px 10px}
+  .mat{padding:9px 8px}
+  .range input{width:120px!important}
+}
+/* ---------- 豎屏 / 窄屏（如 iPad 豎握）：側欄改為抽屜 ---------- */
+/* ---------- 寬屏：左右面板可收起 ---------- */
+@media (min-width:1101px){
+  .app{transition:grid-template-columns .3s cubic-bezier(.3,.7,.3,1)}
+  .app.hide-lib{grid-template-columns:0 minmax(0,1fr) 300px}
+  .app.hide-panel{grid-template-columns:236px minmax(0,1fr) 0}
+  .app.hide-lib.hide-panel{grid-template-columns:0 minmax(0,1fr) 0}
+  .app.hide-lib aside.lib,.app.hide-panel aside.right{overflow:hidden;border:0}
+  aside{overflow-x:hidden}
+  aside.lib>div{min-width:220px} #panel{min-width:284px}   /* 收起動畫中內容不被擠壓變形 */
+}
+.narrow-only{display:none!important}
+@media (max-width:1100px){
+  .grp.narrow-only{display:flex!important}
+  .btn.narrow-only,#fab .btn.narrow-only{display:inline-block!important}
+  .app{grid-template-columns:minmax(0,1fr)}
+  main,aside.lib,aside.right{grid-row:2;grid-column:1}
+  aside.lib,aside.right{position:relative;z-index:6;width:min(320px,86vw);transition:transform .3s cubic-bezier(.3,.7,.3,1),box-shadow .3s}
+  aside.lib{justify-self:start;transform:translateX(-110%)}
+  aside.right{justify-self:end;transform:translateX(110%)}
+  aside.open{transform:none;box-shadow:0 0 30px rgba(40,30,20,.18)}
+  .lib-grid{grid-template-columns:1fr 1fr 1fr}
+  .brand span,footer .only2d{display:none!important}
+}
+
+/* Office Ribbon v2：明確規範各按鈕狀態，避免白底白字；不影響其他對話框。 */
+header.office-ribbon{
+  display:flex;flex-direction:column;align-items:stretch;flex-wrap:nowrap;
+  gap:0;padding:0;min-width:0;position:relative;z-index:8;
+  background:#fffdfb;color:#322f2b;border-bottom:1px solid #e1d8cb;
+  box-shadow:0 2px 8px rgba(45,33,21,.055);
+}
+.ribbon-topline{
+  display:flex;align-items:stretch;gap:16px;min-height:51px;padding:0 18px;
+  background:linear-gradient(180deg,#fffefd 0%,#faf7f2 100%);
+  border-bottom:1px solid #eae2d8;
+}
+.ribbon-brand{display:flex;align-items:center;min-width:205px;max-width:290px;flex-shrink:1;overflow:hidden}
+.ribbon-brand .brand{min-width:0}
+.ribbon-brand .brand b{display:block;font-size:13px;color:#37312b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ribbon-brand .brand span{display:block;font-size:10px;color:#85796b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ribbon-tabs{display:flex;align-items:stretch;gap:3px;min-width:0;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#ded2c5 transparent}
+.ribbon-tab{
+  position:relative;flex-shrink:0;padding:0 19px;border:0;border-bottom:3px solid transparent;
+  border-radius:8px 8px 0 0;background:transparent;color:#62584e;
+  white-space:nowrap;font-size:13px;font-weight:600;letter-spacing:.025em;cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.ribbon-tab:hover{background:#f4ebe3;color:#96502e}
+.ribbon-tab.active{color:#9b502a;border-bottom-color:#b5653a;background:#fffdfb}
+.ribbon-tab:focus-visible{outline:2px solid #b5653a;outline-offset:-3px}
+.ribbon-top-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.ribbon-top-actions .grp{background:#fff;border-color:#e9e0d5}
+.ribbon-top-actions .btn{color:#574d42;background:transparent}
+.ribbon-top-actions .btn.on{color:#a4502b;background:#f6e6db}
+.ribbon-content{min-height:100px;overflow-x:auto;overflow-y:visible;background:#fffdfb;scrollbar-width:thin}
+.ribbon-page{display:flex;align-items:stretch;gap:9px;min-height:100px;padding:9px 13px 7px;width:max-content;min-width:100%}
+.ribbon-section{
+  position:relative;display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;
+  align-content:center;gap:6px;min-width:100px;max-width:750px;
+  padding:8px 12px 24px;border:1px solid #f0e9e1;border-radius:10px;
+  background:#fff;box-shadow:0 1px 2px rgba(61,44,28,.035);
+}
+.ribbon-section:last-child{border-right:1px solid #f0e9e1}
+.ribbon-section-label{
+  position:absolute;left:9px;right:9px;bottom:5px;text-align:center;
+  color:#988879;font-weight:600;font-size:10px;line-height:1.2;
+  white-space:nowrap;pointer-events:none;
+}
+.ribbon-section > .grp{background:transparent;border:0;padding:0;gap:5px}
+.ribbon-section .ribbon-action-clone,.ribbon-file-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+/* 基本按鈕：必須同時指定前景、背景、邊框 */
+header.office-ribbon .ribbon-section button.btn,
+header.office-ribbon .ribbon-section .grp button.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  min-height:34px;padding:6px 12px;border:1px solid #e7ded3;border-radius:7px;
+  background:#fff;color:#4d453d;
+  font-size:12px;font-weight:500;line-height:1.3;white-space:nowrap;
+  box-shadow:0 1px 1px rgba(34,24,15,.02);
+  transition:background .13s,border-color .13s,color .13s,box-shadow .13s;
+}
+header.office-ribbon .ribbon-section button.btn:hover,
+header.office-ribbon .ribbon-section .grp button.btn:hover{
+  background:#fcf1e9;color:#8c4727;border-color:#d8b399;
+}
+header.office-ribbon .ribbon-section button.btn.on,
+header.office-ribbon .ribbon-section .grp button.btn.on{
+  background:#b5653a;color:#fff;border-color:#b5653a;
+  box-shadow:0 2px 5px rgba(181,101,58,.15);
+}
+header.office-ribbon .ribbon-section button.btn.on:hover,
+header.office-ribbon .ribbon-section .grp button.btn.on:hover{
+  background:#944d2b;color:#fff;border-color:#944d2b;
+}
+header.office-ribbon .ribbon-section button.btn.chip.on,
+header.office-ribbon .ribbon-section .grp button.btn.chip.on{
+  background:#f8e9dd;color:#98502e;border-color:#edcfb8;box-shadow:none;
+}
+header.office-ribbon .ribbon-section button.btn.chip.on:hover{background:#f2d9c6;color:#81401f}
+header.office-ribbon .ribbon-section button.btn.danger{background:#fff;color:#aa4133;border-color:#eed9d3}
+header.office-ribbon .ribbon-section button.btn.danger:hover{background:#fff0ed;color:#952f24;border-color:#e9aca2}
+header.office-ribbon .ribbon-section button.btn:disabled{background:#f8f6f3;color:#a99e93;border-color:#ebe4dc;box-shadow:none;cursor:not-allowed}
+header.office-ribbon .ribbon-section button.btn:focus-visible{outline:2px solid #b5653a;outline-offset:2px}
+.ribbon-section button[data-ribbon-icon]::before{content:attr(data-ribbon-icon);font-size:15px;line-height:1;font-weight:700;min-width:14px;text-align:center}
+/* 2D / 3D 切換沿用既有 JS 與動畫，但確保白字有深色背景 */
+header.office-ribbon #viewSeg{padding:3px;border:1px solid #ecdfd5;background:#f7f1eb;border-radius:9px;gap:2px}
+header.office-ribbon #viewSeg .pill{top:3px;bottom:3px;left:3px;width:82px;background:#b5653a}
+header.office-ribbon #viewSeg .btn,
+header.office-ribbon #viewSeg .btn:hover{position:relative;z-index:1;width:82px;min-height:32px;background:transparent;border-color:transparent;box-shadow:none;color:#625448}
+header.office-ribbon #viewSeg .btn[data-view="2d"],
+body.m3d header.office-ribbon #viewSeg .btn[data-view="3d"]{color:#fff}
+body.m3d header.office-ribbon #viewSeg .btn[data-view="2d"]{color:#625448}
+header.office-ribbon .layout-picker{padding:4px 8px;background:#faf6f1;border:1px solid #ebe1d6;border-radius:8px}
+header.office-ribbon .layout-picker select{color:#4d453d}
+header.office-ribbon .menu-pop{z-index:30}
+header.office-ribbon .range{padding:4px 7px}
+header.office-ribbon .range input{accent-color:#b5653a}
+@media(max-width:1050px){.ribbon-brand{min-width:125px;max-width:200px}.ribbon-topline{gap:7px;padding:0 9px}.ribbon-tab{padding:0 12px}.ribbon-section{padding-left:8px;padding-right:8px}.ribbon-page{gap:6px;padding:7px}}
+@media(max-width:600px){.ribbon-brand{display:none}.ribbon-topline{min-height:46px}.ribbon-content,.ribbon-page{min-height:93px}}
+@media(prefers-reduced-motion:reduce){header.office-ribbon .btn,.ribbon-tab{transition:none}}
+
+/* Ribbon 首頁常用工具與一致的圖示/狀態色 */
+header.office-ribbon .ribbon-tab{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.ribbon-tab-icon{font-size:17px;line-height:1;color:#9b6849;min-width:16px;text-align:center}
+.ribbon-home-section{min-width:140px;max-width:420px}
+.ribbon-home-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px;max-width:360px}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action{min-height:39px;padding:7px 11px}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active{background:#b5653a;color:#fff;border-color:#b5653a}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover{background:#944d2b;color:#fff}
+header.office-ribbon .ribbon-section button.btn[data-ribbon-icon]::before{font-family:system-ui,'Segoe UI Symbol',sans-serif;font-size:16px;line-height:1;flex:none}
+header.office-ribbon .ribbon-top-actions button[data-ribbon-icon]::before{content:attr(data-ribbon-icon);margin-right:5px;font-weight:600}
+header.office-ribbon button.btn:disabled{opacity:.54;cursor:not-allowed}
+/* Ribbon hotfix: shortcuts stay readable and icons render in home buttons. */
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action{
+  display:inline-flex;align-items:center;gap:7px;
+  background:#fff;color:#44372d;border:1px solid #e6d9ca;
+}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action::before{
+  content:attr(data-ribbon-icon);font:600 16px/1 system-ui,'Segoe UI Symbol',sans-serif;
+}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action:hover:not(:disabled){background:#f6e9dd;color:#8f4828}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active,
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover:not(:disabled){background:#b5653a;color:#fff;border-color:#b5653a}
+
+/* 家具庫 3D 預覽 */
+.preview3d-btn{margin-top:5px;border:1px solid #dec8b8;border-radius:6px;background:#fcf6ef;color:#7e4a2d;font:600 11px/1.4 inherit;padding:4px 7px;cursor:pointer;touch-action:manipulation}
+.preview3d-btn:hover{background:#f0dfce;border-color:#b5653a}
+.preview3d-btn:focus-visible{outline:2px solid #b5653a;outline-offset:2px}
+.furniture-preview-overlay{position:fixed;inset:0;z-index:9999;background:rgba(28,25,22,.58);display:grid;place-items:center;padding:16px}
+.furniture-preview-dialog{width:min(580px,96vw);max-height:94vh;background:#fff;border:1px solid #ddd2c6;border-radius:15px;box-shadow:0 20px 60px #0005;overflow:hidden;display:flex;flex-direction:column}
+.furniture-preview-dialog header{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ece6df;gap:10px}
+.furniture-preview-dialog header>div{display:flex;flex-direction:column;gap:4px}
+.furniture-preview-dialog header strong{font-size:16px;color:#302b26}
+.furniture-preview-dialog header small{color:#756c63;font-size:12px}
+.furniture-preview-close{background:#f5f0eb;border:0;border-radius:8px;color:#3c3229;font-size:25px;width:34px;height:34px;cursor:pointer}
+.furniture-preview-canvas{width:100%;height:min(440px,59vh);min-height:220px;background:#f4f1eb;touch-action:none}
+.furniture-preview-canvas canvas{display:block;width:100%;height:100%}
+.furniture-preview-dialog footer{border-top:1px solid #ece6df;text-align:center;padding:10px;color:#786b5f;font-size:12px}
+
+/* Architecture stage 2 */
+#plan.tool-wallDraw{cursor:crosshair}
+#plan.tool-wallMove .wall{cursor:move}
+#plan.tool-wallMove .wall:hover{fill:#c47b4c;opacity:.85}
+#plan.tool-wallDraw .wall{pointer-events:none}
+
+/* F4 自訂旋轉角度 Modal */
+#rotateFurnitureDialog{width:min(420px,calc(100vw - 32px));box-shadow:0 22px 65px rgba(0,0,0,.25)}
+#rotateFurnitureDialog h3{margin:0 0 10px;font-size:17px}
+#rotateFurnitureDialog .muted{margin:0 0 16px;line-height:1.65}
+#rotateFurnitureDialog .form label{display:flex;flex-direction:column;gap:6px;font-weight:600}
+#rotateFurnitureDialog input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:white}
+#rotateFurnitureDialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+#rotateFurnitureDialog .rotate-furniture-error{color:#b3372a;margin:7px 0 0}
+
+/* F5: custom GLB model manager */
+.f5-manager-btn{width:calc(100% - 20px);margin:10px;border:1px solid #6a91b7;border-radius:9px;background:#e5effb;color:#234c75;padding:10px;cursor:pointer;font-weight:650}
+.f5-overlay{position:fixed;inset:0;z-index:110000;background:rgba(10,22,38,.64);display:flex;align-items:center;justify-content:center;padding:16px}
+.f5-dialog{box-sizing:border-box;width:min(650px,100%);max-height:92vh;overflow:auto;border-radius:15px;padding:20px;background:#fff;color:#253548;box-shadow:0 20px 55px #0005;display:flex;flex-direction:column;gap:13px}
+.f5-dialog header{display:flex;align-items:center;justify-content:space-between;font-size:20px}.f5-dialog header button{font-size:24px}.f5-dialog p,.f5-dialog footer{font-size:13px;color:#647388;margin:0}
+.f5-dialog label{font-size:13px;display:flex;flex-direction:column;gap:4px}.f5-dialog input{min-width:0;padding:8px;border:1px solid #bdc7d2;border-radius:6px;color:#283a4d;background:#fff}
+.f5-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.f5-dialog button{cursor:pointer;border-radius:7px;padding:7px 12px;border:1px solid #a8b9ca}.f5-import{background:#276eaa;color:white;border:none!important}.f5-status{min-height:20px;color:#196c78;font-size:13px}.f5-list{display:flex;flex-direction:column;gap:6px}.f5-row{border:1px solid #dee4ec;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}.f5-row span{overflow-wrap:anywhere}
+
+/* 操作說明與引導式教學（不影響編輯器本身 DOM 事件） */
+.ribbon-help-button{white-space:nowrap;font-size:12px!important;margin-left:5px!important}
+.fp-tour-highlight{position:fixed;pointer-events:none;z-index:150100;border:3px solid #e69c37;border-radius:9px;box-shadow:0 0 0 3px #ffffffba,0 0 20px #da8d3277;transition:all .18s ease}
+.fp-guide-card{position:fixed;bottom:20px;right:22px;z-index:150101;box-sizing:border-box;width:min(410px,calc(100vw - 30px));padding:18px 20px;background:#fff;color:#2b3443;border-radius:14px;border:1px solid #d4dae3;box-shadow:0 20px 60px #0005;font:14px/1.65 system-ui,'Microsoft JhengHei',sans-serif}
+.fp-guide-head{display:flex;justify-content:space-between;align-items:center}.fp-guide-head strong{font-size:15px}.fp-guide-head button,.fp-help-modal header button{border:0;background:transparent;color:#65728a;font-size:22px;cursor:pointer}
+.fp-guide-count{color:#9c632c;font-size:12px;margin-top:10px}.fp-guide-card h3{font-size:19px;margin:5px 0}.fp-guide-card p{margin:7px 0 14px}.fp-guide-progress{height:5px;border-radius:10px;background:#e8e9eb;overflow:hidden}.fp-guide-progress span{display:block;height:100%;background:#b5653a;transition:width .2s}.fp-guide-actions{display:flex;gap:8px;margin-top:17px;align-items:center}.fp-guide-actions span{flex:1}
+.fp-guide-card button,.fp-help-modal button{cursor:pointer;border:1px solid #cbd1d8;background:#fff;border-radius:7px;padding:7px 12px;color:#374151}.fp-guide-card button.primary,.fp-help-modal button.primary{background:#a95c31;color:white;border-color:#a95c31}.fp-guide-card button:disabled{opacity:.45;cursor:default}
+.fp-help-backdrop{position:fixed;inset:0;z-index:150110;background:#1521329c;display:grid;place-items:center;padding:16px;overflow:auto}
+.fp-help-modal{box-sizing:border-box;width:min(760px,100%);max-height:min(calc(100vh - 32px),850px);margin:auto;background:#fff;color:#233044;box-shadow:0 20px 70px #0005;border-radius:15px;padding:22px;display:flex;flex-direction:column;gap:16px;overflow:hidden;font:14px/1.7 system-ui,'Microsoft JhengHei',sans-serif}
+.fp-help-modal header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e6e8eb;padding-bottom:12px;flex:0 0 auto}.fp-help-modal h2{font-size:20px;margin:0}.fp-help-modal p{margin:0}.fp-help-modal .fp-help-tools{display:flex;gap:8px;flex-wrap:wrap;flex:0 0 auto}.fp-help-modal .fp-help-tools input{flex:1;min-width:160px;border:1px solid #cbd1d8;border-radius:7px;padding:9px 12px}
+.fp-help-body{flex:1 1 auto;min-height:0;overflow:auto;padding-right:8px;padding-bottom:8px}.fp-help-topic{border-bottom:1px solid #e9ecef;padding:4px 0 10px}.fp-help-topic h3{font-size:16px;color:#795333;margin:8px 0 4px}.fp-help-topic ol{margin:3px 0 5px;padding-left:23px}.fp-help-topic li{margin:4px 0}
+.fp-help-modal footer,.fp-help-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #e6e8eb;padding-top:12px;flex:0 0 auto}.fp-help-modal footer span,.fp-help-muted{color:#718096;font-size:12px}.fp-guide-switch{display:flex;gap:12px;align-items:center;padding:15px;border:1px solid #d7dce3;border-radius:9px;font-weight:600}.fp-guide-switch input{width:18px;height:18px;accent-color:#a95c31}
+@media(max-width:560px){.fp-guide-card{bottom:10px;right:10px}.fp-help-modal{padding:14px}.fp-help-modal .fp-help-tools button{flex:1}}
+
+/* Phase 2: viewport issue inspector */
+.diagnostics-list{position:absolute;right:12px;top:14px;width:min(310px,calc(100% - 24px));max-height:calc(100% - 30px);overflow:auto;background:#fffdf9;border:1px solid #d8d0c3;border-radius:12px;box-shadow:0 8px 28px #1f292b30;z-index:15;padding:12px;color:#292d30;font-size:13px}.diagnostics-list[hidden]{display:none}.diag-head{display:flex;justify-content:space-between;align-items:center}.diag-head button{border:0;background:transparent;font-size:22px;cursor:pointer}.diag-summary{margin:8px 0;padding:8px;background:#f1eee8;border-radius:6px}.diag-issue{display:flex;flex-direction:column;text-align:left;gap:4px;width:100%;padding:9px;border:0;border-bottom:1px solid #eee7dd;background:transparent;cursor:pointer;color:inherit}.diag-issue:hover,.diag-issue:focus-visible{background:#e9f2fa}.diag-issue small{font-size:11px;color:#636b73}.diag-empty{font-size:12px;color:#65666a} 
+
+.admin-shortcuts button{background:#247f6a;color:white;border:1px solid #ffffff88;border-radius:10px;padding:10px 14px;box-shadow:0 4px 16px #0003;cursor:pointer;font-weight:700}.boot-screen{min-height:100vh;display:grid;place-items:center;background:#f1f6f3;color:#2a725d;font:600 18px system-ui}
+
+/* Homepage room-layout picker: keep it readable without altering the building ribbon. */
+header.office-ribbon .ribbon-layout-section{min-width:190px;max-width:260px}
+header.office-ribbon .home-layout-picker{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:160px;width:100%;box-sizing:border-box}
+header.office-ribbon .home-layout-picker label{font-size:12px;color:#725744;font-weight:600}
+header.office-ribbon .home-layout-picker select{display:block;width:100%;min-height:34px;padding:5px 8px;border:1px solid #d8c8b9;border-radius:6px;background:#fff;color:#3c342e}
+
+.locale-select{min-width:138px;max-width:185px;padding:7px 10px;border:1px solid var(--line,#cbd5d1);border-radius:7px;background:#fff;color:#283d35;font:inherit}html[dir="rtl"] .login-screen,html[dir="rtl"] .admin-page{text-align:right}
+
+/* Icon-only ribbon: labels remain available to screen readers and become hover/focus tooltips. */
+header.office-ribbon .ribbon-tab{
+  width:52px;padding:0;border-radius:9px 9px 0 0;font-size:0;overflow:visible;
+}
+header.office-ribbon .ribbon-tab-icon{font-size:23px;min-width:0}
+header.office-ribbon button[data-ribbon-icon]{
+  position:relative;width:46px;min-width:46px;height:46px;min-height:46px!important;
+  padding:0!important;gap:0!important;font-size:0!important;overflow:visible;
+}
+header.office-ribbon .ribbon-section button.btn[data-ribbon-icon]::before,
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action::before{
+  font-size:23px;min-width:0;
+}
+header.office-ribbon #viewSeg .btn,
+header.office-ribbon #viewSeg .btn:hover{width:52px;min-width:52px;height:46px;min-height:46px}
+header.office-ribbon #viewSeg .pill{width:52px}
+body.m3d header.office-ribbon #viewSeg .pill{transform:translateX(54px)}
+header.office-ribbon .ribbon-top-actions .ribbon-help-button{
+  position:relative;width:42px;min-width:42px;height:42px;margin-left:0!important;padding:0!important;
+  font-size:0!important;border:1px solid transparent;border-radius:8px;
+}
+header.office-ribbon .ribbon-top-actions button[data-ribbon-icon]::before{margin:0;font-size:20px;line-height:1}
+header.office-ribbon .ribbon-button-text{font-size:0}
+header.office-ribbon .ribbon-tab::after,
+header.office-ribbon button[data-ribbon-icon]::after{
+  content:attr(aria-label);position:absolute;z-index:100;left:50%;top:calc(100% + 10px);
+  transform:translate(-50%,-4px);width:max-content;max-width:min(240px,calc(100vw - 28px));
+  padding:8px 10px;border:1px solid #33445f;border-radius:8px;background:#182238;color:#f8fafc;
+  box-shadow:0 8px 22px rgba(18,29,49,.28);font:600 12px/1.35 system-ui,'Microsoft JhengHei',sans-serif;
+  letter-spacing:0;text-align:center;white-space:normal;opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .14s ease,transform .14s ease;
+}
+header.office-ribbon .ribbon-tab:hover::after,
+header.office-ribbon .ribbon-tab:focus-visible::after,
+header.office-ribbon button[data-ribbon-icon]:hover::after,
+header.office-ribbon button[data-ribbon-icon]:focus-visible::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+/* Do not expose a Ribbon scrollbar; sections use additional rows when space is limited. */
+header.office-ribbon .ribbon-tabs{overflow:visible;scrollbar-width:none;flex-wrap:wrap}
+header.office-ribbon .ribbon-topline{position:relative;z-index:20}
+header.office-ribbon .ribbon-content{overflow:visible;scrollbar-width:none}
+header.office-ribbon .ribbon-page{width:100%;min-width:0;flex-wrap:wrap}
+
+/* Administrator-controlled alternative for teams that prefer icon names to stay visible. */
+header.office-ribbon.show-ribbon-labels .ribbon-tab{width:auto;padding:0 16px;font-size:13px}
+header.office-ribbon.show-ribbon-labels .ribbon-tab-icon{margin-right:7px}
+header.office-ribbon.show-ribbon-labels button[data-ribbon-icon]{width:auto;min-width:46px;padding:6px 11px!important;gap:5px!important;font-size:12px!important}
+header.office-ribbon.show-ribbon-labels .ribbon-section button.btn[data-ribbon-icon]::before,
+header.office-ribbon.show-ribbon-labels .ribbon-home-actions .ribbon-quick-action::before{font-size:16px}
+header.office-ribbon.show-ribbon-labels .ribbon-button-text{font-size:12px}
+header.office-ribbon.show-ribbon-labels #viewSeg .btn,
+header.office-ribbon.show-ribbon-labels #viewSeg .btn:hover{width:82px;min-width:82px}
+header.office-ribbon.show-ribbon-labels #viewSeg .pill{width:82px}
+body.m3d header.office-ribbon.show-ribbon-labels #viewSeg .pill{transform:translateX(84px)}
+header.office-ribbon.show-ribbon-labels .ribbon-top-actions .ribbon-help-button{width:auto;min-width:42px;padding:0 10px!important;font-size:12px!important}
+header.office-ribbon.show-ribbon-labels .ribbon-top-actions button[data-ribbon-icon]::before{margin-right:5px}
+@media(max-width:600px){
+  header.office-ribbon .ribbon-tab{width:46px}
+  header.office-ribbon button[data-ribbon-icon]{width:42px;min-width:42px;height:42px;min-height:42px!important}
+  header.office-ribbon #viewSeg .btn,header.office-ribbon #viewSeg .btn:hover{width:46px;min-width:46px;height:42px;min-height:42px}
+  header.office-ribbon #viewSeg .pill{width:46px}
+  body.m3d header.office-ribbon #viewSeg .pill{transform:translateX(48px)}
+}

@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {furnitureBounds,alignFurniture,distributeFurniture} from '../src/furniture/core/alignmentEngine.js';
+const f=(id,cx,cy,w=100,d=80,rot=0)=>({id,cx,cy,w,d,rot});
+test('rotated furniture has correct axis aligned extents',()=>{const b=furnitureBounds(f('a',100,100,100,80,90));assert.ok(Math.abs(b.left-60)<.0001);assert.ok(Math.abs(b.top-50)<.0001);});
+test('left align uses rotated extents',()=>{const r=alignFurniture([f('a',100,100),f('b',300,200,80,100,90)],'left');assert.equal(r.length,2);assert.ok(Math.abs(r[0].cx-100)<.0001);assert.ok(Math.abs(r[1].cx-100)<.0001);});
+test('center and bottom align',()=>{const list=[f('a',100,100),f('b',300,240)];assert.equal(alignFurniture(list,'centerY')[0].cy,170);assert.equal(alignFurniture(list,'bottom')[0].cy,240);});
+test('horizontal distribute leaves ends and equalizes gaps',()=>{const list=[f('a',50,0),f('b',180,0),f('c',390,0)];const r=distributeFurniture(list,'distributeX');assert.deepEqual(r.map(x=>x.cx),[50,220,390]);});
+test('vertical distribute leaves ends and equalizes gaps',()=>{const list=[f('a',0,0),f('b',0,220),f('c',0,600)];const r=distributeFurniture(list,'distributeY');assert.deepEqual(r.map(x=>x.cy),[0,300,600]);});
+test('distribution needs at least three items',()=>{assert.deepEqual(distributeFurniture([f('a',0,0),f('b',100,0)],'distributeX'),[]);});

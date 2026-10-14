@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.wrangler/
+.env
+.env.*
+!.env.example
+*.private.sql
+admin-seed*.sql
+admin-password-reset*.sql
+authenticator-qr.png
+*.pem
+*.key
+.DS_Store

@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {checkFurnitureCollision,overlapSAT,polygonForFurniture,polygonForWall} from '../src/furniture/core/collisionEngine.js';
+const f=(id,cx,cy,rot=0,type='sofa')=>({id,cx,cy,w:800,d:600,rot,type});
+test('separated furniture has no collision',()=>assert.deepEqual(checkFurnitureCollision(f('a',0,0),[f('b',3000,0)],[],{clearance:600}),[]));
+test('intersecting furniture is collision',()=>assert.equal(checkFurnitureCollision(f('a',0,0),[f('b',100,0)] ,[])[0].severity,'collision'));
+test('nearby furniture warns of clearance',()=>assert.equal(checkFurnitureCollision(f('a',0,0),[f('b',1200,0)] ,[])[0].severity,'clearance'));
+test('rotated overlap checked with SAT',()=>assert.equal(overlapSAT(polygonForFurniture(f('a',0,0,45)),polygonForFurniture(f('b',550,0))),true));
+test('wall rectangle penetration detected',()=>assert.equal(checkFurnitureCollision(f('a',0,0),[],[[-2000,-120,2000,120]])[0].type,'wall'));
+test('angled wall penetration detected',()=>assert.equal(checkFurnitureCollision(f('a',0,0),[],[{start:{x:-1000,y:-1000},end:{x:1000,y:1000},thickness:200}])[0].severity,'collision'));
+test('window and doors excluded',()=>assert.deepEqual(checkFurnitureCollision(f('a',0,0),[f('b',0,0,0,'dooropen')],[]),[]));
+test('wall polygon uses thickness',()=>assert.equal(polygonForWall({start:{x:0,y:0},end:{x:1000,y:0},thickness:200})[0].y,100));
+test('contact is not collision',()=>assert.equal(overlapSAT(polygonForFurniture(f('a',0,0)),polygonForFurniture(f('b',800,0))),false));

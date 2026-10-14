@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {plainSnapshot,polygonArea,calculateEstimate,compareDesigns,serializeCsv} from '../src/services/designStudio.js';
+import {convertFromTwd,currencyCode} from '../src/i18n/currency.js';
+import {createDesignVersions} from '../src/services/designVersions.js';
+const project={rooms:{r:{name:'客廳',mat:'wood'}},architecture:{rooms:[{id:'r',poly:[[0,0],[2000,0],[2000,3000],[0,3000]]}]},furniture:[{id:'f',type:'sofa',name:'沙發',cx:500,cy:500}]};
+test('area in square meters and materials estimate',()=>{assert.equal(polygonArea(project.architecture.rooms[0].poly),6);const e=calculateEstimate(project);assert.equal(e.area,6);assert.equal(e.rows.length,2);assert.equal(e.subtotal,6*1800+3000);assert.equal(e.total,15180)});
+test('different plans compare consistently',()=>{const next=plainSnapshot(project);next.furniture.push({id:'2',type:'table',name:'桌子'});assert.equal(compareDesigns(project,next).furnitureB,2);assert.equal(compareDesigns(project,next).delta,3300)});
+test('CSV quotes and Unicode BOM for Excel',()=>{const csv=serializeCsv([{category:'家具',name:'測試,"物件"',quantity:1,unit:'件',unitPrice:100,total:100}]);assert.ok(csv.startsWith('\uFEFF'));assert.ok(csv.includes('測試,""物件""'))});
+test('locale currencies use fixed TWD conversion rates',()=>{assert.equal(currencyCode('zh-TW'),'TWD');assert.equal(currencyCode('en'),'USD');assert.equal(currencyCode('ja'),'JPY');assert.equal(convertFromTwd(1000,'en'),31);assert.equal(convertFromTwd(1000,'ja'),4800)});
+test('versions save immutable project and restore',()=>{const data=new Map(),storage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)};const versions=createDesignVersions(storage);const r=versions.save('A',project);project.furniture[0].cx=900;assert.equal(versions.get(r.id).furniture[0].cx,500);assert.equal(versions.list().length,1);versions.remove(r.id);assert.equal(versions.list().length,0)});
+test('reactive Proxy snapshot does not throw DataCloneError',()=>{const proxy=new Proxy({furniture:[new Proxy({id:'x'}, {})],rooms:{}},{});assert.deepEqual(plainSnapshot(proxy).furniture[0],{id:'x'});});
