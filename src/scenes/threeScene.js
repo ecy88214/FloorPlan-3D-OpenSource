@@ -497,7 +497,7 @@ function buildFurniture(f){
       const cm = mat(c, {roughness:.55}), fz = d/2 - .02;
       if (f.type === 'wardrobe'){
         const h = 2.2, n = Math.max(1, Math.round(w/.5));
-        g.add(box(w - .02, .08, d - .06, '#3f3c38', 0, 0, -.03), box(w, h - .08, d - .02, cm, 0, .08, -.01));
+        g.add(box(w - .02, .08, d - .06, '#3f3c38', 0, 0, -.03), box(w, h - .1, d - .02, cm, 0, .08, -.01));
         fronts(g, -w/2, .08, w, h - .1, fz, n, 1, cm, 'bar', 1.05);
         g.add(box(w, .02, d - .02, woodM('#c8ab8d'), 0, h - .02, -.01));
       } else if (f.type === 'shoecab'){
