@@ -309,6 +309,11 @@ function vase(g, x, y, z, r, h, c, R, flowers = true){
 function tableLamp(g, x, y, z, s = 1){
   g.add(lathe([[0, 0], [.06*s, 0], [.075*s, .05*s], [.08*s, .12*s], [.055*s, .2*s], [.018*s, .25*s], [.012*s, .3*s]], ceramic({roughness:.3}), x, y, z, 32));
   g.add(lathe([[.13*s, 0], [.1*s, .18*s]], glowMat('#fff6dd', '#ffdca0', .35), x, y + .26*s, z, 40), blob(.03*s, .03*s, .03*s, glowMat('#fff', '#ffe2b0', 1), x, y + .31*s, z, 12));
+  const pl = new THREE.PointLight(0xffe2b8, 0, 3.0, 1.8);
+  pl.position.set(x, y + .32*s, z);
+  pl.userData.isLocalLamp = true;
+  pl.userData.nightIntensity = 2.4;
+  g.add(pl);
 }
 const plate = (g, r, x, y, z) => g.add(lathe([[0, 0], [r*.6, 0], [r*.72, .008], [r, .02]], ceramic({side:THREE.DoubleSide}), x, y, z, 32));
 
@@ -389,6 +394,7 @@ function bayCushionHeightOffset(f){
 
 function buildFurniture(f){
   const g = new THREE.Group(), w = M(f.w), d = M(f.d), c = f.color || '#ddd', bz = -d/2, R = rng(Math.round(f.w*7 + f.d*13 + f.cx + f.cy));
+  const frCol = f.frameColor || '#c8ab8d';
   switch (f.type){
     case 'bench': {
       g.add(rbox(w, .06, d, woodM(c || '#d8bea2'), 0, .42, 0, .015));
@@ -416,7 +422,7 @@ function buildFurniture(f){
       break;
     }
     case 'bed': {
-      const fr = woodM('#c8ab8d'), fab = fabric(c || '#f4efe8'), fh = .28, mt = .22, top = fh + mt;
+      const fr = woodM(frCol), fab = fabric(c || '#f4efe8'), fh = .28, mt = .22, top = fh + mt;
       g.add(box(w - .12, .06, d - .14, '#3f3c38', 0, 0, .03), rbox(w, fh - .06, d - .08, fr, 0, .06, .04, .015));
       g.add(rbox(w, 1.05, .06, fr, 0, 0, bz + .03, .012));
       g.add(rbox(w - .08, .62, .04, fabric('#f4efe8'), 0, .4, bz + .07, .02));
@@ -444,7 +450,7 @@ function buildFurniture(f){
       const col = c || '#76937f';
       const fab = fabric(col), dk = fabric(darker(col, .9));
       const a = Math.min(.16, w * .18), bd = Math.min(.2, d * .24), lh = .14, sd = d - bd - .02, cw = w - 2*a;
-      legs(g, w, d, lh, woodM('#c8ab8d'), .07, .018);
+      legs(g, w, d, lh, woodM(frCol), .07, .018);
       // 底座圓角底框 + 靠背主體
       g.add(rbox(w, .16, d, dk, 0, lh, 0, .035), rbox(w, .73, bd, dk, 0, lh, bz + bd/2, .06));
       // 左右兩側飽滿扶手
@@ -458,7 +464,7 @@ function buildFurniture(f){
     }
     case 'sofa': {
       const fab = fabric(c || '#ede8df'), dk = fabric(darker(c || '#ede8df', .92)), a = Math.min(.18, w*.14), n = w > 2.2 ? 3 : 2, cw = (w - 2*a)/n, bd = Math.min(.2, d*.24), lh = .14, sd = d - bd - .02;
-      legs(g, w, d, lh, woodM('#c8ab8d'), .07, .018);
+      legs(g, w, d, lh, woodM(frCol), .07, .018);
       g.add(rbox(w, .16, d, dk, 0, lh, 0, .03), rbox(w, .73, bd, dk, 0, lh, bz + bd/2, .06));
       [-1, 1].forEach(s => g.add(rbox(a, .5, d, dk, s*(w/2 - a/2), lh, 0, .07)));
       for (let i = 0; i < n; i++){
@@ -471,7 +477,7 @@ function buildFurniture(f){
     case 'cornersofa': {
       const k = Math.min(.95, d*.56, w*.4), b = .2, fab = fabric(c || '#ede8df'), dk = fabric(darker(c || '#ede8df', .92)), lh = .12, sw = (w - b - .2)/2;
       [[-w/2+.07, bz+.07], [w/2-.07, bz+.07], [w/2-.07, bz+k-.07], [-w/2+.07, d/2-.07], [-w/2+k-.07, d/2-.07], [-w/2+k-.07, bz+k-.07]]
-        .forEach(([x, z]) => g.add(rod([x, 0, z], [x, lh, z], .012, woodM('#c8ab8d'), .018)));
+        .forEach(([x, z]) => g.add(rod([x, 0, z], [x, lh, z], .012, woodM(frCol), .018)));
       g.add(rbox(w, .18, k, dk, 0, lh, bz + k/2, .03), rbox(k, .18, d - k + .02, dk, -w/2 + k/2, lh, bz + k + (d - k)/2 - .01, .03));
       g.add(rbox(w, .72, b, dk, 0, lh, bz + b/2, .06), rbox(b, .72, d, dk, -w/2 + b/2, lh, 0, .06), rbox(.2, .5, k, dk, w/2 - .1, lh, bz + k/2, .07), rbox(k, .5, .2, dk, -w/2 + k/2, lh, d/2 - .1, .07));
       for (let i = 0; i < 2; i++){
@@ -486,7 +492,7 @@ function buildFurniture(f){
     }
     case 'nightstand': {
       const wm = woodM(c || '#d8bea2');
-      legs(g, w, d, .1, woodM('#c8ab8d'), .04, .014);
+      legs(g, w, d, .1, woodM(frCol), .04, .014);
       g.add(rbox(w, .4, d - .02, wm, 0, .1, -.01, .012));
       fronts(g, -w/2 + .02, .12, w - .04, .36, d/2 - .02, 1, 2, wm, 'bar');
       tableLamp(g, -w*.12, .5, -d*.12);
@@ -499,7 +505,7 @@ function buildFurniture(f){
         const h = 2.2, n = Math.max(1, Math.round(w/.5));
         g.add(box(w - .02, .08, d - .06, '#3f3c38', 0, 0, -.03), box(w, h - .1, d - .02, cm, 0, .08, -.01));
         fronts(g, -w/2, .08, w, h - .1, fz, n, 1, cm, 'bar', 1.05);
-        g.add(box(w, .02, d - .02, woodM('#c8ab8d'), 0, h - .02, -.01));
+        g.add(box(w, .02, d - .02, woodM(frCol), 0, h - .02, -.01));
       } else if (f.type === 'shoecab'){
         const h = 1.0, y0 = .16, n = Math.max(1, Math.round(w/.45));
         g.add(box(w, h - y0, d - .02, cm, 0, y0, -.01), box(w - .04, .01, .03, glowMat('#fff7e6', '#ffe9c4', .8), 0, y0 - .01, fz - .06));
@@ -552,6 +558,9 @@ function buildFurniture(f){
       const lx = -w/2 + .14, lz = bz + .1;
       g.add(cyl(.04, .045, .02, bm, lx, my, lz, 20), tube([[lx, my + .02, lz], [lx, my + .28, lz + .02], [lx + .08, my + .38, lz + .08]], .007, bm));
       const hd = cyl(.018, .05, .08, bm, lx + .09, my + .32, lz + .1, 20); hd.rotation.x = .5; g.add(hd);
+      const pl = new THREE.PointLight(0xfff0d0, 0, 2.6, 1.8);
+      pl.position.set(lx + .09, my + .3, lz + .1);
+      pl.userData.isLocalLamp = true; pl.userData.nightIntensity = 2.0; g.add(pl);
       break;
     }
     case 'chair': {
@@ -813,6 +822,11 @@ function buildFurniture(f){
       g.add(lathe([[0, 0], [r*.55, 0], [r*.58, .012], [r*.5, .03], [.02, .035]], lm, 0, 0, 0, 40), rod([0, .03, 0], [0, 1.36, 0], .011, lm));
       g.add(lathe([[r*.85, 0], [r*.55, .36]], glowMat('#fff6dd', '#ffdca0', .45), 0, 1.22, 0, 48), blob(.035, .035, .035, glowMat('#fff', '#ffe2b0', 1.2), 0, 1.36, 0, 12));
       g.add(ring(r*.85, .004, lm, 0, 1.22, 0), ring(r*.55, .004, lm, 0, 1.58, 0));
+      const pl = new THREE.PointLight(0xffdfa8, 0, 4.8, 1.8);
+      pl.position.set(0, 1.36, 0);
+      pl.userData.isLocalLamp = true;
+      pl.userData.nightIntensity = 3.8;
+      g.add(pl);
       break;
     }
     case 'island': {
@@ -1413,6 +1427,11 @@ function applyLight(){
   scene.background = new THREE.Color(opt.night ? 0x1c2130 : 0xf8f6f0);
   ground.material.color.set(opt.night ? 0x2a2e38 : 0xf8f6f0);
   lampG.children.forEach(o => { if (o.isPointLight) o.intensity = opt.night ? 6 : 0; else o.material.emissiveIntensity = opt.night ? 2 : .3; });
+  furnG.traverse(o => {
+    if (o.userData?.isLocalLamp) {
+      o.intensity = opt.night ? (o.userData.nightIntensity || 2.5) : (opt.hour >= 17 || opt.hour <= 7 ? (o.userData.nightIntensity || 2.5) * 0.45 : 0);
+    }
+  });
   renderer.toneMappingExposure = opt.night ? 1.25 : 1.05;
   envK = opt.night ? .15 : 1; matCache.forEach(m => { if (m.envMap) m.envMapIntensity = m.userData.env*envK; });
   const h = Math.floor(opt.hour), m = Math.round((opt.hour - h)*60);
@@ -1711,9 +1730,22 @@ function loop(timestamp=0){
 
 async function shot(){ if(!await authorizeExport('3D PNG'))return; const a = document.createElement('a'); a.download = tr('房型室內設計方案', 'floor-plan-design') + '-3D.png'; a.href = renderer.domElement.toDataURL('image/png'); a.click(); }
 
+async function shotHD(){
+  if(!await authorizeExport('3D PNG HD'))return;
+  const curPR = renderer.getPixelRatio();
+  renderer.setPixelRatio(Math.min(4, Math.max(2.5, (window.devicePixelRatio || 1) * 2)));
+  renderer.render(scene, camera);
+  const a = document.createElement('a');
+  a.download = tr('房型室內設計方案-4K高清', 'floor-plan-design-HD') + '.png';
+  a.href = renderer.domElement.toDataURL('image/png');
+  a.click();
+  renderer.setPixelRatio(curPR);
+  renderer.render(scene, camera);
+}
+
 function relang(){ syncWalkTexts(); if (inited) buildLabels(); }
 
-registerScene({enter, exit, relang, sync:() => sync(), shot, groundAt, flyToRoom:id => active && !anim && flyToRoom(id), walking:() => active && opt.mode === 'walk'});
+registerScene({enter, exit, relang, sync:() => sync(), shot, shotHD, groundAt, flyToRoom:id => active && !anim && flyToRoom(id), walking:() => active && opt.mode === 'walk'});
 
 // 家具庫獨立預覽：沿用場景中的家具建模，不修改主場景或物件資料。
 export function createFurniturePreviewModel(item) {

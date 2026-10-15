@@ -11,6 +11,8 @@
         <label>{{ $t('ui.studio.wall.color') }} <input type="color" v-model="wallColor" @input="emit3d" /></label>
         <label>{{ $t('ui.studio.furniture.color') }} <input type="color" v-model="furnitureColor" /></label>
         <button @click="applyFurnitureColor">{{ $t("ui.apply.color.to.selected.furniture") }}</button>
+        <label>{{ tr('家具框架 / 木架色彩', 'Furniture Frame / Wood Color') }} <input type="color" v-model="frameColor" /></label>
+        <button @click="applyFrameColor">{{ tr('套用框架木色到所選家具', 'Apply Frame Color to Selected') }}</button>
         <label>{{ $t('ui.studio.floor.finish') }} <select v-model="finish"><option v-for="(m,k) in FINISHES" :key="k" :value="k">{{ $t(m.i18nKey) }}</option></select></label>
         <button @click="applyFinish">{{ $t("ui.apply.to.selected.room") }}</button><p class="studio-hint">{{ $t("ui.select.a.room.in.two.d.or.three.d.first.furniture.can.be.dragged.and.edited.using.gizmo.in.t") }}</p>
       </template>
@@ -25,7 +27,7 @@
         <p>{{ $t('ui.estimate.area.caption') }} {{estimate.area.toFixed(2)}} m² · {{ $t('ui.estimate.area.note') }}</p>
         <label>{{ $t('ui.estimate.contingency') }} <select v-model.number="reserve"><option :value="0">0%</option><option :value=".1">10%</option><option :value=".15">15%</option><option :value=".2">20%</option></select></label>
         <div class="studio-total">{{ $t('ui.estimate.total.caption') }} {{currency(estimate.total)}}</div><p class="studio-hint">{{ $t('ui.estimate.assumptions') }}</p>
-        <button  @click="exportEstimate">{{ $t('ui.estimate.export.csv') }}</button><button  @click="exportReport">{{ $t('ui.estimate.export.html') }}</button><button  @click="exportProject">{{ $t('ui.estimate.export.json') }}</button>
+        <button  @click="exportEstimate">{{ $t('ui.estimate.export.csv') }}</button><button  @click="exportReport">{{ $t('ui.estimate.export.html') }}</button><button  @click="exportProject">{{ $t('ui.estimate.export.json') }}</button><button @click="export3dHD">{{ tr('3D 4K 高畫質渲染圖', 'Export 3D 4K HD Render') }}</button>
       </template>
       <p v-if="message" class="studio-message" role="status">{{message}}</p>
     </div>
@@ -39,7 +41,9 @@ import {createDesignVersions} from '../services/designVersions.js';
 import {convertFromTwd,currencyCode,currencyProfile,formatCurrency} from '../i18n/currency.js';
 import {localeState} from '../i18n/index.js';
 let editor = null;
-const expanded=ref(false),tab=ref('3D / 材質'),tool=ref('translate'),quality=ref('medium'),lighting=ref('day'),wallColor=ref('#f4f1eb'),furnitureColor=ref('#b8c3ab'),finish=ref('wood'),versionName=ref('設計方案'),reserve=ref(.1),baseline=ref(''),message=ref(''),revision=ref(0),versions=ref([]);
+const expanded=ref(false),tab=ref('3D / 材質'),tool=ref('translate'),quality=ref('medium'),lighting=ref('day'),wallColor=ref('#f4f1eb'),furnitureColor=ref('#b8c3ab'),frameColor=ref('#c8ab8d'),finish=ref('wood'),versionName=ref('設計方案'),reserve=ref(.1),baseline=ref(''),message=ref(''),revision=ref(0),versions=ref([]);
+const isZh=computed(()=>(localeState.locale||'').startsWith('zh'));
+const tr=(zh,en)=>isZh.value?zh:en;
 const manager=createDesignVersions();
 const current=()=>editor?plainSnapshot(editor.state):null;
 const estimate=computed(()=>{revision.value;return calculateEstimate(editor?.state||{rooms:{},furniture:[]},{contingencyRate:reserve.value});});
@@ -50,6 +54,8 @@ onMounted(async()=>{await nextTick();editor=await import('../editor/planEditor.j
 function emit3d(){window.dispatchEvent(new CustomEvent('floorplan:studio-3d',{detail:{tool:tool.value,quality:quality.value,lighting:lighting.value,wallColor:wallColor.value}}));}
 function applyFinish(){const id=editor?.ui.sel?.kind==='room'?editor.ui.sel.id:null;if(!editor||!id||!editor.state.rooms[id]){message.value='請先選取房間';return;}const before=editor.snap();editor.state.rooms[id].mat=finish.value;editor.commit(before,'room-finish');editor.renderAll();message.value='已套用所選房間材質';}
 function applyFurnitureColor(){const f=editor?.ui.sel?.kind==='furn'&&editor.getF(editor.ui.sel.id);if(!f){message.value='請先在 2D/3D 選取家具';return;}const before=editor.snap();f.color=furnitureColor.value;editor.commit(before,'furniture-finish');editor.renderAll();message.value='家具顏色已更新';}
+function applyFrameColor(){const f=editor?.ui.sel?.kind==='furn'&&editor.getF(editor.ui.sel.id);if(!f){message.value='請先在 2D/3D 選取家具';return;}const before=editor.snap();f.frameColor=frameColor.value;editor.commit(before,'furniture-frame-finish');editor.renderAll();message.value='家具木架/副色已更新';}
+async function export3dHD(){const sc=await import('../services/sceneController.js');if(sc.sceneController?.shotHD){sc.sceneController.shotHD();message.value='已匯出 3D 4K 高畫質渲染圖';}else if(sc.sceneController?.shot){sc.sceneController.shot();message.value='已匯出 3D 圖檔';}else{message.value='3D 場景尚未載入';}}
 function saveVersion(){try{if(!editor)throw Error('編輯器尚未準備完成');manager.save(versionName.value,current());update();message.value='已儲存版本';}catch(e){message.value='儲存失敗：'+e.message;}}
 function restoreVersion(){const old=manager.get(baseline.value);if(!old)return; if(!confirm('將目前畫面改為所選版本？目前操作仍可 Undo。'))return;window.dispatchEvent(new CustomEvent('floorplan:studio-restore',{detail:{project:old}}));message.value='已提出版本還原';}
 function deleteVersion(){manager.remove(baseline.value);baseline.value='';update();message.value='已刪除版本';}
