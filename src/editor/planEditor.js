@@ -550,10 +550,26 @@ function furnSVG(t,w,d,c){
       return s;
     }
     case 'armchair': {
-      // 扶手椅 (80 × 80 風格)：曲面包覆筒型椅搭配蓬鬆圓墊
-      return `<path d="M${x+35} ${y+d*0.75} A${w/2-30} ${d/2-30} 0 1 1 ${x+w-35} ${y+d*0.75}" fill="none" stroke="#6b8f75" stroke-width="${Math.min(170, w*0.22)}" stroke-linecap="round"/>`
-        + ec(0, d*0.06, w*0.35, d*0.35, '#8ea896')
-        + ec(0, d*0.06, w*0.07, d*0.07, '#5c7d65');
+      // 現代單人休閒沙發 (80 × 80 風格)：飽滿圓角軟包、寬厚扶手、深陷座墊與跳色抱枕
+      const col = c || '#76937f';
+      const aw = Math.min(150, Math.max(100, w * 0.17)), bd = Math.min(200, Math.max(120, d * 0.25));
+      const cw = w - 2 * aw - 24;
+      const pillowCol = (col === '#76937f' || col === '#5c8766') ? '#b87462' : '#76937f';
+      let s = rc(x, y, w, d, shade(col, 0.92), 'rx="20"') // 主體圓角輪廓
+        + rc(x + 10, y + 10, w - 20, bd, col, 'rx="16"') // 豐厚靠背
+        + rc(x + 10, y + 10, aw, d - 20, col, 'rx="14"') // 左扶手
+        + rc(x + w - aw - 10, y + 10, aw, d - 20, col, 'rx="14"'); // 右扶手
+      // 中央厚實坐墊
+      s += rc(x + aw + 12, y + bd + 10, cw, d - bd - 22, shade(col, 1.06), 'rx="14"')
+        + ln(x + aw + 24, y + d - 25, x + w - aw - 24, y + d - 25, ST_FAINT);
+      // 傾斜點綴的精緻方型抱枕
+      const pw = Math.min(240, w * 0.32), ph = Math.min(170, d * 0.22);
+      const px = x + w/2 - pw/2 + 10, py = y + bd + 15;
+      s += `<g transform="rotate(-15 ${px + pw/2} ${py + ph/2})">
+        <rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="12" fill="${pillowCol}" ${ST}/>
+        <line x1="${px + pw*0.25}" y1="${py + ph/2}" x2="${px + pw*0.75}" y2="${py + ph/2}" stroke="${shade(pillowCol, 0.8)}" stroke-width="1.2"/>
+      </g>`;
+      return s;
     }
     case 'nightstand': {
       // 床頭櫃 (45 × 45 風格)：淡木色圓角方桌、圓形暖色小夜燈、精緻書籍

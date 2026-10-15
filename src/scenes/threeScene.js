@@ -441,22 +441,19 @@ function buildFurniture(f){
       break;
     }
     case 'armchair': {
-      const fab = fabric(c || '#76937f'), wm = woodM('#c8ab8d'), lh = .14;
-      legs(g, w, d, lh, wm, .08, .016);
-      const bh = .72, r = Math.min(w, d)/2;
-      g.add(cyl(r, r*.92, .14, fab, 0, lh, 0, 36));
-      const tubS = new THREE.Shape();
-      tubS.absarc(0, 0, r, 0, Math.PI, false);
-      tubS.lineTo(-r + .12, 0);
-      tubS.absarc(0, 0, r - .12, Math.PI, 0, true);
-      tubS.closePath();
-      const tubGeo = new THREE.ExtrudeGeometry(tubS, {depth:bh - lh, bevelEnabled:true, bevelThickness:.02, bevelSize:.015, curveSegments:24});
-      tubGeo.rotateX(-Math.PI/2);
-      tubGeo.rotateY(Math.PI);
-      tubGeo.translate(0, lh + .08, 0);
-      g.add(mesh(tubGeo, fab));
-      g.add(cyl(r - .11, r - .12, .1, fab, 0, lh + .13, .02, 32));
-      g.add(rot(rbox(.32, .24, .09, fabric('#ede8df'), 0, lh + .28, bz + .2, .04), -.25));
+      const col = c || '#76937f';
+      const fab = fabric(col), dk = fabric(darker(col, .9));
+      const a = Math.min(.16, w * .18), bd = Math.min(.2, d * .24), lh = .14, sd = d - bd - .02, cw = w - 2*a;
+      legs(g, w, d, lh, woodM('#c8ab8d'), .07, .018);
+      // 底座圓角底框 + 靠背主體
+      g.add(rbox(w, .16, d, dk, 0, lh, 0, .035), rbox(w, .73, bd, dk, 0, lh, bz + bd/2, .06));
+      // 左右兩側飽滿扶手
+      [-1, 1].forEach(s => g.add(rbox(a, .5, d - .02, dk, s*(w/2 - a/2), lh, .01, .065)));
+      // 中央厚實座墊與微傾靠墊
+      g.add(rbox(cw - .015, .15, sd, fab, 0, lh + .16, bz + bd + sd/2, .055), rot(rbox(cw - .03, .44, .16, fab, 0, lh + .3, bz + bd + .08, .07), -.16));
+      // 傾斜點綴的跳色抱枕 (鼠尾草綠椅配陶粉抱枕，米白椅配鼠尾草綠抱枕)
+      const pillowCol = (col === '#76937f' || col === '#5c8766') ? '#b87462' : '#76937f';
+      g.add(rot(rbox(.36, .34, .11, fabric(pillowCol), -w*.08, lh + .33, bz + bd + .16, .05), -.22, .2));
       break;
     }
     case 'sofa': {
