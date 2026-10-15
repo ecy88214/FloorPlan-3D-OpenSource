@@ -865,7 +865,7 @@ function renderFurn(){
   g.setAttribute('display', ui.layers.furn ? 'inline' : 'none');
   // All user-added objects share ONE SVG stacking context. The last item
   // in state.furniture is painted on top, including windows and doors.
-  g.innerHTML = state.furniture.map(f => {
+  const markup = state.furniture.map(f => {
     const opening = f.type.startsWith('window') || f.type.startsWith('door');
     const fs = Math.max(80, Math.min(170, Math.min(f.w,f.d)*.2));
     const label = !opening && Math.min(f.w,f.d) >= 380 && !NOLABEL.includes(f.type)
@@ -874,18 +874,20 @@ function renderFurn(){
       ? `<rect x="${-f.w/2-80}" y="${-f.d/2-80}" width="${f.w+160}" height="${f.d+160}" fill="transparent" pointer-events="all"/>` : '';
     return `<g class="furn" data-fid="${f.id}" transform="translate(${f.cx} ${f.cy}) rotate(${f.rot})">${furnSVG(f.type,f.w,f.d,f.color)}${label}${hitArea}</g>`;
   }).join('');
+  setSvgLayerMarkup('#gFurn', markup);
 }
 
 function renderWalls(){
   const joins = joinFootprints(ANGLED_WALLS);
   const angledMarkup = ANGLED_WALLS.map((w,i)=>`<polygon class="wall" data-angled="${i}" points="${joins[i].map(p=>p.join(',')).join(' ')}" fill="${w.type==='structural'?'#b8412c':w.type==='exterior'?'#5c5750':'#8a8378'}"/>`).join('');
-  $('#gWalls').innerHTML = angledMarkup + WALLS.map((w,i) => {
+  const markup = angledMarkup + WALLS.map((w,i) => {
     const [x0,y0,x1,y1,k] = w, id = 'w'+i, dem = state.demolished.includes(id);
     let fill = k==='b' ? (ui.layers.bearing ? '#b8412c' : '#3f3c38') : k==='low' ? '#e9e3d8' : k==='e' ? '#5c5750' : '#8a8378';
     let ex = k==='low' ? 'stroke="#8f897d" stroke-width="1" vector-effect="non-scaling-stroke"' : '';
     if (dem){ fill = 'rgba(198,91,58,.12)'; ex = 'stroke="#c65b3a" stroke-width="1.2" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"'; }
     return `<rect class="wall" data-wall="${id}" x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="${fill}" ${ex}/>`;
   }).join('');
+  setSvgLayerMarkup('#gWalls', markup);
 }
 
 function renderOpenings(){

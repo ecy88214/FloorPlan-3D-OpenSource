@@ -654,8 +654,8 @@ function buildFurniture(f){
     case 'roundtable': {
       const b = Math.min(.25, w*.3), lw = woodM('#c8ab8d'), top = .75;
       g.add(lathe([[b, 0], [b, .015], [b*.8, .035], [.06, .12], [.045, .35], [.05, .6], [.12, .69], [.18, .715]], lw, 0, 0, 0, 40), cyl(w/2, w/2, .035, woodM(c || '#d8bea2'), 0, .715, 0, 64));
-      for (let k = 0; k < 4; k++){ const a = k*Math.PI/2 + .4, rr = w/2 - .17; plate(g, .11, Math.cos(a)*rr, top, Math.sin(a)*rr); }
-      plantPot(g, 0, top, 0, 1);
+      for (let k = 0; k < 4; k++){ const a = k*Math.PI/2 + .4, rr = w/2 - .17; plate(g, .11, Math.cos(a)*rr, top + .0015, Math.sin(a)*rr); }
+      plantPot(g, 0, top + .0015, 0, 1);
       break;
     }
     case 'counter': {
@@ -1210,6 +1210,7 @@ function buildArch(){
       cursor=Math.max(cursor,end);
     });
     wallPart(cursor,L,0,height);
+    colliders.push([wx(w.start.x), wz(w.start.y), wx(w.end.x), wz(w.end.y), M(w.thickness || 180)]);
   });
   const junctions=new Map();
   ANGLED_WALLS.forEach(w=>{for(const p of [w.start,w.end]){const key=`${p.x.toFixed(1)}:${p.y.toFixed(1)}`;const item=junctions.get(key)||{p,r:0,n:0};item.r=Math.max(item.r,w.thickness/2000);item.n++;junctions.set(key,item);}});
@@ -1221,7 +1222,8 @@ function buildArch(){
       const near = horiz ? Math.abs(f.cy-(w[1]+w[3])/2) < Math.max(180, Math.abs(w[3]-w[1])*1.5) : Math.abs(f.cx-(w[0]+w[2])/2) < Math.max(180, Math.abs(w[2]-w[0])*1.5);
       const a = horiz ? f.cx : f.cy; return near && a+f.w/2 > axis0 && a-f.w/2 < axis1;
     }).sort((a,b) => (horiz ? a.cx-b.cx : a.cy-b.cy));
-    if (!wins.length) { wallBox(w, 0, w[4] === 'low' ? Math.min(1, top) : top); colliders.push([wx(w[0]), wz(w[1]), wx(w[2]), wz(w[3])]); return; }
+    const tk = M(Math.min(Math.abs(w[2]-w[0]), Math.abs(w[3]-w[1]))) || .18;
+    if (!wins.length) { wallBox(w, 0, w[4] === 'low' ? Math.min(1, top) : top); colliders.push([wx(w[0]), wz(w[1]), wx(w[2]), wz(w[3]), tk]); return; }
     let cursor = axis0;
     wins.forEach(f => {
       const a = Math.max(axis0, (horiz ? f.cx : f.cy)-f.w/2), b = Math.min(axis1, (horiz ? f.cx : f.cy)+f.w/2);
@@ -1249,7 +1251,7 @@ function buildArch(){
   WINS.forEach((r, i) => {
     const sill = i === 0 ? 1.4 : i >= 6 ? .45 : .9, head = 2.4;
     wallBox(r, 0, Math.min(sill, top)); if (top > head) wallBox(r, head, top);
-    colliders.push([wx(r[0]), wz(r[1]), wx(r[2]), wz(r[3])]);
+    colliders.push([wx(r[0]), wz(r[1]), wx(r[2]), wz(r[3]), .2]);
     const gTop = Math.min(head, top); if (gTop <= sill) return;
     const [x0, y0, x1, y1] = r, hz = (x1-x0) >= (y1-y0), L = M(hz ? x1-x0 : y1-y0), gh = gTop - sill, cx = wx((x0+x1)/2), cz = wz((y0+y1)/2);
     const pane = new THREE.Mesh(new THREE.BoxGeometry(hz ? L : .01, gh, hz ? .01 : L), glassMat); pane.position.set(cx, sill + gh/2, cz); pane.userData.initialWindow=i; archUp.add(pane);
@@ -1360,10 +1362,51 @@ function applyGrow(){
   lampG.visible = grow > .99;
 }
 
+function updateShadowBounds(){
+  if (!sun?.shadow?.camera) return;
+  let minX = 0, maxX = 0, minZ = 0, maxZ = 0, hasPoints = false;
+  const include = (x, z) => {
+    if (!Number.isFinite(x) || !Number.isFinite(z)) return;
+    if (!hasPoints) { minX = maxX = x; minZ = maxZ = z; hasPoints = true; }
+    else {
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+    }
+  };
+  ROOMS.forEach(r => {
+    (r.poly || []).forEach(([x, y]) => include(wx(x), wz(y)));
+  });
+  WALLS.forEach((w, i) => {
+    if (!state.demolished.includes('w' + i)) {
+      include(wx(w[0]), wz(w[1])); include(wx(w[2]), wz(w[3]));
+    }
+  });
+  ANGLED_WALLS.forEach(w => {
+    if (w.start && w.end) {
+      include(wx(w.start.x), wz(w.start.y)); include(wx(w.end.x), wz(w.end.y));
+    }
+  });
+  (state.furniture || []).forEach(f => {
+    if (Number.isFinite(f.cx) && Number.isFinite(f.cy)) {
+      include(wx(f.cx), wz(f.cy));
+    }
+  });
+  if (!hasPoints) { minX = -8; maxX = 8; minZ = -8; maxZ = 8; }
+  const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+  const span = Math.max(7.5, Math.max(maxX - minX, maxZ - minZ) / 2 + 3);
+  const cam = sun.shadow.camera;
+  cam.left = -span; cam.right = span;
+  cam.top = span; cam.bottom = -span;
+  cam.near = 1; cam.far = Math.max(60, span * 3.5);
+  cam.updateProjectionMatrix();
+  sun.target.position.set(cx, 0, cz);
+}
+
 /* ======================= 日照 / 夜景 ======================= */
 function applyLight(){
   const t = (opt.hour - 6) / 12, az = Math.PI * (.15 + t*.7), el = Math.sin(Math.PI*t) * 1.05 + .15, warm = 1 - Math.sin(Math.PI*t);
-  sun.position.set(Math.cos(az)*18, Math.sin(el)*20 + 3, -Math.sin(az)*10 + 8); sun.target.position.set(0, 0, 0);
+  sun.position.set(Math.cos(az)*18, Math.sin(el)*20 + 3, -Math.sin(az)*10 + 8);
+  updateShadowBounds();
   sun.color.setHSL(.09, .5 + warm*.4, .92 - warm*.12);
   sun.intensity = opt.night ? .05 : 1.4 + Math.sin(Math.PI*t)*1.6;
   hemi.intensity = opt.night ? .12 : 1.1;
@@ -1568,7 +1611,20 @@ function setMode(m){
   archUp.traverse(o => { if (o.userData.walkOnly) o.visible = m === 'walk'; });
 }
 function blocked(x, z, r = .22){
-  for (const [x0, z0, x1, z1] of colliders) if (x > x0 - r && x < x1 + r && z > z0 - r && z < z1 + r) return true;
+  for (const [x0, z0, x1, z1, thick = .18] of colliders){
+    const minX = Math.min(x0, x1), maxX = Math.max(x0, x1);
+    const minZ = Math.min(z0, z1), maxZ = Math.max(z0, z1);
+    const thresh = r + thick / 2;
+    if (x < minX - thresh || x > maxX + thresh || z < minZ - thresh || z > maxZ + thresh) continue;
+    const dx = x1 - x0, dz = z1 - z0, lenSq = dx*dx + dz*dz;
+    if (lenSq <= 1e-6){
+      if (Math.hypot(x - x0, z - z0) < thresh) return true;
+      continue;
+    }
+    const t = clamp01(((x - x0)*dx + (z - z0)*dz) / lenSq);
+    const px = x0 + t*dx, pz = z0 + t*dz;
+    if (Math.hypot(x - px, z - pz) < thresh) return true;
+  }
   for (const d of doors){
     const a = d.pivot.rotation.y, px = d.pivot.position.x, pz = d.pivot.position.z, ex = px + Math.cos(a)*.9, ez = pz - Math.sin(a)*.9;
     const t = clamp01(((x-px)*(ex-px) + (z-pz)*(ez-pz)) / ((ex-px)**2 + (ez-pz)**2));

@@ -27,8 +27,8 @@ export function calculateFurnitureSnap(f,candidate,others=[],walls=[],tolerance=
  const side=dot({x:candidate.x-w.a.x,y:candidate.y-w.a.y},n);
  const extent=half.x*Math.abs(n.x)+half.y*Math.abs(n.y),desired=Math.sign(side||1)*((w.thickness||180)/2+extent);
  const delta=desired-side;
- if(Math.abs(delta)>tol||wallBest&&wallBest.delta<=Math.abs(delta))continue;
- wallBest={delta:Math.abs(delta),x:candidate.x+n.x*delta,y:candidate.y+n.y*delta,guide:{axis:'wall',a:w.a,b:w.b,position:{x:candidate.x+n.x*delta,y:candidate.y+n.y*delta},distance:Math.round(Math.abs(delta)),kind:'wall'}};
+ const angle = Math.round(((Math.atan2(vy, vx) * 180 / Math.PI) % 180 + 180) % 180);
+ wallBest={delta:Math.abs(delta),x:candidate.x+n.x*delta,y:candidate.y+n.y*delta,wallAngle:angle,guide:{axis:'wall',a:w.a,b:w.b,position:{x:candidate.x+n.x*delta,y:candidate.y+n.y*delta},distance:Math.round(Math.abs(delta)),kind:'wall',wallAngle:angle}};
  }
  // Prefer walls when closer; avoid mixing wall adjustment with orthogonal alignment that pulls the item away.
  if(wallBest&&(!best.x&&!best.y||wallBest.delta <= Math.min(best.x?.delta??Infinity,best.y?.delta??Infinity))){
@@ -37,5 +37,5 @@ export function calculateFurnitureSnap(f,candidate,others=[],walls=[],tolerance=
    if(best.x){x=best.x.target;guides.push(best.x.guide);}
    if(best.y){y=best.y.target;guides.push(best.y.guide);}
  }
- return {x,y,guides};
+ return {x,y,guides,wallAngle:wallBest?.wallAngle??null};
 }
