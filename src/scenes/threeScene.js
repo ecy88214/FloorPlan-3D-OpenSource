@@ -23,7 +23,7 @@ const OX = 6000, OY = 5300, H = 2.8, FOV = 45;       // 房型中心放在世界
 const wx = x => (x - OX) / 1000, wz = y => (y - OY) / 1000, M = v => v / 1000;
 const SW = () => stage.clientWidth, SH = () => stage.clientHeight;
 const opt = {cut:2.8, furn:true, labels:true, night:false, hour:10, mode:'orbit'};
-const studio = {tool:'translate',quality:'medium',lighting:'day',wallColor:'#f4f1eb'};
+const studio = {tool:'translate',quality:'medium',lighting:'day',wallColor:'#f4eee5'};
 let transform = null, transformBefore = null, transformFid = null;
 
 let inited = false, active = false, raf = 0, anim = null, fly = null;
@@ -83,13 +83,13 @@ function init(){
   sun.castShadow = true; sun.shadow.mapSize.setScalar(COARSE ? 2048 : 4096);   // 平板 GPU 用小一點的陰影貼圖
   Object.assign(sun.shadow.camera, {left:-11, right:11, top:11, bottom:-11, near:1, far:60});
   sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
-  ground = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), new THREE.MeshStandardMaterial({color:0xf2eee7, roughness:1}));
+  ground = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), new THREE.MeshStandardMaterial({color:0xf8f6f0, roughness:1}));
   ground.rotation.x = -Math.PI/2; ground.position.y = -0.015; ground.receiveShadow = true;
   scene.add(hemi, sun, sun.target, ground);
 
   const pm = new THREE.PMREMGenerator(renderer); envTex = pm.fromScene(new RoomEnvironment(), .04).texture; pm.dispose();
   glassMat = new THREE.MeshPhysicalMaterial({color:0xcfe6ef, roughness:.05, transparent:true, opacity:.28, depthWrite:false, side:THREE.DoubleSide});
-  wallMat = mat('#f4f1eb', {roughness:.92}); capMat = mat('#34312d', {roughness:.9}); frameMat = mat('#5d6166', {roughness:.5, metalness:.4});
+  wallMat = mat('#f4eee5', {roughness:.92}); capMat = mat('#3f3c38', {roughness:.9}); frameMat = mat('#5c5750', {roughness:.5, metalness:.4});
 
   archFloor = new THREE.Group(); archUp = new THREE.Group(); furnG = new THREE.Group(); labelG = new THREE.Group(); lampG = new THREE.Group();
   scene.add(archFloor, archUp, furnG, labelG, lampG);
@@ -173,10 +173,10 @@ function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let 
 const rgbK = (hex, k) => { const n = parseInt(hex.slice(1), 16); const f = v => Math.max(0, Math.min(255, Math.round(v*k))); return `rgb(${f(n>>16&255)},${f(n>>8&255)},${f(n&255)})`; };
 // 地面貼圖按真實尺寸平鋪（UV 單位 = 米）
 const TEX = {
-  wood:{sx:1.8, sy:.36, base:'#d6b58a', rough:.55}, walnut:{sx:1.8, sy:.36, base:'#9a6f4b', rough:.5},
-  tile800:{sx:.8, sy:.8, base:'#ebe6dd', grout:'#cfc6b7', rough:.3}, tile600:{sx:.6, sy:.6, base:'#dfe3e0', grout:'#bfc6c1', rough:.35},
-  antislip:{sx:.3, sy:.3, base:'#d3d8d4', grout:'#aab2ac', rough:.8}, marble:{sx:1.2, sy:1.2, base:'#f2efe9', grout:'#d9d2c4', rough:.18},
-  terrazzo:{sx:.5, sy:.5, base:'#e6dfd3', rough:.4}, carpet:{sx:.3, sy:.3, base:'#c6bfd2', rough:1},
+  wood:{sx:1.8, sy:.36, base:'#eedecb', rough:.55}, walnut:{sx:1.8, sy:.36, base:'#bda188', rough:.5},
+  tile800:{sx:.8, sy:.8, base:'#f6f3ed', grout:'#e5decb', rough:.3}, tile600:{sx:.6, sy:.6, base:'#eef1ef', grout:'#d8dedb', rough:.35},
+  antislip:{sx:.3, sy:.3, base:'#e5ebea', grout:'#cbd3d1', rough:.8}, marble:{sx:1.2, sy:1.2, base:'#faf8f5', grout:'#e8e3d8', rough:.18},
+  terrazzo:{sx:.5, sy:.5, base:'#ece5da', rough:.4}, carpet:{sx:.3, sy:.3, base:'#d9d4cc', rough:1},
 };
 const floorMats = {};
 function floorMat(kind){
@@ -300,17 +300,67 @@ const vasePts = (r, h) => [[0, 0], [r*.65, 0], [r, h*.32], [r*.92, h*.62], [r*.4
 function vase(g, x, y, z, r, h, c, R, flowers = true){
   g.add(lathe(vasePts(r, h), mat(c, {roughness:.35, side:THREE.DoubleSide}), x, y, z, 32));
   if (!flowers) return;
-  const cols = ['#f3e6d8', '#e8b4a0', '#f6d27a', '#ffffff'];
+  const cols = ['#f4efe8', '#b87462', '#76937f', '#ffffff'];
   for (let k = 0; k < 5; k++){
     const a = k*1.26 + R()*.4, s = .03 + R()*.05, top = [x + Math.cos(a)*s, y + h + .12 + R()*.14, z + Math.sin(a)*s];
-    g.add(rod([x, y + h*.6, z], top, .003, '#6f8f4a', .003, 6), blob(.022, .018, .022, cols[k % 4], ...top, 12));
+    g.add(rod([x, y + h*.6, z], top, .003, '#5c8766', .003, 6), blob(.022, .018, .022, cols[k % 4], ...top, 12));
   }
 }
 function tableLamp(g, x, y, z, s = 1){
   g.add(lathe([[0, 0], [.06*s, 0], [.075*s, .05*s], [.08*s, .12*s], [.055*s, .2*s], [.018*s, .25*s], [.012*s, .3*s]], ceramic({roughness:.3}), x, y, z, 32));
-  g.add(lathe([[.13*s, 0], [.1*s, .18*s]], glowMat('#f6ecd9', '#ffdca0', .35), x, y + .26*s, z, 40), blob(.03*s, .03*s, .03*s, glowMat('#fff', '#ffe2b0', 1), x, y + .31*s, z, 12));
+  g.add(lathe([[.13*s, 0], [.1*s, .18*s]], glowMat('#fff6dd', '#ffdca0', .35), x, y + .26*s, z, 40), blob(.03*s, .03*s, .03*s, glowMat('#fff', '#ffe2b0', 1), x, y + .31*s, z, 12));
 }
 const plate = (g, r, x, y, z) => g.add(lathe([[0, 0], [r*.6, 0], [r*.72, .008], [r, .02]], ceramic({side:THREE.DoubleSide}), x, y, z, 32));
+
+// 多肉盆栽 (簡約陶盆 + 厚肉葉片)
+function plantPot(g, x, y, z, s = 1){
+  const potM = mat('#d8bea2', {roughness:.6}), leafM = mat('#76937f', {roughness:.5, side:THREE.DoubleSide}), leafM2 = mat('#5c8766', {roughness:.5, side:THREE.DoubleSide});
+  g.add(lathe([[0,0],[.045*s,0],[.055*s,.06*s],[.05*s,.06*s],[0,.05*s]], potM, x, y, z, 20));
+  g.add(cyl(.048*s, .048*s, .005*s, '#4a3a2c', x, y + .05*s, z, 16));
+  for (let k = 0; k < 7; k++){
+    const a = k * Math.PI * 2 / 7, lx = x + Math.cos(a)*.025*s, lz = z + Math.sin(a)*.025*s;
+    const lf = blob(.022*s, .008*s, .015*s, k%2 ? leafM : leafM2, lx, y + .065*s, lz, 12);
+    lf.rotation.set(-Math.sin(a)*.4, 0, Math.cos(a)*.4);
+    g.add(lf);
+  }
+  g.add(blob(.015*s, .015*s, .015*s, leafM2, x, y + .075*s, z, 10));
+}
+
+// 掀開筆記型電腦 (質感鋁合金 + 螢幕發光 + 鍵盤區)
+function laptop3d(g, x, y, z, ry = 0){
+  const sub = new THREE.Group();
+  sub.position.set(x, y, z);
+  sub.rotation.y = ry;
+  const al = mat('#d5d9dd', {metalness:.8, roughness:.25}), darkAl = mat('#2b2e33', {metalness:.6, roughness:.4});
+  sub.add(rbox(.30, .008, .21, al, 0, 0, .10, .003));
+  sub.add(rbox(.26, .002, .09, darkAl, 0, .005, .07, .002));
+  sub.add(rbox(.09, .002, .05, '#bcc1c6', 0, .005, .16, .002));
+  const scrG = new THREE.Group();
+  scrG.position.set(0, .004, -.005);
+  scrG.rotation.x = -1.75;
+  scrG.add(rbox(.30, .006, .21, al, 0, 0, .105, .003));
+  scrG.add(box(.27, .002, .18, screenMat('#3b6f9a'), 0, .0035, .105));
+  sub.add(scrG);
+  g.add(sub);
+}
+
+// 陶瓷馬克杯 (含把手與熱咖啡表面)
+function mug3d(g, x, y, z, c = '#ffffff'){
+  const cm = ceramic({roughness:.2});
+  g.add(lathe([[0,0],[.035,0],[.036,.07],[.032,.07],[.03,.01],[0,.01]], cm, x, y, z, 20));
+  g.add(cyl(.028, .028, .002, '#3a271d', x, y + .055, z, 16));
+  g.add(tube([[x + .035, y + .05, z], [x + .052, y + .035, z], [x + .035, y + .02, z]], .005, cm, 12));
+}
+
+// 精裝書本
+function book3d(g, x, y, z, w = .18, d = .24, h = .025, c = '#76937f', ry = 0){
+  const sub = new THREE.Group();
+  sub.position.set(x, y, z);
+  sub.rotation.y = ry;
+  sub.add(rbox(w, h, d, mat(c, {roughness:.7}), 0, 0, 0, .003));
+  sub.add(box(w - .01, h - .004, d - .008, '#f7f5ed', .004, .002, 0));
+  g.add(sub);
+}
 
 /* ======================= 家具模型（局部座標：背面朝 -z） ======================= */
 // Match the cushion seat surface to the associated bay-window sill.
@@ -341,8 +391,8 @@ function buildFurniture(f){
   const g = new THREE.Group(), w = M(f.w), d = M(f.d), c = f.color || '#ddd', bz = -d/2, R = rng(Math.round(f.w*7 + f.d*13 + f.cx + f.cy));
   switch (f.type){
     case 'bench': {
-      g.add(box(w,.08,d,woodM(c),0,.42,0));
-      for(const x of [-w*.4,w*.4])for(const z of [-d*.32,d*.32])g.add(box(.06,.42,.06,mat('#444039'),x,0,z));
+      g.add(rbox(w, .06, d, woodM(c || '#d8bea2'), 0, .42, 0, .015));
+      for(const x of [-w*.4,w*.4])for(const z of [-d*.32,d*.32])g.add(box(.05,.42,.05,blackMetal(),x,0,z));
       break;
     }
     case 'wall': {
@@ -366,38 +416,65 @@ function buildFurniture(f){
       break;
     }
     case 'bed': {
-      const fr = woodM('#8d7258'), fab = fabric(c), fh = .3, mt = .22, top = fh + mt, n = Math.max(3, Math.round(w/.28)), sw = (w - .04)/n;
-      g.add(box(w - .12, .06, d - .14, '#4a3e33', 0, 0, .03), rbox(w, fh - .06, d - .08, fr, 0, .06, .04, .015));        // 內縮踢腳 + 床箱
-      g.add(rbox(w, 1.08, .06, fr, 0, 0, bz + .03, .012));                                                                 // 床頭板
-      for (let i = 0; i < n; i++) g.add(rbox(sw - .006, .62, .06, fabric(darker(c, .8)), -w/2 + .02 + sw*(i + .5), .42, bz + .08, .025));   // 豎向軟包
-      const md = d - .13, dd = md*.66, dz = d/2 - .015 - dd/2;
-      g.add(rbox(w - .06, mt, md, '#f6f3ee', 0, fh, bz + .11 + md/2, .07));                                              // 床墊
-      g.add(rbox(w + .02, .27, dd, fab, 0, top - .2, dz, .04), rbox(w + .024, .06, .22, fabric('#fbfaf7'), 0, top + .025, dz - dd/2 + .11, .025));   // 被子 + 翻邊
-      g.add(rbox(w + .05, .285, .42, fabric(darker(c, .62)), 0, top - .205, d/2 - .35, .03));                               // 床尾巾
-      const np = w >= 1.3 ? 2 : 1, pw = (w - .16 - (np-1)*.06)/np;
-      for (let i = 0; i < np; i++){
-        const x = -w/2 + .08 + pw/2 + i*(pw + .06);
-        g.add(rot(rbox(pw, .15, .42, fabric('#ffffff'), x, top - .01, bz + .34, .07), -.28), rot(rbox(pw*.62, .3, .1, fabric(i ? '#efe7da' : darker(c, .7)), x, top, bz + .54, .045), -.3));
+      const fr = woodM('#c8ab8d'), fab = fabric(c || '#f4efe8'), fh = .28, mt = .22, top = fh + mt;
+      g.add(box(w - .12, .06, d - .14, '#3f3c38', 0, 0, .03), rbox(w, fh - .06, d - .08, fr, 0, .06, .04, .015));
+      g.add(rbox(w, 1.05, .06, fr, 0, 0, bz + .03, .012));
+      g.add(rbox(w - .08, .62, .04, fabric('#f4efe8'), 0, .4, bz + .07, .02));
+      const md = d - .13, dd = md*.65, dz = d/2 - .015 - dd/2;
+      g.add(rbox(w - .06, mt, md, '#ffffff', 0, fh, bz + .11 + md/2, .07));
+      if (w < 1.2) {
+        const throwColor = (c && c !== '#f4efe8') ? c : '#8ea896';
+        g.add(rbox(w + .01, .26, dd, fabric('#f4efe8'), 0, top - .2, dz, .04), rbox(w + .015, .05, .2, fabric('#ffffff'), 0, top + .025, dz - dd/2 + .1, .025));
+        g.add(rbox(w + .02, .27, dd*.48, fabric(throwColor), 0, top - .195, d/2 - dd*.24 - .02, .03));
+        g.add(rot(rbox(w*.6, .14, .38, fabric('#ffffff'), 0, top - .01, bz + .34, .07), -.28));
+        g.add(rot(rbox(w*.42, .24, .1, fabric('#eedecb'), 0, top + .02, bz + .48, .04), -.3));
+      } else {
+        g.add(rbox(w + .02, .27, dd, fab, 0, top - .2, dz, .04), rbox(w + .024, .06, .22, fabric('#ffffff'), 0, top + .025, dz - dd/2 + .11, .025));
+        g.add(rbox(w + .04, .28, .44, fabric('#d5bfab'), 0, top - .205, d/2 - .34, .03));
+        const pw = (w - .2) / 2;
+        [-1, 1].forEach((s, idx) => {
+          const px = s * (pw/2 + .04);
+          g.add(rot(rbox(pw, .15, .4, fabric('#ffffff'), px, top - .01, bz + .34, .07), -.28));
+          g.add(rot(rbox(pw*.65, .28, .1, fabric(idx === 0 ? '#b87462' : '#76937f'), px, top + .02, bz + .52, .04), -.3));
+        });
       }
       break;
     }
-    case 'sofa': case 'armchair': {
-      const fab = fabric(c), dk = fabric(darker(c, .88)), a = Math.min(.18, w*.14), n = f.type === 'armchair' ? 1 : (w > 2.2 ? 3 : 2), cw = (w - 2*a)/n, bd = Math.min(.2, d*.24), lh = .12, sd = d - bd - .02;
-      legs(g, w, d, lh, woodM('#3a3027'), .07, .018);
+    case 'armchair': {
+      const fab = fabric(c || '#76937f'), wm = woodM('#c8ab8d'), lh = .14;
+      legs(g, w, d, lh, wm, .08, .016);
+      const bh = .72, r = Math.min(w, d)/2;
+      g.add(cyl(r, r*.92, .14, fab, 0, lh, 0, 36));
+      const tubS = new THREE.Shape();
+      tubS.absarc(0, 0, r, 0, Math.PI, false);
+      tubS.lineTo(-r + .12, 0);
+      tubS.absarc(0, 0, r - .12, Math.PI, 0, true);
+      tubS.closePath();
+      const tubGeo = new THREE.ExtrudeGeometry(tubS, {depth:bh - lh, bevelEnabled:true, bevelThickness:.02, bevelSize:.015, curveSegments:24});
+      tubGeo.rotateX(-Math.PI/2);
+      tubGeo.rotateY(Math.PI);
+      tubGeo.translate(0, lh + .08, 0);
+      g.add(mesh(tubGeo, fab));
+      g.add(cyl(r - .11, r - .12, .1, fab, 0, lh + .13, .02, 32));
+      g.add(rot(rbox(.32, .24, .09, fabric('#ede8df'), 0, lh + .28, bz + .2, .04), -.25));
+      break;
+    }
+    case 'sofa': {
+      const fab = fabric(c || '#ede8df'), dk = fabric(darker(c || '#ede8df', .92)), a = Math.min(.18, w*.14), n = w > 2.2 ? 3 : 2, cw = (w - 2*a)/n, bd = Math.min(.2, d*.24), lh = .14, sd = d - bd - .02;
+      legs(g, w, d, lh, woodM('#c8ab8d'), .07, .018);
       g.add(rbox(w, .16, d, dk, 0, lh, 0, .03), rbox(w, .73, bd, dk, 0, lh, bz + bd/2, .06));
       [-1, 1].forEach(s => g.add(rbox(a, .5, d, dk, s*(w/2 - a/2), lh, 0, .07)));
       for (let i = 0; i < n; i++){
         const x = -w/2 + a + cw/2 + i*cw;
         g.add(rbox(cw - .012, .15, sd, fab, x, lh + .16, bz + bd + sd/2, .055), rot(rbox(cw - .03, .44, .16, fab, x, lh + .3, bz + bd + .08, .07), -.16));
       }
-      if (n > 1) [-1, 1].forEach(s => g.add(rot(rbox(.42, .42, .12, fabric(s < 0 ? '#ece5d8' : darker(c, .7)), s*(w/2 - a - .26), lh + .32, bz + bd + .22, .06), -.3, s*-.25)));
-      else g.add(rot(rbox(.4, .26, .1, fabric('#ece5d8'), 0, lh + .33, bz + bd + .2, .05), -.25));
+      [-1, 1].forEach((s, idx) => g.add(rot(rbox(.42, .42, .12, fabric(idx === 0 ? '#b87462' : '#76937f'), s*(w/2 - a - .26), lh + .32, bz + bd + .22, .06), -.3, s*-.25)));
       break;
     }
     case 'cornersofa': {
-      const k = Math.min(.95, d*.56, w*.4), b = .2, fab = fabric(c), dk = fabric(darker(c, .88)), lh = .1, sw = (w - b - .2)/2;
+      const k = Math.min(.95, d*.56, w*.4), b = .2, fab = fabric(c || '#ede8df'), dk = fabric(darker(c || '#ede8df', .92)), lh = .12, sw = (w - b - .2)/2;
       [[-w/2+.07, bz+.07], [w/2-.07, bz+.07], [w/2-.07, bz+k-.07], [-w/2+.07, d/2-.07], [-w/2+k-.07, d/2-.07], [-w/2+k-.07, bz+k-.07]]
-        .forEach(([x, z]) => g.add(rod([x, 0, z], [x, lh, z], .012, woodM('#3a3027'), .018)));
+        .forEach(([x, z]) => g.add(rod([x, 0, z], [x, lh, z], .012, woodM('#c8ab8d'), .018)));
       g.add(rbox(w, .18, k, dk, 0, lh, bz + k/2, .03), rbox(k, .18, d - k + .02, dk, -w/2 + k/2, lh, bz + k + (d - k)/2 - .01, .03));
       g.add(rbox(w, .72, b, dk, 0, lh, bz + b/2, .06), rbox(b, .72, d, dk, -w/2 + b/2, lh, 0, .06), rbox(.2, .5, k, dk, w/2 - .1, lh, bz + k/2, .07), rbox(k, .5, .2, dk, -w/2 + k/2, lh, d/2 - .1, .07));
       for (let i = 0; i < 2; i++){
@@ -407,63 +484,63 @@ function buildFurniture(f){
       g.add(rbox(k - b - .02, .15, d - k - .22, fab, -w/2 + b + (k - b)/2, lh + .18, bz + k + (d - k - .2)/2, .055));
       const L = d - .2 - b - .18, nl = Math.max(1, Math.round(L/.75));
       for (let i = 0; i < nl; i++) g.add(rot(rbox(.16, .42, L/nl - .03, fab, -w/2 + b + .07, lh + .3, bz + b + .18 + L/nl*(i + .5), .07), 0, 0, .16));
-      g.add(rot(rbox(.42, .42, .12, fabric('#ece5d8'), -w/2 + b + .3, lh + .34, bz + b + .24, .06), -.35, .6), rot(rbox(.4, .4, .12, fabric(darker(c, .7)), w/2 - .5, lh + .34, bz + b + .2, .06), -.3, -.25));
+      g.add(rot(rbox(.42, .42, .12, fabric('#b87462'), -w/2 + b + .3, lh + .34, bz + b + .24, .06), -.35, .6), rot(rbox(.4, .4, .12, fabric('#76937f'), w/2 - .5, lh + .34, bz + b + .2, .06), -.3, -.25), rot(rbox(.38, .38, .11, fabric('#eedecb'), -w/2 + b + .25, lh + .34, d/2 - .45, .05), -.2, .4));
       break;
     }
     case 'nightstand': {
-      const wm = woodM(c);
-      legs(g, w, d, .1, woodM('#5a4a3b'), .04, .014);
+      const wm = woodM(c || '#d8bea2');
+      legs(g, w, d, .1, woodM('#c8ab8d'), .04, .014);
       g.add(rbox(w, .4, d - .02, wm, 0, .1, -.01, .012));
       fronts(g, -w/2 + .02, .12, w - .04, .36, d/2 - .02, 1, 2, wm, 'bar');
       tableLamp(g, -w*.12, .5, -d*.12);
-      g.add(box(.16, .025, .22, '#2f5d62', w*.24, .5, .04), box(.14, .02, .2, '#e6dccd', w*.24, .525, .04));
+      book3d(g, w*.2, .5, .04, .15, .2, .022, '#76937f', .1);
       break;
     }
     case 'wardrobe': case 'cabinet': case 'shoecab': {
       const cm = mat(c, {roughness:.55}), fz = d/2 - .02;
       if (f.type === 'wardrobe'){
         const h = 2.2, n = Math.max(1, Math.round(w/.5));
-        g.add(box(w - .02, .08, d - .06, '#4a4641', 0, 0, -.03), box(w, h - .08, d - .02, cm, 0, .08, -.01));
+        g.add(box(w - .02, .08, d - .06, '#3f3c38', 0, 0, -.03), box(w, h - .08, d - .02, cm, 0, .08, -.01));
         fronts(g, -w/2, .08, w, h - .1, fz, n, 1, cm, 'bar', 1.05);
-        g.add(box(w, .02, d - .02, darker(c, .9), 0, h - .02, -.01));
+        g.add(box(w, .02, d - .02, woodM('#c8ab8d'), 0, h - .02, -.01));
       } else if (f.type === 'shoecab'){
         const h = 1.0, y0 = .16, n = Math.max(1, Math.round(w/.45));
-        g.add(box(w, h - y0, d - .02, cm, 0, y0, -.01), box(w - .04, .01, .03, glowMat('#fff7e6', '#ffe9c4', .8), 0, y0 - .01, fz - .06));   // 懸空 + 底部燈帶
+        g.add(box(w, h - y0, d - .02, cm, 0, y0, -.01), box(w - .04, .01, .03, glowMat('#fff7e6', '#ffe9c4', .8), 0, y0 - .01, fz - .06));
         fronts(g, -w/2, y0, w, h - y0, fz, n, 1, cm, 'edge');
-        g.add(rbox(w + .01, .025, d, woodM(darker(c, .8)), 0, h, 0, .006));
-        g.add(rbox(.22, .015, .14, woodM('#6b543f'), -w*.25, h + .025, 0, .006));
-        vase(g, w*.28, h + .025, -.03, .05, .2, '#d8cfc2', R);
+        g.add(rbox(w + .01, .025, d, woodM(c || '#d8bea2'), 0, h, 0, .006));
+        g.add(rbox(.22, .015, .14, woodM('#c8ab8d'), -w*.25, h + .025, 0, .006));
+        plantPot(g, w*.28, h + .025, -.03, .9);
       } else {
         const h = .85, n = Math.max(1, Math.round(w/.5));
-        legs(g, w, d, .1, woodM('#3a3027'), .05, .016);
+        legs(g, w, d, .1, woodM('#c8ab8d'), .05, .016);
         g.add(box(w, h - .13, d - .02, cm, 0, .1, -.01));
         fronts(g, -w/2, .62, w, .2, fz, n, 1, cm, 'bar');
         fronts(g, -w/2, .1, w, .52, fz, n, 1, cm, 'bar', .52);
-        g.add(rbox(w + .02, .03, d + .01, woodM(darker(c, .78)), 0, h - .03, 0, .008));
-        vase(g, w*.3, h, 0, .07, .24, '#e9e2d6', R);
-        g.add(rot(box(.3, .38, .02, woodM('#3a3027'), -w*.25, h, bz + .06), -.12), rot(box(.25, .33, .005, '#d9cfbf', -w*.25, h + .03, bz + .075), -.12));   // 靠牆畫框
-        g.add(lathe([[0, 0], [.05, 0], [.12, .06], [.13, .07]], mat('#b8a58c', {roughness:.5, side:THREE.DoubleSide}), 0, h, .02, 32));
-        for (let k = 0; k < 3; k++) g.add(blob(.035, .035, .035, ['#d98c4a', '#c9ad4f', '#b5463a'][k], Math.cos(k*2.1)*.04, h + .045, .02 + Math.sin(k*2.1)*.04, 14));
+        g.add(rbox(w + .02, .03, d + .01, woodM(c || '#d8bea2'), 0, h - .03, 0, .008));
+        plantPot(g, w*.3, h, 0, 1);
+        book3d(g, -w*.25, h, bz + .08, .18, .24, .025, '#76937f', -.12);
+        g.add(lathe([[0, 0], [.05, 0], [.12, .06], [.13, .07]], ceramic({roughness:.3, side:THREE.DoubleSide}), 0, h, .02, 32));
+        for (let k = 0; k < 3; k++) g.add(blob(.035, .035, .035, ['#b87462', '#eedecb', '#76937f'][k], Math.cos(k*2.1)*.04, h + .045, .02 + Math.sin(k*2.1)*.04, 14));
       }
       break;
     }
     case 'dresser': {
-      const wm = woodM(c), r = Math.min(.34, w*.3);
+      const wm = woodM(c || '#d8bea2'), r = Math.min(.34, w*.3);
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rod([a*(w/2 - .04), 0, b*(d/2 - .04)], [a*(w/2 - .05), .58, b*(d/2 - .05)], .012, wm, .02)));
       g.add(box(w - .04, .14, d - .04, wm, 0, .58), rbox(w, .03, d, wm, 0, .72, 0, .008));
       fronts(g, -w/2 + .03, .585, w - .06, .13, d/2 - .02, 2, 1, wm, 'knob');
-      const mr = new THREE.Mesh(new THREE.TorusGeometry(r, .018, 12, 64), woodM(darker(c, .7))); mr.position.set(0, .77 + r, bz + .04); sh(mr);
+      const mr = new THREE.Mesh(new THREE.TorusGeometry(r, .018, 12, 64), woodM('#c8ab8d')); mr.position.set(0, .77 + r, bz + .04); sh(mr);
       const mg = new THREE.Mesh(new THREE.CircleGeometry(r, 64), mirror()); mg.position.set(0, .77 + r, bz + .035);
-      g.add(mr, mg, box(.08, .03, .06, woodM(darker(c, .7)), 0, .75, bz + .04));
-      [['#e7c9b5', .03, .09], ['#b9d0d8', .025, .12], ['#f0e3cf', .02, .07]].forEach(([cc, rr, hh], i) => g.add(cyl(rr, rr, hh, mat(cc, {roughness:.15, transparent:true, opacity:.8}), w*.25 + i*.06, .75, .02)));
-      g.add(rbox(.16, .06, .1, woodM('#6b543f'), -w*.28, .75, .03, .01));
+      g.add(mr, mg, box(.08, .03, .06, woodM('#c8ab8d'), 0, .75, bz + .04));
+      [['#e7c9b5', .03, .09], ['#76937f', .025, .12], ['#f4efe8', .02, .07]].forEach(([cc, rr, hh], i) => g.add(cyl(rr, rr, hh, mat(cc, {roughness:.15, transparent:true, opacity:.8}), w*.25 + i*.06, .75, .02)));
+      plantPot(g, -w*.26, .75, .04, .75);
       const sz = d/2 + .25;
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rod([a*.13, 0, sz + b*.13], [a*.12, .4, sz + b*.12], .01, wm, .014)));
-      g.add(rbox(.34, .08, .34, fabric('#e8ddd0'), 0, .4, sz, .035));
+      g.add(rbox(.34, .08, .34, fabric('#ede8df'), 0, .4, sz, .035));
       break;
     }
     case 'desk': {
-      const tm = woodM(c), bm = blackMetal();
+      const tm = woodM(c || '#d8bea2'), bm = blackMetal();
       g.add(rbox(w, .025, d, tm, 0, .72, 0, .006));
       [-1, 1].forEach(s => {
         const x = s*(w/2 - .06);
@@ -471,20 +548,19 @@ function buildFurniture(f){
       });
       g.add(box(w - .12, .04, .015, bm, 0, .66, bz + .06), box(.4, .09, d - .12, tm, w/2 - .32, .63, 0));
       pull(g, .16, false, w/2 - .32, .675, d/2 - .06);
-      const my = .745, mz = bz + .15;
-      g.add(rbox(.22, .012, .16, bm, 0, my, mz, .004), rod([0, my, mz - .02], [0, my + .2, mz - .03], .012, bm));
-      g.add(rbox(.62, .37, .02, '#1d1d1f', 0, my + .12, mz - .04, .006), box(.6, .33, .002, screenMat('#27405c'), 0, my + .15, mz - .029));
-      g.add(rbox(.42, .015, .13, '#e8e8ea', 0, my, .06, .004), rbox(.4, .004, .11, '#d2d2d6', 0, my + .014, .06, .002), blob(.03, .015, .05, '#e8e8ea', .3, my + .012, .07, 16));
-      const lx = -w/2 + .15, lz = bz + .12;
-      g.add(cyl(.07, .075, .02, bm, lx, my, lz, 28), tube([[lx, my + .02, lz], [lx, my + .3, lz + .03], [lx + .12, my + .42, lz + .1]], .008, bm));
-      const hd = cyl(.02, .06, .1, bm, lx + .14, my + .34, lz + .12, 24); hd.rotation.x = .5; g.add(hd);
-      g.add(cyl(.04, .038, .09, ceramic({roughness:.3}), w/2 - .15, my, .05, 20), rbox(.2, .015, .28, '#3b5566', -w/2 + .3, my, .1, .004));
+      const my = .745;
+      laptop3d(g, 0, my, .04, 0);
+      mug3d(g, w/2 - .18, my, .06);
+      plantPot(g, -w/2 + .16, my, bz + .14, .85);
+      const lx = -w/2 + .14, lz = bz + .1;
+      g.add(cyl(.04, .045, .02, bm, lx, my, lz, 20), tube([[lx, my + .02, lz], [lx, my + .28, lz + .02], [lx + .08, my + .38, lz + .08]], .007, bm));
+      const hd = cyl(.018, .05, .08, bm, lx + .09, my + .32, lz + .1, 20); hd.rotation.x = .5; g.add(hd);
       break;
     }
     case 'chair': {
-      const lw = woodM('#6b543f'), fab = fabric(c), sy = .44;
+      const lw = woodM('#c8ab8d'), fab = fabric(c || '#b87462'), sy = .44;
       [[-1, 1], [1, 1]].forEach(([s]) => g.add(rod([s*(w/2 - .04), 0, d/2 - .05], [s*(w/2 - .05), sy, d/2 - .07], .012, lw, .018)));
-      [-1, 1].forEach(s => g.add(rod([s*(w/2 - .04), 0, bz + .03], [s*(w/2 - .05), .86, bz + .07], .012, lw, .018)));
+      [-1, 1].forEach(s => g.add(rod([s*(w/2 - .04), 0, bz + .03], [s*(w/2 - .05), .84, bz + .07], .012, lw, .018)));
       g.add(box(w - .08, .025, .02, lw, 0, .15, d/2 - .06), box(w - .08, .025, .02, lw, 0, .15, bz + .05));
       [-1, 1].forEach(s => g.add(box(.02, .025, d - .12, lw, s*(w/2 - .045), .18, 0)));
       g.add(box(w - .06, .04, d - .1, lw, 0, sy - .03, 0), rbox(w - .04, .05, d - .08, fab, 0, sy, .005, .022));
@@ -492,8 +568,8 @@ function buildFurniture(f){
       break;
     }
     case 'bookshelf': {
-      const h = 1.8, t = .022, ns = 5, wm = woodM(c), sh0 = (h - .06 - t)/ns, cols = ['#b88a6a','#6f8f8a','#d9c08c','#9aa58c','#a8675e','#e6dccd','#7d8ea3','#c9bfae'];
-      g.add(box(w, h, .012, woodM(darker(c, .85)), 0, 0, bz + .006), box(t, h, d, wm, -w/2 + t/2), box(t, h, d, wm, w/2 - t/2), box(w - 2*t, .06, d - .03, wm, 0, 0, .0));
+      const h = 1.8, t = .022, ns = 5, wm = woodM(c || '#d8bea2'), sh0 = (h - .06 - t)/ns, cols = ['#76937f','#b87462','#718096','#eedecb','#f4efe8','#c8ab8d','#5c8766','#d5d9dd'];
+      g.add(box(w, h, .012, woodM(darker(c || '#d8bea2', .88)), 0, 0, bz + .006), box(t, h, d, wm, -w/2 + t/2), box(t, h, d, wm, w/2 - t/2), box(w - 2*t, .06, d - .03, wm, 0, 0, .0));
       for (let s = 0; s <= ns; s++){
         const y = s < ns ? .06 + s*sh0 : h - t; g.add(box(w - 2*t, t, d - .012, wm, 0, y, .006));
         if (s === ns) break;
@@ -501,7 +577,7 @@ function buildFurniture(f){
         while (x < end - .03){
           if (x >= deco){
             deco = 99;
-            if (R() < .5) vase(g, x + .07, yb, 0, .045, .16, cols[Math.floor(R()*8)], R, false);
+            if (R() < .5) plantPot(g, x + .07, yb, 0, .85);
             else for (let k = 0; k < 3; k++) g.add(box(.2 - k*.02, .028, d*.7, mat(cols[Math.floor(R()*8)], {roughness:.8}), x + .1, yb + k*.028, .01));
             x += .2; continue;
           }
@@ -515,98 +591,110 @@ function buildFurniture(f){
       break;
     }
     case 'baycushion':
-      g.add(rbox(w, .08, d, fabric(c), 0, .45, 0, .03));
-      g.add(rot(rbox(w - .1, .34, .14, fabric('#ffffff'), 0, .52, bz + .14, .06), .25), rot(rbox(w - .1, .34, .14, fabric('#f0e6d6'), 0, .52, d/2 - .14, .06), -.25));
-      g.add(rbox(w*.8, .04, .3, fabric(darker(c, .7)), 0, .53, d*.12, .02), rbox(.28, .015, .2, woodM('#8d7258'), 0, .53, -d*.15, .006), cyl(.035, .03, .06, ceramic(), 0, .545, -d*.15, 20));
+      g.add(rbox(w, .08, d, fabric(c || '#e7dccd'), 0, .45, 0, .03));
+      g.add(rot(rbox(w - .1, .34, .14, fabric('#f4efe8'), 0, .52, bz + .14, .06), .25), rot(rbox(w - .1, .34, .14, fabric('#76937f'), 0, .52, d/2 - .14, .06), -.25));
+      g.add(rbox(w*.8, .04, .3, fabric('#dfcbba'), 0, .53, d*.12, .02), rbox(.28, .015, .2, woodM('#c8ab8d'), 0, .53, -d*.15, .006));
+      mug3d(g, 0, .545, -d*.15, '#ffffff');
       break;
     case 'coffeetable': {
-      const tm = mat(c, {roughness:.35}), lw = woodM('#3a3027');
+      const tm = mat(c || '#f8f8f7', {roughness:.25}), lw = woodM('#c8ab8d');
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rod([a*(w/2 - .05), 0, b*(d/2 - .05)], [a*(w/2 - .07), .365, b*(d/2 - .07)], .012, lw, .02)));
-      g.add(rbox(w, .035, d, tm, 0, .365, 0, .015), rbox(w - .12, .02, d - .12, woodM(darker(c, .85)), 0, .12, 0, .006));
-      g.add(box(.3, .03, .22, '#2f5d62', w*.2, .14, 0), box(.26, .025, .19, '#d9b36c', w*.2, .17, .01));
-      g.add(rbox(.38, .015, .24, woodM('#6b543f'), -w*.2, .4, 0, .006), box(.22, .025, .16, '#e6dccd', -w*.22, .415, 0));
-      g.add(lathe([[0, 0], [.025, 0], [.035, .07], [.034, .08]], ceramic({side:THREE.DoubleSide}), -w*.12, .415, .06, 20));
-      vase(g, w*.24, .4, -.05, .055, .18, '#e9e2d6', R);
+      g.add(rbox(w, .035, d, tm, 0, .365, 0, .015), rbox(w - .12, .02, d - .12, woodM('#dfcbba'), 0, .12, 0, .006));
+      book3d(g, -w*.2, .4, 0, .2, .26, .026, '#76937f', -.15);
+      plantPot(g, w*.22, .4, -.04, 1);
+      mug3d(g, 0, .4, .08, '#ffffff');
       break;
     }
     case 'tvstand': {
-      const sm = mat(c, {roughness:.5}), n = Math.max(2, Math.round(w/.6));
+      const sm = woodM(c || '#d8bea2'), n = Math.max(2, Math.round(w/.6));
       legs(g, w, d, .1, blackMetal(), .08, .012);
       g.add(rbox(w, .4, d - .02, sm, 0, .1, -.01, .01));
       fronts(g, -w/2 + .005, .105, w - .01, .39, d/2 - .02, n, 1, sm, 'edge');
       g.add(rbox(1.45, .84, .025, mat('#18181a', {roughness:.4, metalness:.3}), 0, .95, bz + .03, .004), box(1.43, .81, .002, screenMat(), 0, .962, bz + .0435));
       g.add(rbox(.9, .06, .09, '#2a2a2c', 0, .5, -.02, .02), box(.86, .045, .002, fabric('#3a3a3c'), 0, .507, .026));
-      vase(g, w/2 - .25, .5, 0, .06, .26, '#d8cfc2', R);
-      g.add(box(.25, .035, .18, '#a9433b', -w/2 + .3, .5, 0), box(.22, .03, .16, '#e6dccd', -w/2 + .3, .535, 0));
+      plantPot(g, w/2 - .22, .5, 0, .95);
+      book3d(g, -w/2 + .25, .5, 0, .18, .24, .03, '#b87462', .1);
       break;
     }
     case 'rug':
-      [[w, d, .01, c, 0], [w - .16, d - .16, .002, darker(c, .82), .01], [w - .26, d - .26, .002, lighter(c, .12), .0115]].forEach(([a, b, h, cc, y]) => {
+      [[w, d, .01, c || '#ede7dc', 0], [w - .16, d - .16, .002, '#dfd7c9', .01], [w - .26, d - .26, .002, '#f4efe8', .0115]].forEach(([a, b, h, cc, y]) => {
         const r = box(a, h, b, mat(cc, {roughness:1}), 0, y + .002); r.castShadow = false; g.add(r);
       });
       break;
     case 'plant': {
-      const r = Math.min(w, d)/2, H = .9 + r*1.6, pot = mat('#d9d2c5', {roughness:.6}), lm = [mat('#5f8f4e', {roughness:.6, side:THREE.DoubleSide}), mat('#79a862', {roughness:.6, side:THREE.DoubleSide})];
+      const r = Math.min(w, d)/2, H = .9 + r*1.6, pot = mat('#d8bea2', {roughness:.6}), lm = [mat('#5c8766', {roughness:.6, side:THREE.DoubleSide}), mat('#76937f', {roughness:.6, side:THREE.DoubleSide})];
       g.add(lathe([[0, 0], [r*.4, 0], [r*.44, .02], [r*.54, .36], [r*.57, .4], [r*.52, .4], [r*.5, .37], [0, .37]], pot, 0, 0, 0, 36), cyl(r*.49, r*.49, .005, '#4a3a2c', 0, .368, 0, 28));
       g.add(rod([0, .37, 0], [.02, H*.62, -.01], .016, '#6b5540', .009));
-      const N = 20 + Math.round(r*36), sc = Math.sqrt(r/.25);
+      const N = 22 + Math.round(r*36), sc = Math.sqrt(r/.25);
       for (let k = 0; k < N; k++){
         const t = k/N, a = k*2.399 + R()*.3, len = (.14 + R()*.08)*(1.1 - t*.4)*sc, s0 = .03 + R()*.08*sc, p = new THREE.Group();
         p.position.set(0, H*(.42 + .58*t), 0); p.rotation.set(0, -a, .1 + t*.5 + R()*.3, 'YXZ');
         const lf = blob(len/2, .005, len*.27, lm[k % 2], s0 + len/2, 0, 0, 16); lf.rotation.z = -.3;
-        p.add(box(s0, .005, .005, '#6f8f4a', s0/2, 0, 0), lf); g.add(p);
+        p.add(box(s0, .005, .005, '#5c8766', s0/2, 0, 0), lf); g.add(p);
       }
       break;
     }
     case 'table': {
-      const tm = mat(c, {roughness:.4}), lw = woodM(darker(c, .55)), ns = Math.max(1, Math.round(w/.62)), top = .75;
+      const tm = woodM(c || '#d8bea2'), lw = woodM('#c8ab8d'), ns = Math.max(1, Math.round(w/.62)), top = .75;
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rod([a*(w/2 - .08), 0, b*(d/2 - .08)], [a*(w/2 - .1), .715, b*(d/2 - .1)], .016, lw, .026)));
       g.add(rbox(w, .035, d, tm, 0, .715, 0, .012), box(w - .22, .07, d - .22, lw, 0, .645));
-      g.add(box(w*.7, .003, .32, fabric('#b9a58c'), 0, top, 0));
+      g.add(box(w*.7, .003, .32, fabric('#ede8df'), 0, top, 0));
       for (let i = 0; i < ns; i++) [-1, 1].forEach(s => {
         const x = -w/2 + w/ns*(i + .5), z = s*(d/2 - .17);
-        g.add(box(.38, .003, .28, fabric('#e7dfd1'), x, top, z)); plate(g, .12, x, top + .003, z);
-        g.add(cyl(.03, .026, .1, mat('#dfeef3', {transparent:true, opacity:.35, roughness:.05}), x + .15, top + .003, z - s*.1, 16));
+        g.add(box(.36, .003, .26, fabric('#f4efe8'), x, top, z)); plate(g, .11, x, top + .003, z);
+        g.add(cyl(.028, .024, .09, mat('#dfeef3', {transparent:true, opacity:.35, roughness:.05}), x + .14, top + .003, z - s*.09, 16));
+        const cz = s*(d/2 + .16), cy = .44, cg = new THREE.Group();
+        cg.position.set(x, 0, cz); cg.rotation.y = s > 0 ? Math.PI : 0;
+        [[-.16, -.16], [.16, -.16], [-.16, .16], [.16, .16]].forEach(([cx, czz]) => cg.add(rod([cx, 0, czz], [cx*.85, cy, czz*.85], .01, lw, .015)));
+        cg.add(rbox(.38, .045, .38, fabric('#b87462'), 0, cy, 0, .02));
+        cg.add(rod([-.16, cy, -.15], [-.14, .82, -.15], .01, lw), rod([.16, cy, -.15], [.14, .82, -.15], .01, lw));
+        cg.add(rbox(.36, .13, .02, lw, 0, .68, -.15, .01));
+        g.add(cg);
       });
-      vase(g, 0, top + .003, 0, .06, .2, '#e9e2d6', R);
+      plantPot(g, 0, top + .003, 0, 1.05);
       break;
     }
     case 'roundtable': {
-      const b = Math.min(.25, w*.3), lw = woodM('#4a3e33'), top = .75;
-      g.add(lathe([[b, 0], [b, .015], [b*.8, .035], [.06, .12], [.045, .35], [.05, .6], [.12, .69], [.18, .715]], lw, 0, 0, 0, 40), cyl(w/2, w/2, .035, mat(c, {roughness:.4}), 0, .715, 0, 64));
+      const b = Math.min(.25, w*.3), lw = woodM('#c8ab8d'), top = .75;
+      g.add(lathe([[b, 0], [b, .015], [b*.8, .035], [.06, .12], [.045, .35], [.05, .6], [.12, .69], [.18, .715]], lw, 0, 0, 0, 40), cyl(w/2, w/2, .035, woodM(c || '#d8bea2'), 0, .715, 0, 64));
       for (let k = 0; k < 4; k++){ const a = k*Math.PI/2 + .4, rr = w/2 - .17; plate(g, .11, Math.cos(a)*rr, top, Math.sin(a)*rr); }
-      vase(g, 0, top, 0, .05, .18, '#e9e2d6', R);
+      plantPot(g, 0, top, 0, 1);
       break;
     }
     case 'counter': {
-      const cm = mat(c, {roughness:.45}), stone = mat('#dcd7cf', {roughness:.22}), n = Math.max(1, Math.round(w/.6)), fz = d/2 - .04;
-      g.add(box(w - .01, .1, d - .1, '#4a4641', 0, 0, -.05), box(w, .72, d - .04, cm, 0, .1, -.02));
+      const cm = mat(c || '#ede8df', {roughness:.45}), stone = mat('#f8f8f7', {roughness:.18}), n = Math.max(1, Math.round(w/.6)), fz = d/2 - .04;
+      g.add(box(w - .01, .1, d - .1, '#3f3c38', 0, 0, -.05), box(w, .72, d - .04, cm, 0, .1, -.02));
       fronts(g, -w/2, .64, w, .18, fz, n, 1, cm, 'bar'); fronts(g, -w/2, .1, w, .54, fz, n, 1, cm, 'bar', .56);
-      g.add(rbox(w + .01, .04, d, stone, 0, .82, 0, .004), box(w, .62, .01, mat('#efece6', {roughness:.3}), 0, .86, bz + .005));
+      g.add(rbox(w + .01, .04, d, stone, 0, .82, 0, .004), box(w, .62, .01, mat('#faf7f2', {roughness:.3}), 0, .86, bz + .005));
       g.add(box(w, .7, .33, cm, 0, 1.48, bz + .165)); fronts(g, -w/2, 1.48, w, .7, bz + .33, n, 1, cm, 'bar', 1.56);
       g.add(box(w - .04, .01, .02, glowMat('#fff7e6', '#ffe9c4', .8), 0, 1.47, bz + .29));
-      if (w >= .8){
-        g.add(rbox(.36, .018, .25, woodM('#c9a27a'), -w/2 + .3, .86, .0, .005));
-        [.07, .06, .05].forEach((r, i) => g.add(cyl(r, r, .16 - i*.03, mat(['#e9e2d6', '#d6cfc3', '#bfb6a8'][i], {roughness:.4}), w/2 - .15 - i*.15, .86, bz + .1, 24)));
-        g.add(cyl(.05, .045, .14, ceramic({roughness:.3}), w/2 - .6, .86, bz + .1, 20));
-        for (let k = 0; k < 4; k++) g.add(rod([w/2 - .6, .9, bz + .1], [w/2 - .6 + (k - 1.5)*.018, 1.1, bz + .1 + (k % 2 - .5)*.02], .005, woodM('#8d7258'), .006, 6));
+      if (w >= 1.6){
+        const stx = w/2 - .45;
+        g.add(rbox(.5, .008, .36, mat('#1f2937', {roughness:.1, metalness:.3}), stx, .862, 0, .004));
+        [-.12, .12].forEach(ox => g.add(ring(.08, .005, mat('#3f4c5e', {roughness:.2}), stx + ox, .868, 0), cyl(.02, .02, .003, mat('#ff6b4a', {emissive:'#ff5522', emissiveIntensity:.4}), stx + ox, .868, 0, 16)));
+        const skx = -w/2 + .45, stm = mat('#cbd5e1', {metalness:.85, roughness:.28});
+        g.add(shell(.46, .34, .02, .015, .03, stm, skx, .862, 0), box(.43, .002, .31, mat('#9aa1a8', {metalness:.8}), skx, .87, 0));
+        const cmm = chrome();
+        g.add(tube([[skx, .87, bz + .1], [skx, 1.08, bz + .1], [skx, 1.12, bz + .14], [skx, 1.09, bz + .2]], .01, cmm));
+      } else if (w >= .8){
+        g.add(rbox(.36, .018, .25, woodM('#c8ab8d'), -w/2 + .3, .86, 0, .005));
+        plantPot(g, w/2 - .2, .86, bz + .14, .9);
       }
       break;
     }
     case 'stove': {
-      const sm = mat('#b9bec3', {metalness:.8, roughness:.3});
-      g.add(rbox(w, .012, d, mat('#0d0d0e', {roughness:.06, metalness:.3}), 0, .862, 0, .004));
+      const sm = mat('#cbd5e1', {metalness:.8, roughness:.25});
+      g.add(rbox(w, .012, d, mat('#1f2937', {roughness:.1, metalness:.3}), 0, .862, 0, .004));
       (w/d > 1.4 ? [[-w/4, 0], [w/4, 0]] : [[-w/4,-d/4],[w/4,-d/4],[-w/4,d/4],[w/4,d/4]]).forEach(([x, z]) => {
-        g.add(cyl(.085, .09, .008, '#2b2b2b', x, .874, z, 32), cyl(.045, .05, .014, mat('#6b5a45', {metalness:.7, roughness:.35}), x, .874, z, 28), cyl(.028, .028, .022, '#1a1a1a', x, .874, z, 20));
-        for (let k = 0; k < 5; k++){ const a = k*Math.PI*2/5; g.add(rot(box(.07, .014, .012, '#1c1c1c', x + Math.cos(a)*.1, .874, z + Math.sin(a)*.1), 0, -a)); }
-        g.add(cyl(.02, .022, .018, '#222', x, .874, d/2 - .04, 20));
+        g.add(ring(.08, .006, mat('#3f4c5e', {roughness:.2}), x, .874, z), cyl(.02, .02, .003, mat('#ff6b4a', {emissive:'#ff5522', emissiveIntensity:.4}), x, .874, z, 16));
+        g.add(cyl(.018, .02, .014, '#1f2937', x, .874, d/2 - .04, 16));
       });
       g.add(rbox(w, .06, .5, sm, 0, 1.55, bz + .25, .01), box(.3, .72, .26, sm, 0, 1.61, bz + .13));
       g.add(rot(box(w - .02, .3, .008, mat('#15181b', {roughness:.05, metalness:.5}), 0, 1.58, bz + .38), -.9), box(.16, .012, .003, mat('#101214', {emissive:'#6fd0ff', emissiveIntensity:.6}), 0, 1.575, bz + .502));
       break;
     }
     case 'ksink': {
-      const st = mat('#c7ccd1', {metalness:.85, roughness:.28}), inner = mat('#9aa1a8', {metalness:.8, roughness:.35}), two = w >= .75, bw = two ? w*.42 : w*.7, bd = d*.66;
+      const st = mat('#cbd5e1', {metalness:.85, roughness:.28}), inner = mat('#9aa1a8', {metalness:.8, roughness:.35}), two = w >= .75, bw = two ? w*.42 : w*.7, bd = d*.66;
       g.add(box(w, .008, d, st, 0, .862, 0));
       (two ? [-w*.23, w*.23] : [0]).forEach(x => g.add(shell(bw, bd, .02, .015, .04, st, x, .862, .03), box(bw - .03, .002, bd - .03, inner, x, .87, .03), cyl(.03, .03, .003, chrome(), x, .872, .03, 20)));
       const fx = two ? 0 : w*.3, cm = chrome();
@@ -615,7 +703,7 @@ function buildFurniture(f){
       break;
     }
     case 'fridge': {
-      const fm = mat(c, {metalness:.45, roughness:.28}), h = 1.8, fz = d/2 - .05;
+      const fm = mat(c || '#d5d9dd', {metalness:.7, roughness:.25}), h = 1.8, fz = d/2 - .05;
       g.add(box(w - .02, .06, d - .06, '#2a2c2e', 0, 0, -.03), rbox(w, h - .06, d - .05, fm, 0, .06, -.025, .02), box(w - .01, h - .07, .003, '#2a2c2e', 0, .065, fz + .0015));
       if (w > .85){
         [-1, 1].forEach(s => { g.add(rbox(w/2 - .004, h - .08, .04, fm, s*w/4, .07, fz + .023, .012)); pull(g, .8, true, s*.035, 1.05, fz + .043); });
@@ -631,11 +719,10 @@ function buildFurniture(f){
       const cer = ceramic(), Rb = w*.45, zc = bz + d*.62, kz = (d*.37)/Rb, cm = chrome();
       g.add(rbox(w*.88, .4, d*.24, cer, 0, .36, bz + d*.12, .04), rbox(w*.92, .03, d*.27, cer, 0, .76, bz + d*.135, .012), cyl(.022, .022, .006, cm, 0, .79, bz + d*.135, 20));
       const ped = lathe([[0, 0], [Rb*.62, 0], [Rb*.66, .02], [Rb*.56, .12], [Rb*.62, .22], [Rb*.92, .33], [Rb, .37]], cer, 0, 0, zc, 40);
-      const seat = cyl(Rb*1.01, Rb*1.01, .022, mat('#f4f4f2', {roughness:.2}), 0, .37, zc, 40), lid = cyl(Rb*.97, Rb*.99, .02, mat('#f4f4f2', {roughness:.2}), 0, .392, zc, 40);
+      const seat = cyl(Rb*1.01, Rb*1.01, .022, mat('#ffffff', {roughness:.18}), 0, .37, zc, 40), lid = cyl(Rb*.97, Rb*.99, .02, mat('#ffffff', {roughness:.18}), 0, .392, zc, 40);
       ped.scale.z = seat.scale.z = lid.scale.z = kz; g.add(ped, seat, lid);
       [-1, 1].forEach(s => g.add(box(.03, .02, .03, cm, s*w*.18, .39, zc - Rb*kz - .005)));
       if (f.type === 'bidettoilet') {
-        // 免治馬桶的電子控制座、側邊操作面板與機身指示燈。
         const plastic = mat('#f8fbfa', {roughness:.22});
         g.add(rbox(w*.82, .085, d*.17, plastic, 0, .445, bz + d*.32, .02));
         g.add(rbox(w*.18, .045, d*.32, plastic, w*.43, .42, bz + d*.56, .016));
@@ -645,7 +732,7 @@ function buildFurniture(f){
       break;
     }
     case 'vanity': {
-      const vm = mat(c, {roughness:.5}), stone = mat('#fafafa', {roughness:.18}), nb = w >= 1.1 ? 2 : 1, cd = d - .04, cm = chrome();
+      const vm = mat(c || '#ede8df', {roughness:.5}), stone = mat('#f8f8f7', {roughness:.18}), nb = w >= 1.1 ? 2 : 1, cd = d - .04, cm = chrome();
       g.add(rbox(w, .45, cd, vm, 0, .33, bz + cd/2, .008));
       fronts(g, -w/2 + .005, .335, w - .01, .44, d/2 - .04, nb, 2, vm, 'edge');
       g.add(rbox(w, .03, d, stone, 0, .78, 0, .006));
@@ -657,12 +744,13 @@ function buildFurniture(f){
       }
       const mw = Math.min(w*.9, nb*.7);
       g.add(rbox(mw + .02, .82, .02, glowMat('#fff7e6', '#ffe9c4', .9), 0, 1.14, bz + .01, .01), box(mw, .8, .01, mirror(), 0, 1.15, bz + .025));
-      g.add(cyl(.028, .028, .12, mat('#c8b8a6', {roughness:.3}), w/2 - .08, .81, bz + .1, 16), rbox(.18, .03, .12, fabric('#e9e2d6'), -w/2 + .12, .81, .05, .012));
+      plantPot(g, w/2 - .1, .81, bz + .1, .7);
+      g.add(rbox(.18, .03, .12, fabric('#ede8df'), -w/2 + .12, .81, .05, .012));
       break;
     }
     case 'shower': {
       const cm = chrome(), x = -w/4;
-      g.add(rbox(w, .05, d, mat('#f4f4f2', {roughness:.3}), 0, 0, 0, .01), box(w*.6, .003, .05, mat('#9aa1a8', {metalness:.8, roughness:.3}), 0, .05, bz + .08));
+      g.add(rbox(w, .05, d, mat('#f8f6f0', {roughness:.3}), 0, 0, 0, .01), box(w*.6, .003, .05, mat('#9aa1a8', {metalness:.8, roughness:.3}), 0, .05, bz + .08));
       [[w, .01, 0, d/2 - .005], [.01, d, w/2 - .005, 0]].forEach(([gw, gd, px, pz]) => { const p = box(gw, 1.95, gd, glassMat, px, .05, pz); p.castShadow = false; g.add(p); });
       g.add(box(.02, 1.95, .02, frameMat, w/2 - .01, .05, d/2 - .01), box(.02, 1.95, .03, frameMat, -w/2 + .01, .05, d/2 - .005), box(.03, 1.95, .02, frameMat, w/2 - .005, .05, bz + .01));
       g.add(box(w, .015, .02, frameMat, 0, 1.985, d/2 - .005), box(.02, .015, d, frameMat, w/2 - .005, 1.985, 0));
@@ -670,22 +758,23 @@ function buildFurniture(f){
       g.add(tube([[x, 1.95, bz + .03], [x, 2.02, bz + .06], [x, 2.03, bz + .22]], .01, cm), rbox(.24, .012, .24, cm, x, 2.02, bz + .25, .004));
       g.add(rot(cyl(.015, .02, .2, cm, x + .1, 1.25, bz + .05, 16), .25), blob(.03, .012, .03, cm, x + .1, 1.47, bz + .08, 16));
       g.add(box(.26, .012, .1, ceramic(), w/2 - .2, 1.2, bz + .05));
-      [['#e6dccd', .03, .18], ['#2f5d62', .025, .15], ['#f4f4f2', .028, .12]].forEach(([cc, r, hh], i) => g.add(cyl(r, r, hh, mat(cc, {roughness:.3}), w/2 - .28 + i*.07, 1.212, bz + .05, 16)));
+      [['#76937f', .03, .18], ['#b87462', .025, .15], ['#ede8df', .028, .12]].forEach(([cc, r, hh], i) => g.add(cyl(r, r, hh, mat(cc, {roughness:.3}), w/2 - .28 + i*.07, 1.212, bz + .05, 16)));
       break;
     }
     case 'bathtub': {
       const cer = ceramic(), h = .56, t = .07, cm = chrome();
-      g.add(shell(w, d, h, t, .14, cer), box(w - .1, .12, d - .1, cer, 0, 0, 0), box(w - 2*t + .004, .004, d - 2*t + .004, mat('#bfe0ea', {roughness:.03, transparent:true, opacity:.6}), 0, .4, 0));
+      g.add(shell(w, d, h, t, .16, cer), box(w - .1, .12, d - .1, cer, 0, 0, 0));
+      g.add(box(w - 2*t + .004, .004, d - 2*t + .004, mat('#bae6fd', {roughness:.03, transparent:true, opacity:.72}), 0, .4, 0));
       const fx = w/2 - t/2;
-      g.add(tube([[fx, h - .02, 0], [fx, h + .1, 0], [fx - .06, h + .13, 0], [fx - .13, h + .09, 0]], .014, cm));
+      g.add(tube([[fx, h - .02, 0], [fx, h + .12, 0], [fx - .06, h + .15, 0], [fx - .13, h + .1, 0]], .014, cm));
       [-1, 1].forEach(s => g.add(cyl(.02, .02, .04, cm, fx, h, s*.1, 16)));
-      g.add(rot(rbox(.08, .16, .3, cer, -w/2 + t + .06, h - .12, 0, .04), 0, 0, -.5), rbox(.22, .05, .16, fabric('#e9e2d6'), fx - .05, h, d/2 - .1, .02));
+      g.add(rot(rbox(.08, .16, .3, cer, -w/2 + t + .06, h - .12, 0, .04), 0, 0, -.5), rbox(.22, .05, .16, fabric('#ede8df'), fx - .05, h, d/2 - .1, .02));
       break;
     }
     case 'washer': case 'dryer': {
-      const bm = mat(c, {roughness:.35}), R0 = Math.min(w, d)*.25, fz = d/2 - .02;
+      const bm = mat(c || '#ffffff', {roughness:.25}), R0 = Math.min(w, d)*.25, fz = d/2 - .02;
       g.add(box(w - .02, .04, d - .04, '#8f969b', 0, 0, -.02), rbox(w, .81, d - .02, bm, 0, .04, -.01, .025));
-      g.add(box(w - .04, .1, .006, lighter(c, .3), 0, .72, fz + .003), rbox(.18, .07, .01, bm, -w/2 + .12, .735, fz + .006, .004));
+      g.add(box(w - .04, .1, .006, '#f1f5f9', 0, .72, fz + .003), rbox(.18, .07, .01, bm, -w/2 + .12, .735, fz + .006, .004));
       g.add(box(.12, .035, .003, screenMat('#1f6f6a'), w*.14, .745, fz + .007));
       const kn = cyl(.03, .03, .02, chrome(), -w*.02, .75, fz + .016, 28); kn.rotation.x = Math.PI/2; g.add(kn);
       const dr = new THREE.Mesh(new THREE.CircleGeometry(R0, 40), mat('#1b1f22', {roughness:.6})); dr.position.set(0, .4, fz + .004); g.add(dr);
@@ -696,7 +785,7 @@ function buildFurniture(f){
       break;
     }
     case 'crib': {
-      const wm = woodM(c);
+      const wm = woodM(c || '#c8ab8d');
       g.add(rbox(w - .09, .12, d - .09, fabric('#ffffff'), 0, .3, 0, .04), box(w - .06, .025, d - .06, wm, 0, .28));
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rbox(.045, .95, .045, wm, a*(w/2 - .022), 0, b*(d/2 - .022), .008), blob(.028, .028, .028, wm, a*(w/2 - .022), .97, b*(d/2 - .022), 14)));
       [-1, 1].forEach(s => {
@@ -705,47 +794,59 @@ function buildFurniture(f){
         for (let p = -w/2 + .09; p < w/2 - .05; p += .075) g.add(rod([p, .28, z], [p, .88, z], .009, wm, .009, 8));
         for (let p = -d/2 + .09; p < d/2 - .05; p += .075) g.add(rod([x, .28, p], [x, .88, p], .009, wm, .009, 8));
       });
-      g.add(rbox(w*.5, .03, d - .14, fabric('#f3d9c9'), w*.12, .42, 0, .015), rbox(.3, .06, .2, fabric('#fbfaf7'), -w/2 + .22, .42, 0, .03));
-      const bx = -w*.3 + .1, bear = '#c9a27a';
+      g.add(rbox(w*.5, .03, d - .14, fabric('#eedecb'), w*.12, .42, 0, .015), rbox(.3, .06, .2, fabric('#ffffff'), -w/2 + .22, .42, 0, .03));
+      const bx = -w*.3 + .1, bear = '#c8ab8d';
       g.add(blob(.05, .06, .045, bear, bx, .5, .12), blob(.045, .042, .04, bear, bx, .59, .12), blob(.016, .016, .01, bear, bx - .032, .625, .12), blob(.016, .016, .01, bear, bx + .032, .625, .12));
       break;
     }
     case 'beanbag': {
-      const fab = mat(c, {roughness:.95});
+      const fab = fabric(c || '#ede8df');
       g.add(blob(w*.5, .3, d*.5, fab, 0, .3, 0, 40), blob(w*.42, .22, d*.22, fab, 0, .5, bz + d*.26, 32));
       break;
     }
     case 'sidetable': {
       const r = Math.min(w, d)/2, bm = blackMetal();
-      g.add(lathe([[r*.55, 0], [r*.55, .012], [.03, .035], [.018, .3], [.025, .5], [.08, .52]], bm, 0, 0, 0, 40), cyl(r, r*.98, .025, mat(c, {roughness:.35}), 0, .52, 0, 48));
-      g.add(box(.16, .02, .12, '#4f6b8a', -r*.25, .545, 0));
-      vase(g, r*.35, .545, -r*.1, .035, .12, '#e9e2d6', R, false);
+      g.add(lathe([[r*.55, 0], [r*.55, .012], [.03, .035], [.018, .3], [.025, .5], [.08, .52]], bm, 0, 0, 0, 40), cyl(r, r*.98, .025, mat(c || '#f8f8f7', {roughness:.25}), 0, .52, 0, 48));
+      book3d(g, -r*.2, .545, 0, .14, .18, .02, '#76937f', .2);
+      mug3d(g, r*.2, .545, 0, '#ffffff');
       break;
     }
     case 'floorlamp': {
-      const r = Math.min(w, d)/2, lm = mat(c, {roughness:.35, metalness:.5});
+      const r = Math.min(w, d)/2, lm = mat(c || '#2b2b2d', {roughness:.35, metalness:.5});
       g.add(lathe([[0, 0], [r*.55, 0], [r*.58, .012], [r*.5, .03], [.02, .035]], lm, 0, 0, 0, 40), rod([0, .03, 0], [0, 1.36, 0], .011, lm));
-      g.add(lathe([[r*.85, 0], [r*.55, .36]], glowMat('#f6ecd9', '#ffdca0', .45), 0, 1.22, 0, 48), blob(.035, .035, .035, glowMat('#fff', '#ffe2b0', 1.2), 0, 1.36, 0, 12));
+      g.add(lathe([[r*.85, 0], [r*.55, .36]], glowMat('#fff6dd', '#ffdca0', .45), 0, 1.22, 0, 48), blob(.035, .035, .035, glowMat('#fff', '#ffe2b0', 1.2), 0, 1.36, 0, 12));
       g.add(ring(r*.85, .004, lm, 0, 1.22, 0), ring(r*.55, .004, lm, 0, 1.58, 0));
       break;
     }
     case 'island': {
-      const cm = mat(c, {roughness:.45}), stone = mat('#dcd7cf', {roughness:.2}), cd = d - .3, n = Math.max(1, Math.round((w - .1)/.6)), cab = new THREE.Group(), fz = cd/2 - .03;
-      cab.add(box(w - .12, .1, cd - .08, '#4a4641', 0, 0, -.04), box(w - .1, .74, cd - .03, cm, 0, .1, -.015));
+      const cm = mat(c || '#ede8df', {roughness:.45}), stone = mat('#f8f8f7', {roughness:.18}), cd = d - .3, n = Math.max(1, Math.round((w - .1)/.6)), cab = new THREE.Group(), fz = cd/2 - .03;
+      cab.add(box(w - .12, .1, cd - .08, '#3f3c38', 0, 0, -.04), box(w - .1, .74, cd - .03, cm, 0, .1, -.015));
       fronts(cab, -w/2 + .05, .64, w - .1, .2, fz, n, 1, cm, 'bar'); fronts(cab, -w/2 + .05, .1, w - .1, .54, fz, n, 1, cm, 'bar', .56);
-      cab.rotation.y = Math.PI; cab.position.z = bz + cd/2; g.add(cab);                    // 櫃門朝 -z，+z 側留出吧台挑空
+      cab.rotation.y = Math.PI; cab.position.z = bz + cd/2; g.add(cab);
       g.add(rbox(w, .05, d, stone, 0, .84, 0, .006));
-      [-1, 1].forEach(s => g.add(box(.04, .84, d, stone, s*(w/2 - .02), 0, 0)));             // 瀑布式側板
-      g.add(lathe([[0, 0], [.06, 0], [.14, .06], [.15, .07]], mat('#6b543f', {roughness:.5, side:THREE.DoubleSide}), w*.22, .89, 0, 32));
-      for (let k = 0; k < 4; k++) g.add(blob(.04, .04, .04, ['#d98c4a', '#9fbf5a', '#b5463a', '#e6c14f'][k], w*.22 + Math.cos(k*1.6)*.05, .935 + (k === 3 ? .04 : 0), Math.sin(k*1.6)*.05, 14));
-      vase(g, -w*.25, .89, -.05, .05, .22, '#e9e2d6', R);
+      [-1, 1].forEach(s => g.add(box(.04, .84, d, stone, s*(w/2 - .02), 0, 0)));
+      const nb = Math.max(2, Math.round(w / .6));
+      for (let i = 0; i < nb; i++){
+        const bx = -w/2 + w/nb*(i + .5), bzPos = d/2 - .12;
+        const bg = new THREE.Group();
+        bg.position.set(bx, 0, bzPos);
+        const bm = blackMetal(), sy = .68, br = .17;
+        [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a, b]) => bg.add(rod([a*br*.72, 0, b*br*.72], [a*br*.4, sy, b*br*.4], .01, bm)));
+        bg.add(ring(Math.SQRT2*br*(.72 - .32*.4), .007, bm, 0, .26, 0), cyl(br*.55, br*.55, .02, bm, 0, sy - .01, 0, 24));
+        bg.add(lathe([[0, 0], [br*.85, 0], [br*.95, .02], [br*.97, .04], [br*.9, .06], [0, .065]], fabric('#76937f'), 0, sy, 0, 32));
+        g.add(bg);
+      }
+      g.add(rbox(.32, .018, .22, woodM('#c8ab8d'), -w*.24, .89, 0, .005));
+      g.add(lathe([[0, 0], [.06, 0], [.14, .06], [.15, .07]], ceramic({roughness:.3}), w*.22, .89, 0, 32));
+      for (let k = 0; k < 4; k++) g.add(blob(.035, .035, .035, ['#d98c4a', '#76937f', '#b87462', '#eedecb'][k], w*.22 + Math.cos(k*1.6)*.04, .93 + (k === 3 ? .035 : 0), Math.sin(k*1.6)*.04, 14));
+      plantPot(g, -w*.26, .89, bz + .15, .9);
       break;
     }
     case 'barstool': {
       const r = Math.min(w, d)/2, bm = blackMetal(), sy = .7;
       [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a, b]) => g.add(rod([a*r*.72, 0, b*r*.72], [a*r*.4, sy, b*r*.4], .011, bm)));
       g.add(ring(Math.SQRT2*r*(.72 - .32*.4), .008, bm, 0, .28, 0), cyl(r*.55, r*.55, .02, bm, 0, sy - .01, 0, 32));
-      g.add(lathe([[0, 0], [r*.85, 0], [r*.95, .02], [r*.97, .045], [r*.9, .07], [0, .075]], mat(c, {roughness:.6}), 0, sy, 0, 40));
+      g.add(lathe([[0, 0], [r*.85, 0], [r*.95, .02], [r*.97, .045], [r*.9, .07], [0, .075]], fabric(c || '#76937f'), 0, sy, 0, 40));
       break;
     }
     case 'waterheater': {
@@ -782,16 +883,16 @@ function buildFurniture(f){
       break;
     }
     case 'dishwasher': {
-      const dm = mat(c, {metalness:.55, roughness:.28}), fz = d/2 - .02;
-      g.add(box(w - .01, .08, d - .07, '#3a3834', 0, 0, -.035), box(w - .005, .76, d - .03, '#8b9095', 0, .08, -.015));
+      const dm = mat(c || '#d5d9dd', {metalness:.7, roughness:.25}), fz = d/2 - .02;
+      g.add(box(w - .01, .08, d - .07, '#3f3c38', 0, 0, -.035), box(w - .005, .76, d - .03, '#8b9095', 0, .08, -.015));
       g.add(rbox(w - .006, .7, .02, dm, 0, .085, fz, .004), box(w - .006, .055, .02, '#26282a', 0, .785, fz));
       for (let i = 0; i < 4; i++) g.add(box(.012, .006, .002, mat('#101214', {emissive:i ? '#6fd0ff' : '#7fe08a', emissiveIntensity:.8}), w*.1 + i*.03, .81, fz + .011));
       pull(g, w*.6, false, 0, .74, fz + .01);
       break;
     }
     case 'ovencol': {
-      const cm = mat(c, {roughness:.5}), h = 2.1, fz = d/2 - .02, frm = mat('#1c1d1f', {roughness:.3, metalness:.5}), gl = mat('#0b0c0d', {roughness:.03, metalness:.6});
-      g.add(box(w - .02, .08, d - .06, '#4a4641', 0, 0, -.03), box(w, h - .08, d - .02, cm, 0, .08, -.01));
+      const cm = mat(c || '#dfcbba', {roughness:.5}), h = 2.1, fz = d/2 - .02, frm = mat('#1c1d1f', {roughness:.3, metalness:.5}), gl = mat('#0b0c0d', {roughness:.03, metalness:.6});
+      g.add(box(w - .02, .08, d - .06, '#3f3c38', 0, 0, -.03), box(w, h - .08, d - .02, cm, 0, .08, -.01));
       fronts(g, -w/2, .08, w, .6, fz, 1, 2, cm, 'bar'); fronts(g, -w/2, 1.78, w, h - 1.8, fz, 1, 1, cm, 'bar', 1.84);
       [[.7, .58], [1.3, .46]].forEach(([y, ah]) => {
         g.add(box(w - .02, ah - .01, .02, frm, 0, y, fz + .01), box(w - .1, ah*.52, .003, gl, 0, y + ah*.1, fz + .021), box(w - .04, .06, .003, '#2a2c2e', 0, y + ah - .075, fz + .021));
@@ -801,7 +902,7 @@ function buildFurniture(f){
       break;
     }
     case 'purifier': {
-      const pm = mat(c, {roughness:.45}), h = .72;
+      const pm = mat(c || '#f4f4f2', {roughness:.45}), h = .72;
       g.add(rbox(w, h, d, pm, 0, 0, 0, Math.min(w, d)*.2), rbox(w - .05, .006, d - .05, '#8d959b', 0, h - .002, 0, .02));
       for (let i = 0; i < 7; i++) g.add(box(w - .07, .004, .006, '#6f777d', 0, h + .002, -d/2 + .05 + i*(d - .1)/6));
       g.add(rbox(w - .06, .42, .006, fabric('#c8ccd0'), 0, .06, d/2 - .001, .01));
@@ -809,22 +910,23 @@ function buildFurniture(f){
       break;
     }
     case 'officechair': {
-      const r = Math.min(w, d)*.46, dk = darker(c, .75), bm = mat('#2b2b2d', {roughness:.45}), cm = chrome();
+      const r = Math.min(w, d)*.46, bm = mat('#2b2b2d', {roughness:.45}), cm = chrome();
       for (let k = 0; k < 5; k++){
         const a = k*Math.PI*2/5, tx = Math.sin(a)*r*.95, tz = Math.cos(a)*r*.95;
         g.add(rod([0, .1, 0], [tx, .07, tz], .022, bm, .014, 10), cyl(.008, .008, .03, bm, tx, .04, tz, 8), rot(cyl(.026, .026, .03, '#111', tx, .026 - .015, tz, 16), 0, a, Math.PI/2));
       }
       g.add(cyl(.05, .06, .05, bm, 0, .08, 0, 20), cyl(.025, .025, .22, cm, 0, .12, 0, 16), cyl(.036, .036, .12, bm, 0, .12, 0, 16), rbox(.22, .05, .22, bm, 0, .34, .02, .01));
-      g.add(rbox(w*.78, .03, d*.72, bm, 0, .38, .04, .01), rbox(w*.8, .08, d*.74, fabric(c), 0, .4, .05, .035));
+      const seatColor = c || '#718096';
+      g.add(rbox(w*.78, .03, d*.72, bm, 0, .38, .04, .01), rbox(w*.8, .08, d*.74, fabric(seatColor), 0, .4, .05, .035));
       g.add(tube([[0, .36, 0], [0, .38, bz + .12], [0, .6, bz + .07]], .02, bm));
       const bf = shell(w*.72, .6, .03, .025, .08, bm); bf.rotation.x = Math.PI/2 - .12; bf.position.set(0, .88, bz + .06); g.add(bf);
-      g.add(rot(box(w*.68, .56, .006, mat(dk, {roughness:.85, transparent:true, opacity:.88, side:THREE.DoubleSide}), 0, .6, bz + .085), -.12), rot(rbox(w*.5, .08, .03, fabric(c), 0, .66, bz + .11, .015), -.12));
-      g.add(rod([-.05, 1.14, bz + .025], [-.05, 1.22, bz + .015], .008, bm), rod([.05, 1.14, bz + .025], [.05, 1.22, bz + .015], .008, bm), rbox(w*.45, .12, .05, fabric(dk), 0, 1.2, bz + .02, .025));
+      g.add(rot(box(w*.68, .56, .006, mat('#5c6778', {roughness:.85, transparent:true, opacity:.88, side:THREE.DoubleSide}), 0, .6, bz + .085), -.12), rot(rbox(w*.5, .08, .03, fabric(seatColor), 0, .66, bz + .11, .015), -.12));
+      g.add(rod([-.05, 1.14, bz + .025], [-.05, 1.22, bz + .015], .008, bm), rod([.05, 1.14, bz + .025], [.05, 1.22, bz + .015], .008, bm), rbox(w*.45, .12, .05, fabric('#5c6778'), 0, 1.2, bz + .02, .025));
       [-1, 1].forEach(s => g.add(box(.035, .22, .035, bm, s*w*.4, .42, .04), rbox(.07, .03, d*.4, bm, s*w*.4, .63, .04, .012)));
       break;
     }
     case 'piano': {
-      const pk = mat(c, {roughness:.12, metalness:.1}), bd = d*.5, kz = bz + bd, h = 1.25, kd = d*.22 - .03, iv = mat('#faf8f3', {roughness:.3}), eb = mat('#111', {roughness:.25}), kw = (w - .12)/52;
+      const pk = mat(c || '#242322', {roughness:.12, metalness:.1}), bd = d*.5, kz = bz + bd, h = 1.25, kd = d*.22 - .03, iv = mat('#faf8f3', {roughness:.3}), eb = mat('#111', {roughness:.25}), kw = (w - .12)/52;
       g.add(box(w, h, bd, pk, 0, 0, bz + bd/2), rbox(w + .02, .03, bd + .03, pk, 0, h, bz + bd/2 + .01, .008));
       [-1, 1].forEach(s => g.add(rbox(.06, .13, kd + .06, pk, s*(w/2 - .03), .6, kz + (kd + .06)/2, .01), box(.05, .6, .05, pk, s*(w/2 - .08), 0, kz + kd + .01), box(.06, .04, d - bd, pk, s*(w/2 - .08), 0, kz + (d - bd)/2)));
       g.add(box(w - .12, .08, kd + .05, pk, 0, .6, kz + (kd + .05)/2), box(w - .12, .1, .03, pk, 0, .68, kz + .015));
@@ -835,11 +937,11 @@ function buildFurniture(f){
       g.add(rot(box(w*.42, .18, .012, pk, 0, .84, kz + .012), -.25));
       [-.06, 0, .06].forEach(x => g.add(box(.025, .012, .07, mat('#c9a35a', {metalness:.9, roughness:.3}), x, .05, kz + .03)));
       const mt = cyl(.0, .05, .2, woodM('#5a3e2b'), w*.3, h + .03, bz + bd/2, 4); mt.rotation.y = Math.PI/4; g.add(mt);
-      g.add(rot(box(.14, .18, .015, woodM('#c9a27a'), -w*.3, h + .03, bz + .06), -.15), rot(box(.11, .14, .002, '#9fb3c2', -w*.3, h + .05, bz + .07), -.15));
+      g.add(rot(box(.14, .18, .015, woodM('#c8ab8d'), -w*.3, h + .03, bz + .06), -.15), rot(box(.11, .14, .002, '#9fb3c2', -w*.3, h + .05, bz + .07), -.15));
       break;
     }
     case 'treadmill': {
-      const tm = mat(c, {roughness:.55}), bm = mat('#2a2a2c', {roughness:.5}), al = mat('#9a9ea3', {metalness:.6, roughness:.4});
+      const tm = mat(c || '#374151', {roughness:.55}), bm = mat('#24262b', {roughness:.5}), al = mat('#9a9ea3', {metalness:.6, roughness:.4});
       g.add(rbox(w, .14, d - .25, tm, 0, .03, .125, .03), box(w - .16, .006, d - .5, '#141414', 0, .17, .15));
       [-1, 1].forEach(s => g.add(box(.07, .008, d - .45, al, s*(w/2 - .05), .17, .15)));
       [bz + .06, d/2 - .06].forEach(z => [-1, 1].forEach(s => g.add(box(.06, .03, .06, bm, s*(w/2 - .06), 0, z))));
@@ -1268,8 +1370,8 @@ function applyLight(){
   sun.color.setHSL(.09, .5 + warm*.4, .92 - warm*.12);
   sun.intensity = opt.night ? .05 : 1.4 + Math.sin(Math.PI*t)*1.6;
   hemi.intensity = opt.night ? .12 : 1.1;
-  scene.background = new THREE.Color(opt.night ? 0x1c2130 : 0xf7f4ee);
-  ground.material.color.set(opt.night ? 0x2a2e38 : 0xf2eee7);
+  scene.background = new THREE.Color(opt.night ? 0x1c2130 : 0xf8f6f0);
+  ground.material.color.set(opt.night ? 0x2a2e38 : 0xf8f6f0);
   lampG.children.forEach(o => { if (o.isPointLight) o.intensity = opt.night ? 6 : 0; else o.material.emissiveIntensity = opt.night ? 2 : .3; });
   renderer.toneMappingExposure = opt.night ? 1.25 : 1.05;
   envK = opt.night ? .15 : 1; matCache.forEach(m => { if (m.envMap) m.envMapIntensity = m.userData.env*envK; });

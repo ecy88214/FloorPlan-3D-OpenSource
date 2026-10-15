@@ -48,19 +48,25 @@ aside.right{border-right:0;border-left:1px solid var(--line)}
 .lib-accordion .lib-grid{padding:3px 10px 12px}
 @media (prefers-reduced-motion:reduce){.lib-accordion-arrow{transition:none}}
 
+.lib-hero-header{margin:10px 10px 8px;padding:10px 12px;background:linear-gradient(135deg,#fdfbf7 0%,#f4eee5 100%);border:1px solid #e7ded1;border-radius:10px;box-shadow:0 2px 6px rgba(45,35,25,.04)}
+.lib-hero-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.lib-hero-badge{display:inline-block;padding:2px 7px;background:#60594f;color:#fff;font-size:10px;font-weight:700;border-radius:12px;letter-spacing:.5px}
+.lib-hero-tag{font-size:12px;font-weight:700;color:#2e2a26;letter-spacing:.3px}
+.lib-hero-desc{font-size:10.5px;color:#8c8172;line-height:1.4}
 .lib h4{position:sticky;top:0;z-index:1;background:var(--panel)}
-.item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 6px;border:1px solid var(--line);
-  border-radius:8px;background:#fff;cursor:grab;user-select:none;touch-action:pan-y;transition:border-color .15s,transform .15s}
+.item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 8px;border:1px solid #e7ded2;
+  border-radius:11px;background:#fff;cursor:grab;user-select:none;touch-action:pan-y;transition:border-color .18s,transform .18s,box-shadow .18s;box-shadow:0 1px 3px rgba(45,35,25,.04)}
 .item.dragging{border-color:var(--accent);opacity:.5}
-@media (hover:hover){.item:hover{border-color:var(--accent);transform:translateY(-1px)}}
-#ghost{position:fixed;left:0;top:0;z-index:30;pointer-events:none;opacity:.8;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 10px rgba(40,30,20,.3))}
+@media (hover:hover){.item:hover{border-color:#b87462;transform:translateY(-2px);box-shadow:0 6px 14px rgba(45,35,25,.09)}}
+.item-preview{width:100%;height:58px;display:flex;align-items:center;justify-content:center;padding:2px}
+#ghost{position:fixed;left:0;top:0;z-index:30;pointer-events:none;opacity:.9;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 16px rgba(40,30,20,.28))}
 #ghost svg{width:100%;height:100%;display:block;overflow:visible}
-.item svg{width:56px;height:44px}
-.item b{font-weight:500;font-size:12px}
-.item small{color:var(--muted);font-size:11px}
+.item svg{width:100%;height:100%;max-height:52px;display:block;overflow:visible;filter:drop-shadow(0 2px 4px rgba(45,35,25,.13))}
+.item b,.item-name{font-weight:600;font-size:11.5px;color:#2d2925;text-align:center;line-height:1.25;margin-top:2px}
+.item small,.item-dim{color:#857a6d;font-size:10.5px;background:#f7f3ed;border-radius:4px;padding:1px 6px;letter-spacing:.2px}
 .hint{padding:10px 14px 16px;color:var(--muted);font-size:12px}
 main{position:relative;overflow:hidden;background:var(--paper)}
-#plan{width:100%;height:100%;display:block;touch-action:none;cursor:default}
+#plan{width:100%;height:100%;display:block;touch-action:none;cursor:default;background:#f8f6f0}
 #plan.panning{cursor:grabbing}
 #plan.tool-measure{cursor:crosshair}
 #plan .wall{pointer-events:all;cursor:pointer}
@@ -68,8 +74,8 @@ main{position:relative;overflow:hidden;background:var(--paper)}
 #plan.tool-select .wall:hover{fill:#b5653a;opacity:.72}
 #plan.tool-demolish .wall:hover{fill:#d9894f}
 #plan.tool-select .room:hover{opacity:.82}
-#plan .furn{cursor:move}
-@media (hover:hover){#plan .furn:hover{filter:drop-shadow(0 0 2px rgba(181,101,58,.7))}}
+#plan .furn{cursor:move;filter:drop-shadow(0 3px 6px rgba(40,32,22,.16));transition:filter .18s ease}
+@media (hover:hover){#plan .furn:hover{filter:drop-shadow(0 5px 12px rgba(181,101,58,.45))}}
 [data-handle]{cursor:pointer}
 [data-handle=size]{cursor:nwse-resize}
 .scalebar{position:absolute;left:14px;bottom:12px;background:rgba(255,253,249,.92);border:1px solid var(--line);

@@ -350,190 +350,496 @@ function shade(h,k){ const f = v => Math.max(0,Math.min(255,Math.round(k>1 ? v+(
 function buildDefs(){
   const plank = (id,base,line) => `<pattern id="m-${id}" patternUnits="userSpaceOnUse" width="1800" height="360">
       <rect width="1800" height="360" fill="${base}"/>
-      <path d="M0 0H1800M0 180H1800M1200 0V180M600 180V360" stroke="${line}" stroke-width="10"/>
-      <path d="M100 70Q500 60 900 85T1700 75M200 260Q700 250 1100 275T1750 262" stroke="${line}" stroke-width="5" fill="none" opacity=".45"/></pattern>`;
+      <path d="M0 0H1800M0 180H1800M1200 0V180M600 180V360" stroke="${line}" stroke-width="8"/>
+      <path d="M100 70Q500 60 900 85T1700 75M200 260Q700 250 1100 275T1750 262" stroke="${line}" stroke-width="4" fill="none" opacity=".4"/></pattern>`;
   const tile = (id,size,base,line) => `<pattern id="m-${id}" patternUnits="userSpaceOnUse" width="${size}" height="${size}">
-      <rect width="${size}" height="${size}" fill="${base}"/><path d="M0 0H${size}M0 0V${size}" stroke="${line}" stroke-width="10"/></pattern>`;
+      <rect width="${size}" height="${size}" fill="${base}"/><path d="M0 0H${size}M0 0V${size}" stroke="${line}" stroke-width="8"/></pattern>`;
   $('#defs').innerHTML =
-    plank('wood','#dcc09a','#bf9d70') + plank('walnut','#a57c56','#80593a') +
-    tile('tile800',800,'#ece7de','#d3cabb') + tile('tile600',600,'#e2e6e3','#c4cbc6') + tile('antislip',300,'#d6dbd7','#b3bab4') +
+    plank('wood','#eedecb','#d8c2aa') + plank('walnut','#bda188','#9d8169') +
+    tile('tile800',800,'#f6f3ed','#e5dfd5') + tile('tile600',600,'#eef1ef','#d7ddd9') + tile('antislip',300,'#e5ebea','#cbd4d2') +
     `<pattern id="m-marble" patternUnits="userSpaceOnUse" width="1200" height="1200">
-      <rect width="1200" height="1200" fill="#f3f0ea"/><path d="M0 0H1200M0 0V1200" stroke="#dcd5c8" stroke-width="10"/>
-      <path d="M-50 300C250 260 380 520 700 470S1100 640 1260 600M200 1200C300 950 520 980 640 820" stroke="#d6cfc2" stroke-width="12" fill="none"/></pattern>
+      <rect width="1200" height="1200" fill="#faf8f5"/><path d="M0 0H1200M0 0V1200" stroke="#e8dfd5" stroke-width="8"/>
+      <path d="M-50 300C250 260 380 520 700 470S1100 640 1260 600M200 1200C300 950 520 980 640 820" stroke="#ded5c7" stroke-width="8" fill="none"/></pattern>
     <pattern id="m-terrazzo" patternUnits="userSpaceOnUse" width="500" height="500">
-      <rect width="500" height="500" fill="#e8e1d5"/>
-      <circle cx="60" cy="80" r="22" fill="#b9a58c"/><circle cx="310" cy="140" r="16" fill="#8fa3a0"/><circle cx="190" cy="330" r="26" fill="#c9b7a2"/>
-      <circle cx="420" cy="400" r="18" fill="#a88f76"/><circle cx="90" cy="440" r="12" fill="#8fa3a0"/><circle cx="440" cy="40" r="10" fill="#b9a58c"/></pattern>
+      <rect width="500" height="500" fill="#ece5da"/>
+      <circle cx="60" cy="80" r="18" fill="#b9a58c"/><circle cx="310" cy="140" r="14" fill="#8fa3a0"/><circle cx="190" cy="330" r="22" fill="#c9b7a2"/>
+      <circle cx="420" cy="400" r="16" fill="#a88f76"/><circle cx="90" cy="440" r="11" fill="#8fa3a0"/><circle cx="440" cy="40" r="9" fill="#b9a58c"/></pattern>
     <pattern id="m-carpet" patternUnits="userSpaceOnUse" width="120" height="120">
-      <rect width="120" height="120" fill="#c9c3d3"/><circle cx="30" cy="30" r="8" fill="#bab3c6"/><circle cx="90" cy="90" r="8" fill="#bab3c6"/></pattern>
+      <rect width="120" height="120" fill="#d9d4cc"/><circle cx="30" cy="30" r="8" fill="#c9c3ba"/><circle cx="90" cy="90" r="8" fill="#c9c3ba"/></pattern>
     <pattern id="grid" patternUnits="userSpaceOnUse" width="1000" height="1000">
-      <path d="M500 0V1000M0 500H1000" stroke="#e5dfd3" stroke-width="8"/><path d="M0 0V1000M0 0H1000" stroke="#d8d0c1" stroke-width="14"/></pattern>`;
+      <path d="M500 0V1000M0 500H1000" stroke="#eae4d8" stroke-width="8"/><path d="M0 0V1000M0 0H1000" stroke="#ddd6c9" stroke-width="14"/></pattern>
+    <filter id="furn-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#2a2219" flood-opacity="0.14"/>
+    </filter>`;
 }
 
-/* ======================= 家具圖例 ======================= */
-const ST = 'stroke="#3d3a34" stroke-width="1" vector-effect="non-scaling-stroke"';
+/* ======================= 家具圖例 (現代簡約 · 平面色塊風) ======================= */
+const ST = 'stroke="#443f3b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+const ST_FINE = 'stroke="#7d7368" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+const ST_FAINT = 'stroke="#b2a89c" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
 const rc = (x,y,w,h,f,ex='') => `<rect x="${x}" y="${y}" width="${Math.max(0,w)}" height="${Math.max(0,h)}" fill="${f}" ${ST} ${ex}/>`;
 const ec = (cx,cy,rx,ry,f,ex='') => `<ellipse cx="${cx}" cy="${cy}" rx="${Math.max(0,rx)}" ry="${Math.max(0,ry)}" fill="${f}" ${ST} ${ex}/>`;
 const ln = (x1,y1,x2,y2,ex='') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${ST} ${ex}/>`;
 const pa = (d,f='none',ex='') => `<path d="${d}" fill="${f}" ${ST} ${ex}/>`;
 const DASH = 'stroke-dasharray="4 3"';
 
+function plantSvg(cx, cy, r, potCol = '#c48a60', leafCol = '#5f8a69') {
+  let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${potCol}" ${ST}/>`;
+  const n = 8, lr = r * 0.75, lw = r * 0.38;
+  for (let k = 0; k < n; k++) {
+    const angle = (k * 360) / n;
+    const lcol = k % 2 === 0 ? leafCol : shade(leafCol, 1.14);
+    s += `<ellipse cx="${cx}" cy="${cy - r * 0.45}" rx="${lw}" ry="${lr}" transform="rotate(${angle} ${cx} ${cy})" fill="${lcol}" ${ST}/>`;
+  }
+  s += `<circle cx="${cx}" cy="${cy}" r="${r * 0.28}" fill="#3d5a44" ${ST}/>`;
+  return s;
+}
+
+function bookSvg(bx, by, bw, bh, col = '#475569', rot = 0) {
+  const trans = rot ? `transform="rotate(${rot} ${bx + bw/2} ${by + bh/2})"` : '';
+  return `<g ${trans}>
+    <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="2" fill="${col}" ${ST_FINE}/>
+    <rect x="${bx + 2}" y="${by + 2}" width="${bw - 4}" height="${bh - 4}" fill="#faf7f2" opacity="0.9"/>
+    <line x1="${bx + bw * 0.42}" y1="${by}" x2="${bx + bw * 0.42}" y2="${by + bh}" stroke="${col}" stroke-width="0.8"/>
+  </g>`;
+}
+
+function cupSvg(cx, cy, r = 26) {
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffffff" ${ST_FINE}/>
+    <circle cx="${cx}" cy="${cy}" r="${r * 0.72}" fill="#5a3d2e"/>
+    <path d="M${cx + r * 0.8} ${cy - r * 0.3} Q${cx + r * 1.5} ${cy} ${cx + r * 0.8} ${cy + r * 0.3}" fill="none" ${ST_FINE}/>`;
+}
+
+function laptopSvg(cx, cy, w = 240, d = 160) {
+  const x = cx - w / 2, y = cy - d / 2;
+  const kw = w * 0.82, kh = d * 0.46;
+  const kx = cx - kw / 2, ky = y + d * 0.15;
+  const tw = w * 0.28, th = d * 0.22;
+  const tx = cx - tw / 2, ty = y + d * 0.68;
+  return `<rect x="${x}" y="${y}" width="${w}" height="${d}" rx="8" fill="#d8dcde" ${ST}/>
+    <rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${d - 8}" rx="5" fill="#f1f3f5"/>
+    <rect x="${kx}" y="${ky}" width="${kw}" height="${kh}" rx="3" fill="#2d3748" ${ST_FINE}/>
+    <rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="2" fill="#cbd5e1" ${ST_FAINT}/>`;
+}
+
 function furnSVG(t,w,d,c){
   if(t==='customglb')return rc(-w/2,-d/2,w,d,'#dae7f2')+ln(-w/2,-d/2,w/2,d/2,'stroke="#547ca0"')+ln(w/2,-d/2,-w/2,d/2,'stroke="#547ca0"');
   const x = -w/2, y = -d/2, m = Math.min(w,d);
   switch (t){
     case 'balconyutility':case 'balconylounge':case 'balconygarden':case 'roomzone':
-      return rc(x,y,w,d,c)+rc(x+w*.08,y+d*.08,w*.84,d*.84,'none',DASH)+ (t==='balconylounge'?ec(0,0,w*.14,d*.23,'#ede3d1'):t==='balconygarden'?ec(-w*.22,0,w*.13,d*.22,'#72945a')+ec(w*.22,0,w*.13,d*.22,'#72945a'):t==='balconyutility'?rc(x+w*.1,y+d*.15,w*.25,d*.5,'#f1f1ef'):'');
-    case 'bench':return rc(x,y,w,d,c)+ln(x,y+d/3,x+w,y+d/3)+ln(x,y+d*2/3,x+w,y+d*2/3);
-    case 'wallbearing':case 'wallexterior':case 'wallpillar':return rc(x,y,w,d,c);
-    case 'wall': return rc(x,y,w,d,c,'rx="10"') + ln(x,y+d*.25,x+w,y+d*.25,'opacity=".35"') + ln(x,y+d*.75,x+w,y+d*.75,'opacity=".35"');
-    case 'walllow': return rc(x,y,w,d,c,'rx="14"') + ln(x,y+d*.5,x+w,y+d*.5,'opacity=".4"');
-    case 'wallglass': return rc(x,y,w,d,'rgba(185,220,233,.5)') + ln(x+w*.33,y,x+w*.33,y+d,'stroke="#4f7394"') + ln(x+w*.66,y,x+w*.66,y+d,'stroke="#4f7394"');
-    case 'wallcurve': return pa(`M${x} ${y+d}Q0 ${y-d*.4} ${x+w} ${y+d}`,c) + pa(`M${x} ${y+d}Q0 ${y-d*.4} ${x+w} ${y+d}`,'none','stroke="#3d3a34"');
+      return rc(x,y,w,d,c)+rc(x+w*.08,y+d*.08,w*.84,d*.84,'none',DASH)+ (t==='balconylounge'?ec(0,0,w*.14,d*.23,'#ede3d1'):t==='balconygarden'?plantSvg(-w*.22,0,w*.12,'#c48a60','#5c8766')+plantSvg(w*.22,0,w*.12,'#c48a60','#5c8766'):t==='balconyutility'?rc(x+w*.1,y+d*.15,w*.25,d*.5,'#f8fafc'):'');
+    case 'bench':
+      return rc(x,y,w,d,'#d8bea2','rx="8"')+ln(x+20,y+d/3,x+w-20,y+d/3,ST_FINE)+ln(x+20,y+d*2/3,x+w-20,y+d*2/3,ST_FINE);
+    case 'wallbearing':case 'wallexterior':case 'wallpillar':
+      return rc(x,y,w,d,c);
+    case 'wall':
+      return rc(x,y,w,d,c,'rx="6"') + ln(x,y+d*.25,x+w,y+d*.25,'opacity=".35"') + ln(x,y+d*.75,x+w,y+d*.75,'opacity=".35"');
+    case 'walllow':
+      return rc(x,y,w,d,c,'rx="6"') + ln(x,y+d*.5,x+w,y+d*.5,'opacity=".4"');
+    case 'wallglass':
+      return rc(x,y,w,d,'rgba(186,230,253,.45)') + ln(x+w*.33,y,x+w*.33,y+d,'stroke="#64748b"') + ln(x+w*.66,y,x+w*.66,y+d,'stroke="#64748b"');
+    case 'wallcurve':
+      return pa(`M${x} ${y+d}Q0 ${y-d*.4} ${x+w} ${y+d}`,c) + pa(`M${x} ${y+d}Q0 ${y-d*.4} ${x+w} ${y+d}`,'none','stroke="#443f3b"');
     case 'door': case 'dooropen': case 'doorentry': case 'doordouble': case 'doorslide': case 'doorfold': case 'doorglass': {
-      const s = rc(x,y,w,d,'#f5e5cd');
+      const s = rc(x,y,w,d,'#eedecb');
       if (t === 'dooropen' || t === 'doorentry') {
-        // 俯視開啟門符號：左側為有厚度的開啟門扇、下方為橘色門檻線，
-        // 虛線四分之一圓由門扇上端落到門檻右端。
-        // 註意：門扇的開啟半徑為門寬 w，不是門片厚度 d。
         const entry = t === 'doorentry';
         const hingeX = x, baseY = y + d / 2, r = w;
         const thickness = Math.min(Math.max(d * .85, 58), entry ? 145 : 115);
-        const wallShade = entry ? '#b8aea1' : '#d0c8ba';
-        const doorShade = entry ? '#8c8175' : '#a59d90';
-        // 左側實心門片（開啟 90 度），不再畫成細線，也不再畫底部黑色橫框。
+        const wallShade = entry ? '#a68c74' : '#c8ab8d';
+        const doorShade = entry ? '#7d634d' : '#9e856e';
         const openLeaf = `<rect x="${hingeX}" y="${baseY-r}" width="${thickness}" height="${r}" fill="${wallShade}"/>`
           + `<rect x="${hingeX}" y="${baseY-r}" width="${Math.max(thickness*.25,12)}" height="${r}" fill="${doorShade}" opacity=".85"/>`;
         const threshold = `<line x1="${hingeX}" y1="${baseY}" x2="${hingeX+r}" y2="${baseY}" stroke="${entry ? '#be6e3b' : '#c6794b'}" stroke-width="${entry?5:4}" vector-effect="non-scaling-stroke"/>`;
         const swing = `<path d="M ${hingeX} ${baseY-r} A ${r} ${r} 0 0 1 ${hingeX+r} ${baseY}" fill="none" stroke="#77716b" stroke-width="1.2" stroke-dasharray="6 5" vector-effect="non-scaling-stroke"/>`;
         return openLeaf + threshold + swing;
       }
-      if (t === 'doorslide' || t === 'doorglass') return rc(x,y,w,d,t==='doorglass'?'rgba(185,220,233,.5)':'#f5e5cd') + ln(0,y,0,y+d,'stroke="#7b5638"') + ln(x,y+d*.25,x+w,y+d*.25,'stroke="#7b5638"') + ln(x,y+d*.75,x+w,y+d*.75,'stroke="#7b5638"');
+      if (t === 'doorslide' || t === 'doorglass') return rc(x,y,w,d,t==='doorglass'?'rgba(186,230,253,.45)':'#eedecb') + ln(0,y,0,y+d,'stroke="#7b5638"') + ln(x,y+d*.25,x+w,y+d*.25,'stroke="#7b5638"') + ln(x,y+d*.75,x+w,y+d*.75,'stroke="#7b5638"');
       if (t === 'doorfold') return s + ln(x+w*.33,y,x+w*.33,y+d,'stroke="#7b5638"') + ln(x+w*.66,y,x+w*.66,y+d,'stroke="#7b5638"');
       if (t === 'doordouble') return s + ln(0,y,0,y+d,'stroke="#7b5638"') + pa(`M${x} ${y+d}A${w/2} ${w/2} 0 0 1 0 ${y}`, 'none', 'stroke="#7b5638"') + pa(`M${x+w} ${y+d}A${w/2} ${w/2} 0 0 0 0 ${y}`, 'none', 'stroke="#7b5638"');
       return s + pa(`M${x} ${y+d}A${w} ${w} 0 0 1 ${x+w} ${y}`, 'none', 'stroke="#7b5638"') + ln(x,y+d,x+w,y,'stroke="#7b5638"');
     }
     case 'windowproject': {
-      // 平面圖以 U 形側牆＋外側窗面表達真正往外推出的窗龕。
       const side = Math.min(w*.1, 140), back = Math.min(d*.18, 95);
-      return rc(x,y,w,d,'#e9e4dc')
-        + rc(x+side,y+back,w-side*2,d-back*2,'#eaf7fb')
-        + rc(x,y,side,d,'#b2aaa0') + rc(x+w-side,y,side,d,'#b2aaa0')
-        + rc(x,y+d-back,w,back,'#b9dce9')
-        + ln(0,y+d-back,0,y+d,'stroke="#4f7394"')
+      return rc(x,y,w,d,'#f5f0ea')
+        + rc(x+side,y+back,w-side*2,d-back*2,'#e8f4f8')
+        + rc(x,y,side,d,'#bdaea1') + rc(x+w-side,y,side,d,'#bdaea1')
+        + rc(x,y+d-back,w,back,'#bae6fd')
+        + ln(0,y+d-back,0,y+d,'stroke="#64748b"')
         + ln(x,y,x+w,y,'stroke="#655e56" stroke-dasharray="18 10"');
     }
     case 'windowbuilt': case 'window': case 'windowwide': case 'windowslide': case 'windowbay': case 'windowcorner': {
-      let s = rc(x,y,w,d,'#eaf7fb');
+      let s = rc(x,y,w,d,'#eaf5fb');
       const n = t === 'window' ? 1 : t === 'windowcorner' ? 3 : 2;
-      for (let i=1;i<n;i++) s += ln(x+w*i/n,y,x+w*i/n,y+d,'stroke="#4f7394"');
-      return s + ln(x,y+d*.25,x+w,y+d*.25,'stroke="#4f7394"') + ln(x,y+d*.75,x+w,y+d*.75,'stroke="#4f7394"');
+      for (let i=1;i<n;i++) s += ln(x+w*i/n,y,x+w*i/n,y+d,'stroke="#64748b"');
+      return s + ln(x,y+d*.25,x+w,y+d*.25,'stroke="#64748b"') + ln(x,y+d*.75,x+w,y+d*.75,'stroke="#64748b"');
     }
     case 'bed': {
-      let s = rc(x,y,w,d,'#fbf8f2','rx="30"') + rc(x,y,w,Math.min(90,d*.05),shade(c,.62),'rx="20"');
-      const ph = Math.min(360,d*.18), py = y+150;
-      if (w >= 1300){ const pw = (w-240)/2; s += rc(x+80,py,pw,ph,'#fff','rx="70"') + rc(x+160+pw,py,pw,ph,'#fff','rx="70"'); }
-      else s += rc(x+80,py,w-160,ph,'#fff','rx="70"');
-      const by = py+ph+110, bh = y+d-15-by;
-      s += rc(x+15,by,w-30,bh,c,'rx="40"') + pa(`M${x+15} ${by+300}H${x+w-15}`,'none',DASH);
-      s += pa(`M${x+w-15-Math.min(420,w*.3)} ${by}L${x+w-15} ${by}L${x+w-15} ${by+Math.min(420,w*.3)}Z`, shade(c,1.12));
-      return s;
+      if (w < 1350) {
+        // 單人床 (90 × 200 風格)：粉綠色折疊棉被、白枕頭、淡木床框
+        const pw = Math.min(w - 160, 520), ph = Math.min(270, d * 0.16);
+        const px = x + (w - pw) / 2, py = y + 105;
+        const by = y + d * 0.46, bh = y + d - 30 - by;
+        return rc(x, y, w, 70, '#c8ab8d', 'rx="6"') // 床頭板
+          + rc(x + 10, y + 60, w - 20, d - 70, '#d4bca2', 'rx="16"') // 床框
+          + rc(x + 22, y + 72, w - 44, d - 92, '#faf8f5', 'rx="12"') // 床單
+          + rc(px, py, pw, ph, '#ffffff', 'rx="28"') // 枕頭
+          + ln(px + pw * 0.3, py + ph / 2, px + pw * 0.7, py + ph / 2, ST_FAINT) // 枕頭折痕
+          + rc(x + 22, by, w - 44, bh, '#8ea896', 'rx="12"') // 粉綠色棉被
+          + rc(x + 22, by, w - 44, 75, '#9eb8a5', 'rx="8"') // 棉被反折
+          + ln(x + 30, by + 75, x + w - 30, by + 75, 'stroke="#6b8f75" stroke-dasharray="8 6"')
+          + rc(x + 10, y + d - 18, w - 20, 14, '#c8ab8d', 'rx="4"'); // 床尾框
+      }
+      // 雙人床 (150 × 200 / 180 × 200 風格)：雙枕頭、暖燕麥翻褶棉被、焦糖奶茶色床尾巾
+      const pw = (w - 160) / 2, ph = Math.min(300, d * 0.17), py = y + 115;
+      const dy = py + ph + 35;
+      const ry = y + d * 0.58, rh = y + d - 30 - ry;
+      return rc(x, y, w, 80, '#c8ab8d', 'rx="8"') // 床頭板
+        + rc(x + 10, y + 70, w - 20, d - 80, '#d4bca2', 'rx="18"') // 床框
+        + rc(x + 22, y + 82, w - 44, d - 102, '#faf8f5', 'rx="14"') // 白色床單
+        + rc(x + 35, py, pw - 20, ph, '#ffffff', 'rx="30"') // 左枕頭
+        + ln(x + 55, py + ph / 2, x + 15 + pw, py + ph / 2, ST_FAINT)
+        + rc(x + 55 + pw, py, pw - 20, ph, '#ffffff', 'rx="30"') // 右枕頭
+        + ln(x + 75 + pw, py + ph / 2, x + 35 + 2 * pw, py + ph / 2, ST_FAINT)
+        + rc(x + 22, dy, w - 44, y + d - 30 - dy, '#f4efe8', 'rx="14"') // 翻摺棉被
+        + rc(x + 22, ry, w - 44, rh, '#d5bfab', 'rx="14"') // 暖駝色床尾飾巾
+        + rc(x + 22, ry, w - 44, 80, '#e2cfbd', 'rx="8"')
+        + ln(x + 30, ry + 80, x + w - 30, ry + 80, 'stroke="#b59c86" stroke-dasharray="10 8"')
+        + rc(x + 10, y + d - 18, w - 20, 14, '#c8ab8d', 'rx="4"'); // 床尾框
     }
-    case 'sofa': case 'armchair': {
-      const b = d*.24, a = Math.min(200,w*.13), n = t==='armchair' ? 1 : (w>2200 ? 3 : 2), cw = (w-2*a)/n, dk = shade(c,.85);
-      let s = rc(x,y,w,d,dk,'rx="60"');
-      for (let i=0;i<n;i++) s += rc(x+a+i*cw,y+b,cw,d-b-40,c,'rx="40"');
-      return s + rc(x,y,w,b,dk,'rx="50"') + rc(x,y,a,d,dk,'rx="50"') + rc(x+w-a,y,a,d,dk,'rx="50"');
+    case 'sofa': {
+      const col = c || '#ede8df';
+      const aw = Math.min(180, Math.max(110, w * 0.11)), bd = Math.min(220, Math.max(140, d * 0.25));
+      const n = w >= 1900 ? 3 : 2, cw = (w - 2 * aw - 28) / n;
+      let s = rc(x, y, w, d, shade(col, 0.94), 'rx="24"') // 沙發主體圓角輪廓
+        + rc(x + 10, y + 10, w - 20, bd, col, 'rx="18"') // 靠背
+        + rc(x + 10, y + 10, aw, d - 20, col, 'rx="18"') // 左扶手
+        + rc(x + w - aw - 10, y + 10, aw, d - 20, col, 'rx="18"'); // 右扶手
+      for (let i = 0; i < n; i++) {
+        const cx_i = x + aw + 14 + i * cw;
+        s += rc(cx_i, y + bd + 10, cw, d - bd - 22, shade(col, 1.04), 'rx="16"')
+          + ln(cx_i + 12, y + d - 25, cx_i + cw - 12, y + d - 25, ST_FAINT);
+      }
+      // 右扶手上的焦糖奶茶色抱枕（傾斜點綴）
+      const pw = Math.min(220, w * 0.12), ph = Math.min(180, d * 0.22);
+      const px = x + w - aw - pw - 15, py = y + bd + 20;
+      s += `<g transform="rotate(-18 ${px + pw/2} ${py + ph/2})">
+        <rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="14" fill="#cbb094" ${ST}/>
+        <line x1="${px + pw*0.25}" y1="${py + ph/2}" x2="${px + pw*0.75}" y2="${py + ph/2}" stroke="#a88c70" stroke-width="1.2"/>
+      </g>`;
+      return s;
     }
     case 'cornersofa': {
-      const k = Math.min(950,d*.56,w*.4), b = 220, dk = shade(c,.85);
-      let s = pa(`M${x} ${y}H${x+w}V${y+k}H${x+k}V${y+d}H${x}Z`, dk);
-      const cw = (w-b-200)/2;
-      s += rc(x+b,y+b,cw,k-b-30,c,'rx="40"') + rc(x+b+cw,y+b,cw,k-b-30,c,'rx="40"') + rc(x+b,y+k,k-b-30,d-k-200,c,'rx="40"');
-      return s + rc(x,y,w,b,dk,'rx="50"') + rc(x,y,b,d,dk,'rx="50"') + rc(x+w-200,y,200,k,dk,'rx="50"') + rc(x,y+d-200,k,200,dk,'rx="50"');
+      // L 型沙發 (270 × 200 風格)：圓角轉角、雙抱枕、雅緻米白座墊
+      const col = c || '#ede8df';
+      const cw = Math.min(1050, w * 0.38), sd = Math.min(950, d * 0.48), b = 180;
+      let s = pa(`M${x+30} ${y} H${x+w-50} Q${x+w} ${y} ${x+w} ${y+50} V${y+d-30} Q${x+w} ${y+d} ${x+w-30} ${y+d} H${x+w-cw+30} Q${x+w-cw} ${y+d} ${x+w-cw} ${y+d-30} V${y+sd+30} Q${x+w-cw} ${y+sd} ${x+w-cw-30} ${y+sd} H${x+30} Q${x} ${y+sd} ${x} ${y+sd-30} V${y+30} Q${x} ${y} ${x+30} ${y} Z`, shade(col, 0.94));
+      // 靠背
+      s += rc(x + 10, y + 10, w - 20, b, col, 'rx="16"')
+        + rc(x + w - b - 10, y + 10, b, d - 20, col, 'rx="16"')
+        + rc(x + 10, y + 10, b, sd - 20, col, 'rx="16"');
+      // 座墊分割
+      const n = 2, mw = (w - cw - b - 20) / n;
+      for (let i = 0; i < n; i++) s += rc(x + b + 10 + i * mw, y + b + 10, mw, sd - b - 20, shade(col, 1.04), 'rx="14"');
+      s += rc(x + w - cw + 10, y + b + 10, cw - b - 20, d - b - 20, shade(col, 1.04), 'rx="16"');
+      // 2 顆灰綠色抱枕（角落與左側）
+      const p1x = x + b + 15, p1y = y + b + 25;
+      s += `<g transform="rotate(22 ${p1x + 70} ${p1y + 60})"><rect x="${p1x}" y="${p1y}" width="140" height="120" rx="12" fill="#76937f" ${ST}/></g>`;
+      const p2x = x + w - cw - 40, p2y = y + b + 25;
+      s += `<g transform="rotate(-25 ${p2x + 70} ${p2y + 60})"><rect x="${p2x}" y="${p2y}" width="140" height="120" rx="12" fill="#76937f" ${ST}/></g>`;
+      return s;
     }
-    case 'nightstand': return rc(x,y,w,d,c,'rx="30"') + `<circle r="${m*.24}" fill="#fff6dd" ${ST}/>` + `<circle r="${m*.08}" fill="${shade(c,.8)}" ${ST}/>`;
+    case 'armchair': {
+      // 扶手椅 (80 × 80 風格)：曲面包覆筒型椅搭配蓬鬆圓墊
+      return `<path d="M${x+35} ${y+d*0.75} A${w/2-30} ${d/2-30} 0 1 1 ${x+w-35} ${y+d*0.75}" fill="none" stroke="#6b8f75" stroke-width="${Math.min(170, w*0.22)}" stroke-linecap="round"/>`
+        + ec(0, d*0.06, w*0.35, d*0.35, '#8ea896')
+        + ec(0, d*0.06, w*0.07, d*0.07, '#5c7d65');
+    }
+    case 'nightstand': {
+      // 床頭櫃 (45 × 45 風格)：淡木色圓角方桌、圓形暖色小夜燈、精緻書籍
+      return rc(x, y, w, d, '#d8bea2', 'rx="16"')
+        + rc(x + 12, y + 12, w - 24, d - 24, '#dfcbb5', 'rx="12"')
+        + `<circle cx="${x + w * 0.72}" cy="${y + d * 0.35}" r="${w * 0.22}" fill="#fff6dd" ${ST}/>`
+        + `<circle cx="${x + w * 0.72}" cy="${y + d * 0.35}" r="${w * 0.13}" fill="#ffeed0" ${ST_FINE}/>`
+        + `<circle cx="${x + w * 0.72}" cy="${y + d * 0.35}" r="${w * 0.06}" fill="#e5a86a"/>`
+        + bookSvg(x + w * 0.14, y + d * 0.48, w * 0.38, d * 0.36, '#475569', -12);
+    }
     case 'wardrobe': {
-      let s = rc(x,y,w,d,c) + ln(x+50,0,x+w-50,0);
-      for (let hx = x+160; hx < x+w-100; hx += 180) s += ln(hx-45,-d*.28,hx+45,d*.28,'opacity=".6"');
+      // 衣櫃 (180 × 60 風格)：淡雅木紋、三門均分、俐落把手
+      const n = w >= 1500 ? 3 : 2, pw = (w - 20) / n;
+      let s = rc(x, y, w, d, '#c8ab8d', 'rx="8"');
+      for (let i = 0; i < n; i++) {
+        const px = x + 10 + i * pw;
+        s += rc(px, y + 10, pw, d - 20, '#dfcbba', 'rx="4"')
+          + ln(px + pw - 25, y + d/2 - 40, px + pw - 25, y + d/2 + 40, 'stroke="#6e5d50" stroke-width="2.5"')
+          + ln(px + 30, y + 30, px + pw - 30, y + d - 30, ST_FAINT);
+      }
       return s;
     }
-    case 'cabinet': case 'shoecab': return rc(x,y,w,d,c) + ln(x,y+d,x+w,y);
-    case 'dresser': return rc(x,y,w,d,c,'rx="20"') + rc(x+w*.2,y,w*.6,55,'#dfe9ee') + ec(0,d/2+180,160,140,shade(c,.9));
-    case 'desk': return rc(x,y,w,d,c,'rx="20"') + rc(-w*.18,y+50,w*.36,45,'#555') + rc(-w*.14,y+d*.45,w*.28,d*.28,'#f4f4f4','rx="10"');
-    case 'chair': return rc(x+25,y+d*.16,w-50,d*.84-10,c,'rx="60"') + rc(x,y,w,d*.2,shade(c,.78),'rx="40"');
-    case 'bookshelf': { let s = rc(x,y,w,d,c); for (let bx = x+400; bx < x+w-50; bx += 400) s += ln(bx,y,bx,y+d); return s; }
-    case 'baycushion': return rc(x,y,w,d,c,'rx="60"') + rc(x+60,y+80,w-120,Math.min(300,d*.2),'#fff','rx="60"') + rc(x+60,y+d-80-Math.min(300,d*.2),w-120,Math.min(300,d*.2),'#fff','rx="60"');
-    case 'coffeetable': return rc(x,y,w,d,c,'rx="80"') + rc(x+60,y+60,w-120,d-120,shade(c,1.06),'rx="50"');
-    case 'tvstand': return rc(x,y,w,d,c) + rc(x+w*.15,y+30,w*.7,55,'#3a3a3a');
-    case 'rug': return rc(x,y,w,d,c,'rx="40" fill-opacity=".6"') + rc(x+90,y+90,w-180,d-180,'none','rx="30" stroke-dasharray="3 3" opacity=".6"');
-    case 'plant': {
-      let s = `<circle r="${m/2}" fill="${c}" fill-opacity=".85" ${ST}/>`;
-      for (let k=0;k<8;k++) s += `<ellipse cx="0" cy="${-m*.27}" rx="${m*.1}" ry="${m*.21}" transform="rotate(${k*45})" fill="${shade(c,.8)}" ${ST}/>`;
-      return s + `<circle r="${m*.1}" fill="#8a6a4a" ${ST}/>`;
+    case 'desk': {
+      // 書桌 (140 × 60 風格)：溫潤木桌、筆記型電腦 (鍵盤/觸控板)、咖啡杯、盆栽
+      const lw = Math.min(340, w * 0.26), ld = Math.min(220, d * 0.4);
+      return rc(x, y, w, d, '#d8bea2', 'rx="12"')
+        + rc(x + 12, y + 12, w - 24, d - 24, '#dfcbb5', 'rx="8"')
+        + laptopSvg(0, 0, lw, ld)
+        + cupSvg(x + w - 160, 0, Math.min(38, d * 0.08))
+        + plantSvg(x + 160, 0, Math.min(70, d * 0.14), '#c48a60', '#5c8766');
     }
-    case 'table': return rc(x,y,w,d,c,'rx="30"') + rc(x+50,y+50,w-100,d-100,'none','rx="20" opacity=".4"');
-    case 'roundtable': return ec(0,0,w/2,d/2,c) + ec(0,0,w/2-50,d/2-50,'none','opacity=".4"');
-    case 'counter': return rc(x,y,w,d,c) + ln(x,y+d-40,x+w,y+d-40,DASH);
-    case 'stove': {
-      let s = rc(x,y,w,d,'#2f2f2f','rx="20"'); const r = m*.26;
-      const pts = w/d > 1.4 ? [[-w/4,0],[w/4,0]] : [[-w/4,-d/4],[w/4,-d/4],[-w/4,d/4],[w/4,d/4]];
-      pts.forEach(([px,py]) => s += `<circle cx="${px}" cy="${py}" r="${r}" fill="none" stroke="#bbb" stroke-width="1" vector-effect="non-scaling-stroke"/><circle cx="${px}" cy="${py}" r="${r*.45}" fill="#666"/>`);
-      return s;
-    }
-    case 'ksink': return rc(x,y,w,d,c,'rx="20"') + rc(x+w*.06,y+d*.18,w*.42,d*.66,'#fff','rx="50"') + rc(x+w*.52,y+d*.18,w*.42,d*.66,'#fff','rx="50"') + `<circle cx="0" cy="${y+d*.09}" r="22" fill="#999"/>`;
-    case 'fridge': return rc(x,y,w,d,c,'rx="30"') + ln(x,y+d*.14,x+w,y+d*.14) + ln(0,y+d*.14,0,y+d) + rc(-70,y+d*.5,40,d*.25,'#aab') + rc(30,y+d*.5,40,d*.25,'#aab');
-    case 'toilet': return rc(x+w*.04,y,w*.92,d*.27,c,'rx="30"') + ec(0,y+d*.27+d*.36,w*.47,d*.36,c) + ec(0,y+d*.27+d*.4,w*.3,d*.24,'#eef4f7');
-    case 'bidettoilet': return rc(x+w*.04,y,w*.92,d*.28,'#f1f3f3','rx="45"') + rc(x+w*.12,y+d*.13,w*.76,d*.075,'#dadfe0','rx="14"') + ec(0,y+d*.63,w*.47,d*.34,c) + ec(0,y+d*.63,w*.37,d*.26,'#e1e5e5') + ec(0,y+d*.63,w*.29,d*.20,'#f8faf9') + rc(x+w*.78,y+d*.44,w*.18,d*.23,'#e7edef','rx="12"') + `<circle cx="${x+w*.87}" cy="${y+d*.52}" r="${Math.max(8,w*.027)}" fill="#80a7ae"/>`;
-    case 'vanity': return rc(x,y,w,d,c,'rx="20"') + ec(0,y+d*.57,Math.min(w*.32,260),d*.28,'#fff') + `<circle cx="0" cy="${y+d*.17}" r="26" fill="#999"/>`;
-    case 'shower': return rc(x,y,w,d,c) + ln(x,y,x+w,y+d,DASH) + ln(x+w,y,x,y+d,DASH) + `<circle r="45" fill="#fff" ${ST}/>`;
-    case 'bathtub': return rc(x,y,w,d,c,'rx="40"') + rc(x+80,y+80,w-160,d-160,'#fff',`rx="${m*.33}"`) + `<circle cx="${x+w-260}" cy="0" r="35" fill="#ccc" ${ST}/>`;
-    case 'washer': case 'dryer': return rc(x,y,w,d,c,'rx="30"') + rc(x,y,w,d*.14,shade(c,.9)) + `<circle cy="${d*.06}" r="${m*.34}" fill="#fff" ${ST}/><circle cy="${d*.06}" r="${m*.24}" fill="${t==='dryer'?'#e9dccb':'#cfdde4'}" ${ST}/>`;
-    case 'crib': {
-      let s = rc(x,y,w,d,c,'rx="20"') + rc(x+45,y+45,w-90,d-90,'#fff','rx="20"');
-      for (let sx = x+90; sx < x+w-60; sx += 90) s += ln(sx,y,sx,y+45,'opacity=".5"') + ln(sx,y+d-45,sx,y+d,'opacity=".5"');
-      return s;
-    }
-    case 'beanbag': return ec(0,0,w/2,d/2,c) + ec(-w*.04,-d*.06,w*.3,d*.28,shade(c,1.12),'opacity=".9"');
-    case 'sidetable': return ec(0,0,w/2,d/2,c) + ec(0,0,w*.12,d*.12,'none','opacity=".5"');
-    case 'floorlamp': return `<circle r="${m*.5}" fill="#fff6dd" fill-opacity=".85" ${ST}/>` + `<circle r="${m*.32}" fill="none" ${ST} ${DASH}/>` + `<circle r="${m*.07}" fill="${c}" ${ST}/>`;
-    case 'island': return rc(x,y,w,d,c) + ln(x,y+d-250,x+w,y+d-250,DASH);
-    case 'barstool': return `<circle r="${m/2}" fill="${c}" ${ST}/><circle r="${m*.3}" fill="${shade(c,1.15)}" ${ST}/>`;
-    case 'waterheater': return rc(x,y,w,d,c,`rx="${d/2}" ${DASH}`) + ln(x+w*.2,0,x+w*.8,0,DASH);
-    case 'tv': return rc(x,y,w,d,c,'rx="10"') + rc(x+w*.3,y+d,w*.4,Math.min(40,d),'#666');
-    case 'aircon': return rc(x,y,w,d,c,'rx="30"') + ln(x+40,y+d*.72,x+w-40,y+d*.72) + ln(x+40,y+d*.86,x+w-40,y+d*.86);
-    case 'acwall': {
-      let s = rc(x,y,w,d,c,`rx="30" ${DASH}`);
-      [.25,.5,.75].forEach(k => s += ln(x+w*k,y+d,x+w*k,y+d+200,`${DASH} opacity=".6"`));
-      return s;
-    }
-    case 'dishwasher': return rc(x,y,w,d,c,'rx="15"') + ln(x,y+d-70,x+w,y+d-70) + rc(x+w*.3,y+d-45,w*.4,25,'#888');
-    case 'ovencol': return rc(x,y,w,d,c) + ln(x,y,x+w,y+d) + ln(x+w,y,x,y+d);
-    case 'purifier': return rc(x,y,w,d,c,'rx="60"') + rc(x+45,y+45,w-90,d-90,'none',`rx="40" ${DASH}`);
     case 'officechair': {
+      // 辦公椅 (65 × 65 風格)：人體工學曲線靠背、五星滾輪底座、扶手與頭枕
       let s = '';
-      for (let k = 0; k < 5; k++) s += `<line x1="0" y1="0" x2="0" y2="${m*.48}" transform="rotate(${k*72+36})" stroke="#555" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
-      return s + rc(x+w*.12,y+d*.22,w*.76,d*.66,c,'rx="80"') + rc(x+w*.15,y+d*.04,w*.7,d*.16,shade(c,.78),'rx="40"')
-        + rc(x+w*.02,y+d*.3,w*.1,d*.45,shade(c,.7),'rx="30"') + rc(x+w*.88,y+d*.3,w*.1,d*.45,shade(c,.7),'rx="30"');
+      for (let k = 0; k < 5; k++) s += `<line x1="0" y1="0" x2="0" y2="${m * 0.48}" transform="rotate(${k * 72})" stroke="#475569" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+        <circle cx="0" cy="${m * 0.48}" r="12" transform="rotate(${k * 72})" fill="#1e293b"/>`;
+      return s + rc(x + w * 0.14, y + d * 0.22, w * 0.72, d * 0.56, '#8a95a5', 'rx="32"') // 座墊
+        + rc(x + w * 0.18, y + d * 0.06, w * 0.64, d * 0.18, '#6b7787', 'rx="16"') // 靠背
+        + rc(x + w * 0.3, y - d * 0.04, w * 0.4, d * 0.1, '#535c69', 'rx="10"') // 頭枕
+        + rc(x + w * 0.04, y + d * 0.3, w * 0.1, d * 0.36, '#475569', 'rx="14"') // 左扶手
+        + rc(x + w * 0.86, y + d * 0.3, w * 0.1, d * 0.36, '#475569', 'rx="14"'); // 右扶手
+    }
+    case 'chair': {
+      // 餐椅 (50 × 50 風格)：圓弧椅背與乾燥玫瑰暖紅/灰綠軟墊
+      return rc(x + 20, y, w - 40, d * 0.22, '#5c534b', 'rx="12"')
+        + rc(x + 25, y + d * 0.18, w - 50, d * 0.76, c || '#b87462', 'rx="22"')
+        + ln(x + 40, y + d - 20, x + w - 40, y + d - 20, ST_FAINT);
+    }
+    case 'table': {
+      // 四人餐桌 (140 × 80 風格)：淡木圓角長餐桌、中央盆栽、周圍四張包覆餐椅
+      const col = c || '#d8bea2';
+      let s = rc(x + w * 0.05, y, w * 0.9, d, col, 'rx="24"')
+        + rc(x + w * 0.05 + 12, y + 12, w * 0.9 - 24, d - 24, '#dfcbb5', 'rx="18"')
+        + plantSvg(0, 0, Math.min(w, d) * 0.16, '#c48a60', '#5c8766');
+      // 上下側餐椅 (乾燥玫瑰色軟座＋椅背)
+      const cw = Math.min(280, w * 0.22), cd = Math.min(160, d * 0.22);
+      s += rc(-w * 0.28, y - cd * 0.55, cw, cd, '#b87462', 'rx="18"')
+        + rc(w * 0.06, y - cd * 0.55, cw, cd, '#b87462', 'rx="18"')
+        + rc(-w * 0.28, y + d - cd * 0.45, cw, cd, '#b87462', 'rx="18"')
+        + rc(w * 0.06, y + d - cd * 0.45, cw, cd, '#b87462', 'rx="18"');
+      // 若是 6 人餐桌左右兩側再增加椅子
+      if (w >= 1700) {
+        s += rc(x - cd * 0.4, -cw * 0.5, cd, cw, '#b87462', 'rx="18"')
+          + rc(x + w - cd * 0.6, -cw * 0.5, cd, cw, '#b87462', 'rx="18"');
+      }
+      return s;
+    }
+    case 'roundtable': {
+      // 圓桌：淡木圓頂、中央盆栽、四方弧形餐椅
+      let s = ec(0, 0, w/2, d/2, '#d8bea2') + ec(0, 0, w/2 - 14, d/2 - 14, '#dfcbb5')
+        + plantSvg(0, 0, w * 0.16, '#c48a60', '#5c8766');
+      const r = w/2, cr = w * 0.16;
+      s += ec(0, -r - cr * 0.3, cr * 1.3, cr * 0.7, '#b87462')
+        + ec(0, r + cr * 0.3, cr * 1.3, cr * 0.7, '#b87462')
+        + ec(-r - cr * 0.3, 0, cr * 0.7, cr * 1.3, '#b87462')
+        + ec(r + cr * 0.3, 0, cr * 0.7, cr * 1.3, '#b87462');
+      return s;
+    }
+    case 'coffeetable': {
+      if (Math.abs(w - d) < 120) {
+        // 圓形茶几 (Ø 80 風格)：大理石紋圓台面、書籍、多肉小盆栽
+        return ec(0, 0, w/2, d/2, '#f8f8f7')
+          + pa(`M${-w*0.2} ${-d*0.3} Q${0} ${-d*0.1} ${w*0.3} ${-d*0.25}`, 'none', 'stroke="#e5e5e5" stroke-width="1.5"')
+          + bookSvg(-w * 0.28, -d * 0.12, w * 0.28, d * 0.36, '#475569', -12)
+          + plantSvg(w * 0.2, -d * 0.14, w * 0.15, '#c48a60', '#5c8766');
+      }
+      // 異形／花生豆型茶几 (120 × 60 風格)：柔和天然木質曲面、精巧書籍
+      return `<path d="M${x+w*0.2} ${y+12} C${x+w*0.5} ${y+d*0.22} ${x+w*0.8} ${y+12} ${x+w-20} ${y+d*0.35} C${x+w} ${y+d*0.75} ${x+w*0.75} ${y+d-12} ${x+w*0.48} ${y+d-28} C${x+w*0.25} ${y+d-15} ${x+15} ${y+d*0.8} ${x+15} ${y+d*0.4} C${x+15} ${y+d*0.15} ${x+w*0.08} ${y+12} ${x+w*0.2} ${y+12}Z" fill="#d8bea2" ${ST}/>`
+        + bookSvg(-w * 0.08, -d * 0.12, w * 0.24, d * 0.38, '#475569', -15);
+    }
+    case 'sidetable': {
+      return ec(0, 0, w/2, d/2, '#f8f8f7') + ec(0, 0, w/2 - 10, d/2 - 10, '#f0efe9')
+        + plantSvg(0, 0, w * 0.22, '#c48a60', '#5c8766');
+    }
+    case 'tvstand': {
+      // 電視櫃 (200 × 40 風格)：淡木櫃體、極窄邊框電視、端側綠植盆栽
+      return rc(x, y, w, d, '#d8bea2', 'rx="10"')
+        + rc(x + 10, y + 10, w - 20, d - 20, '#dfcbb5', 'rx="6"')
+        + rc(-180, y + d * 0.44, 360, d * 0.14, '#2d3748', 'rx="4"') // 電視底座
+        + rc(-w * 0.28, y + d * 0.4, w * 0.56, d * 0.1, '#1a202c', 'rx="3"') // 電視本體
+        + plantSvg(x + w - 180, 0, d * 0.22, '#c48a60', '#5c8766');
+    }
+    case 'bookshelf': {
+      // 書架／書櫃 (180 × 30 風格)：整齊多彩書脊、中央點綴綠植
+      let s = rc(x, y, w, d, '#d8bea2', 'rx="6"');
+      const bookCols = ['#f8fafc','#475569','#b87462','#76937f','#d8bea2','#334155','#e2e8f0','#c48a60'];
+      let bx = x + 30;
+      while (bx < -120) {
+        const bw = 35 + ((bx * 7) % 25);
+        s += rc(bx, y + 10, bw, d - 20, bookCols[Math.abs(bx) % bookCols.length], 'rx="2"');
+        bx += bw + 8;
+      }
+      s += plantSvg(0, 0, d * 0.32, '#c48a60', '#5c8766');
+      bx = 120;
+      while (bx < x + w - 40) {
+        const bw = 35 + ((bx * 11) % 25);
+        s += rc(bx, y + 10, bw, d - 20, bookCols[Math.abs(bx) % bookCols.length], 'rx="2"');
+        bx += bw + 8;
+      }
+      return s;
+    }
+    case 'cabinet': case 'shoecab': {
+      // 收納櫃／玄關櫃 (120 × 40 風格)：木質收納格、格柵門紋、桌面綠植托盤
+      let s = rc(x, y, w, d, '#d8bea2', 'rx="8"')
+        + rc(x + 10, y + 10, w * 0.38, d - 20, '#dfcbb5', 'rx="4"')
+        + rc(x + w * 0.38 + 15, y + 10, w * 0.62 - 25, d - 20, '#ebe1d3', 'rx="4"');
+      for (let fx = x + w * 0.38 + 35; fx < x + w - 25; fx += 35) {
+        s += ln(fx, y + 12, fx, y + d - 12, ST_FAINT);
+      }
+      return s + plantSvg(x + w - 140, 0, d * 0.22, '#c48a60', '#5c8766');
+    }
+    case 'dresser': {
+      return rc(x, y, w, d, '#d8bea2', 'rx="10"')
+        + rc(x + 10, y + 10, w - 20, d - 20, '#dfcbb5', 'rx="6"')
+        + ln(x + w * 0.15, y + 25, x + w * 0.85, y + 25, 'stroke="#64748b" stroke-width="2"')
+        + ec(0, d/2 + 180, 160, 140, '#dfcbb5');
+    }
+    case 'counter': {
+      // 廚房檯面 (240 × 60 風格)：白色石英石台面、嵌入式不銹鋼水槽、雙口黑晶感應爐
+      return rc(x, y, w, d, '#f8f8f7', 'rx="8"')
+        + rc(x + 120, y + 70, 560, d - 140, '#cbd5e1', 'rx="16"') // 水槽外框
+        + rc(x + 140, y + 90, 520, d - 180, '#94a3b8', 'rx="12"') // 水槽槽體
+        + `<circle cx="${x + 400}" cy="0" r="32" fill="#e2e8f0" ${ST_FINE}/>` // 排水孔
+        + `<circle cx="${x + 400}" cy="${y + 45}" r="24" fill="#cbd5e1" ${ST}/>` // 水龍頭
+        + rc(x + w - 850, y + 65, 720, d - 130, '#1f2937', 'rx="12"') // 黑晶瓦斯/感應爐
+        + `<circle cx="${x + w - 670}" cy="0" r="140" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${x + w - 670}" cy="0" r="65" fill="#374151" ${ST_FINE}/>`
+        + `<circle cx="${x + w - 310}" cy="0" r="140" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${x + w - 310}" cy="0" r="65" fill="#374151" ${ST_FINE}/>`;
+    }
+    case 'island': {
+      // 中島 (180 × 90 風格)：大理石瀑布島台、嵌入式洗滌槽、3 張草綠色高腳吧椅
+      return rc(x, y, w, d, '#f8f8f7', 'rx="12"')
+        + rc(-300, y + 100, 600, 400, '#cbd5e1', 'rx="16"')
+        + `<circle cx="0" cy="${y + 300}" r="30" fill="#e2e8f0" ${ST_FINE}/>`
+        + `<circle cx="0" cy="${y + 60}" r="24" fill="#94a3b8" ${ST}/>`
+        + ec(-w * 0.28, y + d + 30, 150, 95, '#76937f')
+        + ec(0, y + d + 30, 150, 95, '#76937f')
+        + ec(w * 0.28, y + d + 30, 150, 95, '#76937f');
+    }
+    case 'barstool': {
+      return ec(0, 0, w/2, d/2, '#76937f') + ec(0, -d * 0.12, w * 0.38, d * 0.22, '#8ea896');
+    }
+    case 'stove': {
+      return rc(x, y, w, d, '#1f2937', 'rx="12"')
+        + `<circle cx="${-w/4}" cy="0" r="${m*0.3}" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${-w/4}" cy="0" r="${m*0.14}" fill="#374151"/>`
+        + `<circle cx="${w/4}" cy="0" r="${m*0.3}" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${w/4}" cy="0" r="${m*0.14}" fill="#374151"/>`;
+    }
+    case 'ksink': {
+      return rc(x, y, w, d, '#d5d9dd', 'rx="12"')
+        + rc(x + 50, y + 60, w - 100, d - 120, '#94a3b8', 'rx="14"')
+        + `<circle cx="0" cy="0" r="30" fill="#e2e8f0" ${ST_FINE}/>`
+        + `<circle cx="0" cy="${y + 35}" r="22" fill="#cbd5e1" ${ST}/>`;
+    }
+    case 'fridge': {
+      // 冰箱 (70 × 70 風格)：拉絲鉑銀質感、下層冷凍抽屜縫線、極簡把手
+      return rc(x, y, w, d, '#d5d9dd', 'rx="14"')
+        + ln(x + 10, y + d * 0.68, x + w - 10, y + d * 0.68, 'stroke="#8a9299" stroke-width="2.5"')
+        + rc(x + w * 0.2, y + d * 0.64, w * 0.6, 20, '#64748b', 'rx="4"');
+    }
+    case 'washer': case 'dryer': {
+      // 洗衣機 (60 × 60 風格)：純白機身、大圓黑鏡門蓋＋金屬圈、上方旋鈕控制板
+      return rc(x, y, w, d, '#ffffff', 'rx="14"')
+        + ln(x + 10, y + 100, x + w - 10, y + 100, ST_FINE)
+        + `<circle cx="${x + w - 130}" cy="${y + 50}" r="24" fill="#e2e8f0" ${ST_FINE}/>`
+        + rc(x + 40, y + 36, 120, 28, '#1e293b', 'rx="3"')
+        + `<circle cx="0" cy="${y + 340}" r="210" fill="#cbd5e1" ${ST}/>`
+        + `<circle cx="0" cy="${y + 340}" r="175" fill="${t==='dryer'?'#374151':'#1e293b'}"/>`
+        + ec(30, y + 310, 120, 80, 'rgba(255,255,255,0.18)', `transform="rotate(-25 30 ${y+310})"`);
+    }
+    case 'toilet': case 'bidettoilet': {
+      // 馬桶 (40 × 70 風格)：方正蓄水箱、流線橢圓座圈與內圈蓄水區
+      return rc(x + 20, y, w - 40, 200, '#ffffff', 'rx="16"')
+        + rc(-35, y + 80, 70, 36, '#e2e8f0', 'rx="8"')
+        + ec(0, y + 440, w * 0.46, d * 0.34, '#ffffff')
+        + ec(0, y + 440, w * 0.36, d * 0.26, '#f8fafc')
+        + ec(0, y + 460, w * 0.24, d * 0.16, '#e2e8f0');
+    }
+    case 'vanity': {
+      // 洗手盆／浴室櫃 (60 × 45 風格)：石英白台面、下嵌長方形面盆、鍍鉻龍頭
+      return rc(x, y, w, d, '#ffffff', 'rx="10"')
+        + rc(x + 60, y + 70, w - 120, d - 140, '#f1f5f9', 'rx="12"')
+        + rc(x + 85, y + 95, w - 170, d - 190, '#e2e8f0', 'rx="8"')
+        + `<circle cx="0" cy="${y + d * 0.58}" r="20" fill="#cbd5e1"/>`
+        + rc(-15, y + 30, 30, 50, '#cbd5e1', 'rx="6"');
+    }
+    case 'shower': {
+      // 淋浴間 (90 × 90 風格)：極簡通透玻璃隔屏、底盆、頂噴花灑與地漏
+      return rc(x, y, w, d, '#f1f5f9', 'rx="8"')
+        + rc(x, y, 20, d, 'rgba(186,230,253,0.5)', 'stroke="#64748b"')
+        + rc(x, y + d - 20, w * 0.7, 20, 'rgba(186,230,253,0.5)', 'stroke="#64748b"')
+        + `<circle cx="${x + w - 180}" cy="${y + 180}" r="70" fill="#cbd5e1" ${ST}/>`
+        + `<circle cx="${x + w - 180}" cy="${y + 180}" r="25" fill="#94a3b8"/>`
+        + rc(x + w - 210, y + 150, 60, 60, '#cbd5e1', 'rx="4"');
+    }
+    case 'bathtub': {
+      // 浴缸 (170 × 75 風格)：獨立蛋型圓角浴缸、清澈漸變水藍水面、鍍鉻龍頭
+      return rc(x, y, w, d, '#ffffff', 'rx="120"')
+        + rc(x + 40, y + 35, w - 80, d - 70, '#bae6fd', 'rx="100"')
+        + rc(x + 80, y + 65, w - 160, d - 130, '#93c5fd', 'rx="80"')
+        + `<circle cx="${x + 120}" cy="0" r="24" fill="#cbd5e1" ${ST_FINE}/>`;
+    }
+    case 'plant': {
+      // 盆栽 (Ø 50 / Ø 35 風格)：層次分明、向外綻放的多葉翠綠植栽
+      return plantSvg(0, 0, m / 2, '#c48a60', '#5f8a69');
+    }
+    case 'rug': {
+      return rc(x, y, w, d, '#ede7dc', 'rx="30"')
+        + rc(x + 80, y + 80, w - 160, d - 160, 'none', 'rx="20" stroke="#d5ccbe" stroke-dasharray="6 6"');
+    }
+    case 'floorlamp': {
+      return `<circle cx="0" cy="0" r="${m * 0.45}" fill="#fff6dd" ${ST}/>`
+        + `<circle cx="0" cy="0" r="${m * 0.28}" fill="none" stroke="#f0d8a8" stroke-dasharray="4 3"/>`
+        + `<circle cx="0" cy="0" r="${m * 0.1}" fill="#e5a86a"/>`;
     }
     case 'piano': {
-      let s = rc(x,y,w,d*.55,c,'rx="10"') + rc(x+40,y+d*.55,w-80,d*.4,shade(c,1.4),'rx="10"');
-      const kx = x+90, kw = w-180, kd = d*.2;
-      s += rc(kx,y+d*.55,kw,kd,'#faf8f3');
-      for (let i = 1; i < 26; i++) s += ln(kx+kw*i/26,y+d*.55,kx+kw*i/26,y+d*.55+kd,'opacity=".5"');
+      const kx = x + 80, kw = w - 160, kd = d * 0.24;
+      let s = rc(x, y, w, d * 0.58, '#242322', 'rx="8"')
+        + rc(x + 40, y + d * 0.58, w - 80, d * 0.38, '#32302e', 'rx="8"')
+        + rc(kx, y + d * 0.58, kw, kd, '#faf8f5');
+      for (let i = 1; i < 26; i++) s += ln(kx + kw * i / 26, y + d * 0.58, kx + kw * i / 26, y + d * 0.58 + kd, ST_FAINT);
       return s;
     }
-    case 'treadmill': return rc(x,y,w,d,c,'rx="50"') + rc(x+90,y+320,w-180,d-400,'#1c1c1e','rx="25"') + rc(x,y,w,230,shade(c,1.4),'rx="40"');
-    default: return rc(x,y,w,d,c);
+    case 'treadmill': {
+      return rc(x, y, w, d, '#374151', 'rx="40"')
+        + rc(x + 90, y + 300, w - 180, d - 420, '#111827', 'rx="20"')
+        + rc(x, y, w, 240, '#4b5563', 'rx="30"');
+    }
+    case 'crib': {
+      let s = rc(x, y, w, d, '#dfcbba', 'rx="16"') + rc(x + 40, y + 40, w - 80, d - 80, '#ffffff', 'rx="12"');
+      for (let sx = x + 80; sx < x + w - 50; sx += 80) s += ln(sx, y, sx, y + 40, ST_FAINT) + ln(sx, y + d - 40, sx, y + d, ST_FAINT);
+      return s;
+    }
+    case 'beanbag': {
+      return ec(0, 0, w/2, d/2, '#ede8df') + ec(-w * 0.06, -d * 0.06, w * 0.32, d * 0.28, '#dfcbba', 'opacity=".8"');
+    }
+    case 'waterheater': {
+      return rc(x, y, w, d, '#f8fafc', `rx="${d/2}"`) + rc(x + w * 0.2, y + 10, w * 0.6, d - 20, 'none', 'stroke="#cbd5e1" stroke-dasharray="4 3"');
+    }
+    case 'aircon': {
+      return rc(x, y, w, d, '#ffffff', 'rx="20"') + ln(x + 30, y + d * 0.7, x + w - 30, y + d * 0.7, ST_FINE);
+    }
+    case 'acwall': {
+      return rc(x, y, w, d, '#ffffff', 'rx="16"') + ln(x + 30, y + d * 0.65, x + w - 30, y + d * 0.65, ST_FINE);
+    }
+    case 'dishwasher': {
+      return rc(x, y, w, d, '#d5d9dd', 'rx="12"') + ln(x + 10, y + d - 70, x + w - 10, y + d - 70, ST_FINE) + rc(x + w * 0.3, y + d - 45, w * 0.4, 20, '#64748b', 'rx="3"');
+    }
+    case 'ovencol': {
+      return rc(x, y, w, d, '#dfcbba', 'rx="8"') + rc(x + 40, y + 40, w - 80, d * 0.45, '#1e293b', 'rx="6"') + rc(x + 40, y + d * 0.52, w - 80, d * 0.42, '#1e293b', 'rx="6"');
+    }
+    case 'purifier': {
+      return rc(x, y, w, d, '#ffffff', 'rx="30"') + rc(x + 30, y + 30, w - 60, d - 60, 'none', 'rx="20" stroke="#cbd5e1" stroke-dasharray="3 3"');
+    }
+    default: return rc(x, y, w, d, c, 'rx="8"');
   }
 }
 
 /* ======================= 渲染 ======================= */
-const NOLABEL = ['plant','floorlamp','sidetable','barstool','beanbag'];
+const NOLABEL = ['plant','floorlamp','sidetable','barstool','beanbag','nightstand','coffeetable','tvstand','chair','stove','ksink'];
 function renderRooms(){
   let s = '';
   ROOMS.forEach(r => s += `<polygon class="room" data-room="${r.id}" points="${r.poly.map(p=>p.join(',')).join(' ')}" fill="url(#m-${state.rooms[r.id].mat})"/>`);
-  const sill = ([a,b,c,d]) => `<rect x="${a}" y="${b}" width="${c-a}" height="${d-b}" fill="#e2dacb" stroke="#b9b0a0" stroke-width="1" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
+  const sill = ([a,b,c,d]) => `<rect x="${a}" y="${b}" width="${c-a}" height="${d-b}" fill="#eedecb" stroke="#c8ab8d" stroke-width="1" vector-effect="non-scaling-stroke" pointer-events="none"/>`;
   DOORS.forEach(d => s += sill(d.rect)); SLIDES.forEach(d => s += sill(d.rect));
   setSvgLayerMarkup('#gRooms', s);
 }
@@ -556,10 +862,10 @@ function renderFurn(){
 
 function renderWalls(){
   const joins = joinFootprints(ANGLED_WALLS);
-  const angledMarkup = ANGLED_WALLS.map((w,i)=>`<polygon class="wall" data-angled="${i}" points="${joins[i].map(p=>p.join(',')).join(' ')}" fill="${w.type==='structural'?'#b8412c':w.type==='exterior'?'#8f897d':'#a7a195'}"/>`).join('');
+  const angledMarkup = ANGLED_WALLS.map((w,i)=>`<polygon class="wall" data-angled="${i}" points="${joins[i].map(p=>p.join(',')).join(' ')}" fill="${w.type==='structural'?'#b8412c':w.type==='exterior'?'#5c5750':'#8a8378'}"/>`).join('');
   $('#gWalls').innerHTML = angledMarkup + WALLS.map((w,i) => {
     const [x0,y0,x1,y1,k] = w, id = 'w'+i, dem = state.demolished.includes(id);
-    let fill = k==='b' ? (ui.layers.bearing ? '#b8412c' : '#26241f') : k==='low' ? '#e9e3d8' : k==='e' ? '#8f897d' : '#a7a195';
+    let fill = k==='b' ? (ui.layers.bearing ? '#b8412c' : '#3f3c38') : k==='low' ? '#e9e3d8' : k==='e' ? '#5c5750' : '#8a8378';
     let ex = k==='low' ? 'stroke="#8f897d" stroke-width="1" vector-effect="non-scaling-stroke"' : '';
     if (dem){ fill = 'rgba(198,91,58,.12)'; ex = 'stroke="#c65b3a" stroke-width="1.2" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"'; }
     return `<rect class="wall" data-wall="${id}" x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="${fill}" ${ex}/>`;
@@ -1697,10 +2003,25 @@ document.addEventListener('keydown', e => {
 function buildLib(){
   const previouslyOpen = [...$('#lib').querySelectorAll('.lib-accordion[open]')].map(el => Number(el.dataset.group));
   const hasPreviousGroups = $('#lib').querySelector('.lib-accordion') !== null;
-  $('#lib').innerHTML = `<button type="button" class="f5-manager-btn">${T('ui.import.manage.glb.models')}</button>` + LIB.map((c,ci) => `<details class="lib-accordion" data-group="${ci}" ${hasPreviousGroups ? (previouslyOpen.includes(ci) ? 'open' : '') : (ci === 0 ? 'open' : '')}><summary class="lib-accordion-header"><span class="lib-accordion-arrow" aria-hidden="true"></span><span class="lib-accordion-title">${esc(nm(c.cat))}</span><span class="lib-accordion-count">${c.items.length}</span></summary><div class="lib-grid">${c.items.map((it,ii) => {
-    const [t,n,w,d,col] = it, pad = Math.max(w,d)*.08;
+  const heroBadge = `
+    <div class="lib-hero-header">
+      <div class="lib-hero-top">
+        <span class="lib-hero-badge">${tr('風格 2','Style 2')}</span>
+        <span class="lib-hero-tag">${tr('現代簡約 · 平面色塊風','Modern Minimalist · Flat Color Block')}</span>
+      </div>
+      <div class="lib-hero-desc">${tr('柔和配色 · 清晰易辨識 · 空間規劃標準件','Soft Palette · Clean Legibility · Standard Units')}</div>
+    </div>
+  `;
+  $('#lib').innerHTML = heroBadge + `<button type="button" class="f5-manager-btn">${T('ui.import.manage.glb.models')}</button>` + LIB.map((c,ci) => `<details class="lib-accordion" data-group="${ci}" ${hasPreviousGroups ? (previouslyOpen.includes(ci) ? 'open' : '') : (ci === 0 ? 'open' : '')}><summary class="lib-accordion-header"><span class="lib-accordion-arrow" aria-hidden="true"></span><span class="lib-accordion-title">${esc(nm(c.cat))}</span><span class="lib-accordion-count">${c.items.length}</span></summary><div class="lib-grid">${c.items.map((it,ii) => {
+    const [t,n,w,d,col] = it, pad = Math.max(w,d)*.1;
     return `<div class="item" data-key="${ci}:${ii}" title="${T('ui.catalog.add.hint')}">
-      <svg viewBox="${-w/2-pad} ${-d/2-pad} ${w+2*pad} ${d+2*pad}">${furnSVG(t,w,d,col)}</svg><b>${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}</b><small>${w}×${d}</small><button type="button" class="preview3d-btn" title="${T('ui.catalog.preview.tooltip')}" aria-label="${T('ui.catalog.preview.tooltip')} ${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}">◈ ${T('ui.three.d.preview')}</button></div>`;
+      <div class="item-preview">
+        <svg viewBox="${-w/2-pad} ${-d/2-pad} ${w+2*pad} ${d+2*pad}">${furnSVG(t,w,d,col)}</svg>
+      </div>
+      <b class="item-name">${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}</b>
+      <small class="item-dim">${w} × ${d}</small>
+      <button type="button" class="preview3d-btn" title="${T('ui.catalog.preview.tooltip')}" aria-label="${T('ui.catalog.preview.tooltip')} ${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}">◈ ${T('ui.three.d.preview')}</button>
+    </div>`;
   }).join('')}</div></details>`).join('') + `<div class="hint">${T(COARSE ? 'ui.catalog.instructions.touch' : 'ui.catalog.instructions.desktop')}</div>`;
   $('#lib').querySelector('.f5-manager-btn').onclick=()=>openModelManager({onChange:buildLib});
   document.querySelectorAll('.preview3d-btn').forEach(btn => {
