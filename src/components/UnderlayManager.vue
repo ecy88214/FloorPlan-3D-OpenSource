@@ -1,44 +1,53 @@
 <template>
   <Teleport to="body">
     <div v-if="open" class="ul-overlay" @click.self="close">
-      <section class="ul-dialog" role="dialog" aria-modal="true" aria-label="底圖匯入與比例校正">
-        <header><h2>📐 2D 底圖描繪</h2><button type="button" @click="close" aria-label="關閉">✕</button></header>
+      <section class="ul-dialog" role="dialog" aria-modal="true" :aria-label="tr('底圖匯入與比例校正', 'Underlay Import & Scale Calibration')">
+        <header><h2>📐 {{ tr('2D 底圖描繪', '2D Underlay Tracing') }}</h2><button type="button" @click="close" :aria-label="tr('關閉', 'Close')">✕</button></header>
         <div class="ul-scroll">
-          <p class="ul-muted">匯入平面圖作為描繪參考，可使用尺寸辨識輔助比例校正，牆體請在 2D 編輯器中手動繪製。</p>
-          <label class="ul-upload">底圖檔案（JPG、PNG、WEBP 或 PDF）<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" @change="onFile" /></label>
-          <div v-if="pdfBuffer" class="ul-line"><label>PDF 頁碼 <input type="number" min="1" :max="pdfPages" v-model.number="pdfPage" /></label><span>共 {{pdfPages}} 頁</span><button type="button" @click="renderPage" :disabled="busy">載入頁面</button></div>
-          <p v-if="busy" class="ul-muted" role="status">{{progressMessage || "處理底圖中，請稍候…"}}</p>
+          <p class="ul-muted">{{ tr('匯入平面圖作為描繪參考，可使用尺寸辨識輔助比例校正，牆體請在 2D 編輯器中手動繪製。', 'Import a floor plan as reference. Automatic dimension recognition aids scale calibration; walls are drawn manually in 2D.') }}</p>
+          <label class="ul-upload">{{ tr('底圖檔案（JPG、PNG、WEBP 或 PDF）', 'Underlay File (JPG, PNG, WEBP, or PDF)') }}<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" @change="onFile" /></label>
+          <div v-if="pdfBuffer" class="ul-line"><label>{{ tr('PDF 頁碼', 'PDF Page') }} <input type="number" min="1" :max="pdfPages" v-model.number="pdfPage" /></label><span>{{ tr(`共 ${pdfPages} 頁`, `${pdfPages} pages total`) }}</span><button type="button" @click="renderPage" :disabled="busy">{{ tr('載入頁面', 'Load Page') }}</button></div>
+          <p v-if="busy" class="ul-muted" role="status">{{progressMessage || tr("處理底圖中，請稍候…", "Processing underlay, please wait…")}}</p>
           <p v-if="error" class="ul-error" role="alert">{{ error }}</p>
           <template v-if="underlay.image">
-            <div class="ul-preview"><img :src="underlay.image" :alt="underlay.name || '平面圖底圖'" /></div>
-            <div class="ul-line"><strong>{{underlay.name}}</strong><label><input type="checkbox" v-model="underlay.visible" @change="persist" /> 顯示底圖</label></div>
-            <div class="ul-line"><label>透明度 {{Math.round(underlay.opacity*100)}}% <input type="range" min="0.1" max="1" step="0.05" v-model.number="underlay.opacity" @change="persist" /></label></div>
-            <div class="ul-fields"><label>X 座標（mm）<input type="number" v-model.number="underlay.x" @change="persist" /></label><label>Y 座標（mm）<input type="number" v-model.number="underlay.y" @change="persist" /></label><label>底圖寬度（mm）<input type="number" min="1" v-model.number="underlay.width" @change="fixRatio" /></label></div>
+            <div class="ul-preview"><img :src="underlay.image" :alt="underlay.name || tr('平面圖底圖', 'Plan underlay')" /></div>
+            <div class="ul-line"><strong>{{underlay.name}}</strong><label><input type="checkbox" v-model="underlay.visible" @change="persist" /> {{ tr('顯示底圖', 'Show underlay') }}</label></div>
+            <div class="ul-line"><label>{{ tr(`透明度 ${Math.round(underlay.opacity*100)}%`, `Opacity ${Math.round(underlay.opacity*100)}%`) }} <input type="range" min="0.1" max="1" step="0.05" v-model.number="underlay.opacity" @change="persist" /></label></div>
+            <div class="ul-fields"><label>{{ tr('X 座標（mm）', 'X (mm)') }}<input type="number" v-model.number="underlay.x" @change="persist" /></label><label>{{ tr('Y 座標（mm）', 'Y (mm)') }}<input type="number" v-model.number="underlay.y" @change="persist" /></label><label>{{ tr('底圖寬度（mm）', 'Underlay Width (mm)') }}<input type="number" min="1" v-model.number="underlay.width" @change="fixRatio" /></label></div>
             <div class="ul-calibration">
-              <div class="ul-line"><strong>輔助比例校正</strong><button type="button" class="ul-primary" :disabled="busy" @click="runAutomatic">{{busy?'自動處理中…':'↻ 自動辨識尺寸'}}</button></div>
-              <p class="ul-muted">優先分析尺寸線；沒有尺寸線時，嘗試由房間面積估算比例。估算結果不能作為施工尺寸，牆體必須手動描繪。</p>
+              <div class="ul-line"><strong>{{ tr('輔助比例校正', 'Scale Calibration') }}</strong><button type="button" class="ul-primary" :disabled="busy" @click="runAutomatic">{{busy ? tr('自動處理中…', 'Processing…') : tr('↻ 自動辨識尺寸', '↻ Auto Recognize Dimensions')}}</button></div>
+              <p class="ul-muted">{{ tr('優先分析尺寸線；沒有尺寸線時，嘗試由房間面積估算比例。估算結果不能作為施工尺寸，牆體必須手動描繪。', 'Analyzes dimension lines first; falls back to room areas. Estimates cannot be used as construction dimensions; walls must be drawn manually.') }}</p>
               <p v-if="scaleMessage" :class="scaleConfirmed?'ul-success':'ul-warning'">{{scaleMessage}}</p>
-              <details><summary>進階：手動比例校正（僅供圖面缺少尺寸時使用）</summary>
-              <b>比例校正 {{ underlay.calibrated ? '✓ 已校正' : '（尚未校正）' }}</b>
-              <p>按「選取兩點」後，依序在 2D 圖面點擊舊圖上的一條已知尺寸線的兩端，最後輸入實際長度（mm）。這兩次點擊不會建立牆體。</p>
-              <div class="ul-line"><button type="button" class="ul-primary" @click="beginCalibration">{{ points.length === 1 ? '選取第二點…' : '選取兩點校正' }}</button><span v-if="points.length">已選 {{points.length}}／2 點</span></div>
-              <div class="ul-line"><label>實際距離（mm）<input type="number" v-model.number="realLength" min="1" step="1" /></label><button type="button" :disabled="points.length!==2" @click="applyCalibration">套用比例</button></div>
+              <details><summary>{{ tr('進階：手動比例校正（僅供圖面缺少尺寸時使用）', 'Advanced: Manual Scale Calibration (for plans without dimensions)') }}</summary>
+              <b>{{ tr('比例校正', 'Calibration') }} {{ underlay.calibrated ? tr('✓ 已校正', '✓ Calibrated') : tr('（尚未校正）', '(Not calibrated)') }}</b>
+              <p>{{ tr('按「選取兩點」後，依序在 2D 圖面點擊舊圖上的一條已知尺寸線的兩端，最後輸入實際長度（mm）。這兩次點擊不會建立牆體。', 'Click "Pick Two Points", tap both ends of a known dimension line on the 2D plan, then enter actual length (mm). No walls are created.') }}</p>
+              <div class="ul-line"><button type="button" class="ul-primary" @click="beginCalibration">{{ points.length === 1 ? tr('選取第二點…', 'Pick second point…') : tr('選取兩點校正', 'Pick Two Points') }}</button><span v-if="points.length">{{ tr(`已選 ${points.length}／2 點`, `${points.length}/2 points picked`) }}</span></div>
+              <div class="ul-line"><label>{{ tr('實際距離（mm）', 'Actual Distance (mm)') }}<input type="number" v-model.number="realLength" min="1" step="1" /></label><button type="button" :disabled="points.length!==2" @click="applyCalibration">{{ tr('套用比例', 'Apply Scale') }}</button></div>
               </details>
             </div>
 
           </template>
         </div>
-        <footer><button type="button" v-if="underlay.image" @click="remove">移除底圖</button><span></span><button type="button" @click="close" class="ul-primary">完成，開始描繪</button></footer>
+        <footer><button type="button" v-if="underlay.image" @click="remove">{{ tr('移除底圖', 'Remove Underlay') }}</button><span></span><button type="button" @click="close" class="ul-primary">{{ tr('完成，開始描繪', 'Done, Start Tracing') }}</button></footer>
       </section>
     </div>
-    <div v-if="calibrating" class="ul-calibration-banner">請在平面圖上點擊 {{points.length===0?'第一':'第二'}} 個校正端點（Esc 取消） <button @click="stopCalibration">取消</button></div>
+    <div v-if="calibrating" class="ul-calibration-banner">{{ tr(`請在平面圖上點擊第 ${points.length===0?'一':'二'} 個校正端點（Esc 取消）`, `Click point ${points.length===0?'1':'2'} on plan for calibration (Esc to cancel)`) }} <button @click="stopCalibration">{{ tr('取消', 'Cancel') }}</button></div>
   </Teleport>
 </template>
 <script setup>
-import { onMounted,onUnmounted,ref } from 'vue';
+import { onMounted,onUnmounted,ref,computed } from 'vue';
+import { localeState, t } from '../i18n/index.js';
 import { recognizeDimensions, extractDimensionScales } from '../services/autoScaleEngine.js';
 import { findAreaLabels, estimateScaleFromRoomAreas } from '../services/areaScaleEngine.js';
 import { underlay, restoreUnderlay, saveUnderlay, clearUnderlay, calibrateUnderlay, calibrateUnderlayFromPixels } from '../services/underlayState.js';
+const isEn = computed(() => localeState.locale === 'en');
+const isZh = computed(() => (localeState.locale || '').startsWith('zh'));
+const tr = (zh, en) => {
+  if (isEn.value) return en;
+  if (isZh.value) return zh;
+  const translated = t(en);
+  return translated !== en ? translated : en;
+};
 const open=ref(false),busy=ref(false),error=ref(''),calibrating=ref(false),points=ref([]),realLength=ref(3000),pdfBuffer=ref(null),pdfPages=ref(0),pdfPage=ref(1);
 let pdfDocument=null, pdfLib=null;
 const progressMessage=ref(''),scaleMessage=ref(''),scaleConfirmed=ref(false);
@@ -53,7 +62,7 @@ async function runAutomatic(){
   if(!underlay.image)return;
   busy.value=true; error.value=''; scaleMessage.value=''; scaleConfirmed.value=false;
   try {
-    progressMessage.value='正在辨識尺寸與比例…';
+    progressMessage.value=tr('正在辨識尺寸與比例…', 'Recognizing dimensions and scale…');
     const image=await makeImageData(1600);
     const recognition=await recognizeDimensions(image);
     const result=extractDimensionScales(image,recognition.words);
@@ -65,13 +74,13 @@ async function runAutomatic(){
       underlay.scaleSource=estimate?'area-estimate':'dimensions';
       persist(); scaleConfirmed.value=!!result?.confident;
       scaleMessage.value=estimate
-        ?`依 ${estimate.areas} 筆房間面積推估約 ${estimate.mmPerPixel.toFixed(2)} mm/px。估算結果不可作為施工尺寸，請再手動量測校正。`
-        :`已根據 ${result.matched} 筆尺寸標註校正，約 ${result.mmPerPixel.toFixed(2)} mm/px。請核對已知尺寸。`;
-    }else scaleMessage.value='未找到足夠可靠的尺寸資訊，請使用下方兩點手動比例校正。';
-  }catch(e){error.value='自動辨識尺寸失敗：'+e.message;}
+        ? tr(`依 ${estimate.areas} 筆房間面積推估約 ${estimate.mmPerPixel.toFixed(2)} mm/px。估算結果不可作為施工尺寸，請再手動量測校正。`, `Estimated ≈ ${estimate.mmPerPixel.toFixed(2)} mm/px based on ${estimate.areas} room areas. Not for construction; please calibrate manually.`)
+        : tr(`已根據 ${result.matched} 筆尺寸標註校正，約 ${result.mmPerPixel.toFixed(2)} mm/px。請核對已知尺寸。`, `Calibrated ≈ ${result.mmPerPixel.toFixed(2)} mm/px based on ${result.matched} dimension annotations. Please verify known dimensions.`);
+    }else scaleMessage.value=tr('未找到足夠可靠的尺寸資訊，請使用下方兩點手動比例校正。', 'No reliable dimension data found; please use two-point manual calibration below.');
+  }catch(e){error.value=tr('自動辨識尺寸失敗：', 'Auto recognition failed: ')+e.message;}
   finally{busy.value=false;progressMessage.value='';}
 }
-function persist(){if(!saveUnderlay())error.value='底圖儲存空間不足；本次可使用，但重新整理後可能需要重新匯入。';}
+function persist(){if(!saveUnderlay())error.value=tr('底圖儲存空間不足；本次可使用，但重新整理後可能需要重新匯入。', 'Storage quota exceeded; underlay works for current session but may need re-import after reload.');}
 function fixRatio(){underlay.width=Math.max(1,Number(underlay.width)||1); underlay.height=underlay.width/originalAspect;persist();}
 let originalAspect=4/3;
 function close(){stopCalibration();open.value=false;}

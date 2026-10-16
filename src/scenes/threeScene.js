@@ -1577,7 +1577,7 @@ function updateSel(){
 /* ======================= 漫遊 ======================= */
 // 觸屏漫遊：左下虛擬搖桿移動，在畫面上拖曳轉向（iPad 不支持滑鼠指針鎖定）
 const HINT_ORBIT = () => COARSE ? tr('單指旋轉 · 雙指縮放 / 平移 · 點選家具後可拖曳擺放 · 點擊門片開關', '1 finger orbits · 2 fingers zoom / pan · select furniture to drag it · tap doors to open')
-  : tr('滑鼠滑鼠左鍵旋轉 · 滑鼠滑鼠右鍵平移 · 滾輪縮放 · 選取家具後拖曳可擺放 · 點擊門開關', 'Left-drag orbits · right-drag pans · scroll zooms · select furniture to drag it · click doors to open');
+  : tr('滑鼠左鍵旋轉 · 滑鼠右鍵平移 · 滾輪縮放 · 選取家具後拖曳可擺放 · 點擊門片開關', 'Left-drag orbits · right-drag pans · scroll zooms · select furniture to drag it · click doors to open');
 const HINT_TOUCHWALK = () => tr('左下搖桿移動 · 拖曳畫面轉向 · 點擊門片開關', 'Joystick moves · drag to look · tap doors to open');
 const HINT_WALK = () => tr('WASD 移動 · 滑鼠轉向 · Shift 快走 · E 開關門 · Esc 暫停', 'WASD moves · mouse looks · Shift runs · E opens doors · Esc pauses');
 function syncHint3d(){ $('#hint3d').textContent = opt.mode === 'orbit' ? HINT_ORBIT() : touchWalk ? HINT_TOUCHWALK() : HINT_WALK(); }

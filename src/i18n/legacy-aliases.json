@@ -737,6 +737,21 @@
   "例如：客厅方案 B": "ui.studio.save.example",
   "Preview 3D model": "ui.preview.model.title",
   "预览 3D 模型": "ui.preview.model.title",
-  "預覽 3D 模型": "ui.preview.model.title",
-  "Wall": "ui.catalog.wall.label"
+  "Wall": "ui.catalog.wall.label",
+  "Delete": "ui.keyboard.delete.description",
+  "刪除": "ui.keyboard.delete.description",
+  "删除": "ui.keyboard.delete.description",
+  "Duplicate": "ui.keyboard.copy.description",
+  "複製": "ui.keyboard.copy.description",
+  "复制": "ui.keyboard.copy.description",
+  "Done": "ui.guide.done",
+  "完成": "ui.guide.done",
+  "← Back": "ui.back",
+  "← 返回": "ui.back",
+  "Color": "ui.furniture.color",
+  "顏色": "ui.furniture.color",
+  "颜色": "ui.furniture.color",
+  "Floor Plan Designer": "ui.header.initial.title",
+  "房型室內設計": "ui.header.initial.title",
+  "房型室内设计": "ui.header.initial.title"
 }

@@ -111,7 +111,7 @@
     <div class="grp only3d" id="toggles3d">
       <button class="btn chip on" data-t="furn" data-ribbon-icon="▦">{{ $t("ui.furniture") }}</button>
       <button class="btn chip on" data-t="labels" data-ribbon-icon="▤">{{ $t("ui.room.labels") }}</button>
-      <button class="btn chip" data-t="night" data-en="Night" data-ribbon-icon="☾">夜景</button>
+      <button class="btn chip" data-t="night" data-ribbon-icon="☾">{{ $t("ui.night") }}</button>
     </div>
     <div class="grp only3d"><label class="range"><span>{{ $t("ui.view.sunlight") }}</span> <input type="range" id="sun" min="7" max="18" step=".25" value="10" style="width:84px"><span id="sunT">10:00</span></label></div>
 <span class="ribbon-section-label">{{ $t("ui.view.three.d.controls") }}</span>

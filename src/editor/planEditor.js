@@ -39,7 +39,7 @@ const ANGLED_WALLS = [];
 /* ======================= 多語言（繁體中文 / English，預設繁體中文） ======================= */
 const LANG_KEY = 'huxing-lang';
 const LANGS = ["en", "zh", "zh-TW", "ja", "ko", "tr", "ru", "vi", "th", "de", "es", "fr", "uk", "pl", "pt-BR", "ar", "fa", "id", "it", "el", "zht"];
-let LANG = (() => { try { const l = localStorage.getItem(LANG_KEY); return LANGS.includes(l) ? l : 'en'; } catch(e) { return 'en'; } })();
+let LANG = (() => { try { const l = localStorage.getItem('floorplan:locale') || localStorage.getItem(LANG_KEY); return l === 'zh-TW' ? 'zht' : LANGS.includes(l) ? l : 'en'; } catch(e) { return 'en'; } })();
 // 简 → 繁：先按词替換一字多义的字，再逐字查表（表由 OpenCC s2tw 按本頁用到的字生成）
 const S2T_PHRASES = [
   ['布置','佈置'],['布局','佈局'],['台面','檯面'],['复制','複製'],
@@ -47,21 +47,40 @@ const S2T_PHRASES = [
   ['选择','選取'],['测量','量測'],['拆改','拆除／變更'],['导入','匯入'],['导出','匯出'],['漫游','漫遊']
 ];
 const S2T = new Map(('与與两兩个個为為书書于於仅僅从從价價会會传傳体體余餘侧側倾傾储儲儿兒关關内內写寫净淨准準击擊则則刚剛删刪制製办辦动動势勢区區单單占佔卧臥卫衛厅廳历歷压壓厨廚双雙发發变變叶葉后後吗嗎听聽启啟哑啞围圍图圖圆圓场場坐座块塊垫墊墙牆处處备備复復头頭妆妝婴嬰实實宽寬对對导導层層屉屜属屬岛島带帶干乾并並库庫应應开開当當径徑态態总總悬懸懒懶户戶护護拟擬择擇挂掛挡擋挤擠损損换換据據摆擺摇搖撑撐数數无無时時显顯暂暫机機杂雜杆桿条條来來松鬆构構柜櫃标標栈棧栏欄样樣梁樑棱稜椭橢横橫橱櫥气氣没沒注註浅淺测測浏瀏游遊滚滾满滿灯燈灵靈点點热熱状狀独獨环環现現电電画畫监監盖蓋盘盤砖磚确確离離积積称稱竖豎筑築签籤类類约約级級线線结結绕繞绘繪给給统統继繼绿綠缀綴编編缝縫缩縮网網联聯脚腳获獲虚虛装裝见見视視览覽触觸计計认認让讓议議记記设設识識译譯该該语語请請读讀调調负負败敗质質贴貼赶趕转轉轮輪软軟轴軸轻輕载載较較辅輔辑輯边邊过過这這进進远遠适適选選邻鄰里裡针針钢鋼钮鈕铰鉸铺鋪销銷锁鎖键鍵镜鏡长長门門闭閉闲閒间間阅閱阳陽阴陰阶階随隨隐隱静靜页頁顶頂项項顺順颜顏飘飄飞飛马馬鸟鳥齐齊龙龍').match(/../gu).map(p => [...p]));
-const TW_TERMS = [['没有可撤销的操作','沒有可復原的操作'],['撤销','復原'],['撤銷','復原'],['可撤销','可復原'],['可撤銷','可復原'],['户型装修设计','房型室內設計'],['户型装修方案','房型室內設計方案'],['装修设计','室內設計'],['装修方案','設計方案'],['户型','房型'],['戶型','房型'],['入户门','入口門'],['入戶門','入口門'],['入户','入口'],['入戶','入口'],['鼠标','滑鼠'],['鼠標','滑鼠'],['左键','滑鼠左鍵'],['右键','滑鼠右鍵'],['左鍵','滑鼠左鍵'],['右鍵','滑鼠右鍵'],['点击','點擊'],['點選','點選'],['选中','選取'],['选择','選取'],['取消选择','取消選取'],['拖动','拖曳'],['拖動','拖曳'],['摇杆','搖桿'],['适应窗口','符合視窗'],['適應窗口','符合視窗'],['全屏','全螢幕'],['全螢幕幕','全螢幕'],['语言','語言'],['語言 / 語言','語言 / Language'],['清空所有家具家电','清空所有家具及家電'],['家具家电','家具與家電'],['布置','配置'],['佈置','配置'],['布局','格局'],['佈局','格局'],['燃气灶','瓦斯爐'],['燃氣灶','瓦斯爐'],['马桶','馬桶'],['淋浴房','淋浴間'],['飘窗','飄窗'],['橱柜台面','廚櫃檯面'],['橱柜','廚櫃'],['橱櫃','廚櫃'],['台面','檯面'],['绿植','植栽'],['綠植','植栽'],['大植栽','大型植栽'],['落地灯','立燈'],['落地燈','立燈'],['餐厨','餐廚'],['子女房','次臥室'],['小孩房','兒童房'],['休闲','休閒'],['茶几','茶几'],['过道','走道'],['洗衣池','洗衣槽'],['洗手盆','洗手台'],['水槽','水槽'],['干湿分离','乾濕分離'],['對開門冰箱','對開式冰箱'],['对开门冰箱','對開式冰箱'],['65 寸','65 吋'],['55 寸','55 吋'],['空调','冷氣'],['空調','冷氣'],['烘干机','烘衣機'],['烘乾機','烘衣機'],['储物柜','收納櫃'],['儲物櫃','收納櫃'],['柜机','落地式'],['櫃機','落地式'],['挂机','壁掛式'],['掛機','壁掛式'],['点门开关','點擊門片開關'],['开关门','開關門'],['點擊門片開關門','點擊門片開關'],['画面上拖曳','畫面上拖曳'],['拖曳摆放','拖曳擺放'],['平面图','平面圖'],['复制','複製'],['删除','刪除'],['清空','清空'],['占地面积','占地面積'],['适应','符合'],['默认','預設'],['恢复为','還原成'],['恢复','還原'],['測量','量測'],['测量','量測'],['贴墙吸附','貼齊牆面']];
+const TW_TERMS = [['没有可撤销的操作','沒有可復原的操作'],['撤销','復原'],['撤銷','復原'],['可撤销','可復原'],['可撤銷','可復原'],['户型装修设计','房型室內設計'],['户型装修方案','房型室內設計方案'],['装修设计','室內設計'],['装修方案','設計方案'],['户型','房型'],['戶型','房型'],['入户门','入口門'],['入戶門','入口門'],['入户','入口'],['入戶','入口'],['鼠标左键','滑鼠左鍵'],['鼠标右键','滑鼠右鍵'],['鼠標左鍵','滑鼠左鍵'],['鼠標右鍵','滑鼠右鍵'],['鼠标','滑鼠'],['鼠標','滑鼠'],['左键','滑鼠左鍵'],['右键','滑鼠右鍵'],['左鍵','滑鼠左鍵'],['右鍵','滑鼠右鍵'],['点击','點擊'],['點選','點選'],['选中','選取'],['选择','選取'],['取消选择','取消選取'],['拖动','拖曳'],['拖動','拖曳'],['摇杆','搖桿'],['适应窗口','符合視窗'],['適應窗口','符合視窗'],['全屏','全螢幕'],['全螢幕幕','全螢幕'],['语言','語言'],['語言 / 語言','語言 / Language'],['清空所有家具家电','清空所有家具及家電'],['家具家电','家具與家電'],['布置','配置'],['佈置','配置'],['布局','格局'],['佈局','格局'],['燃气灶','瓦斯爐'],['燃氣灶','瓦斯爐'],['马桶','馬桶'],['淋浴房','淋浴間'],['飘窗','飄窗'],['橱柜台面','廚櫃檯面'],['橱柜','廚櫃'],['橱櫃','廚櫃'],['台面','檯面'],['绿植','植栽'],['綠植','植栽'],['大植栽','大型植栽'],['落地灯','立燈'],['落地燈','立燈'],['餐厨','餐廚'],['子女房','次臥室'],['小孩房','兒童房'],['休闲','休閒'],['茶几','茶几'],['过道','走道'],['洗衣池','洗衣槽'],['洗手盆','洗手台'],['水槽','水槽'],['干湿分离','乾濕分離'],['對開門冰箱','對開式冰箱'],['对开门冰箱','對開式冰箱'],['65 寸','65 吋'],['55 寸','55 吋'],['空调','冷氣'],['空調','冷氣'],['烘干机','烘衣機'],['烘乾機','烘衣機'],['储物柜','收納櫃'],['儲物櫃','收納櫃'],['柜机','落地式'],['櫃機','落地式'],['挂机','壁掛式'],['掛機','壁掛式'],['点门开关','點擊門片開關'],['开关门','開關門'],['點擊門片開關門','點擊門片開關'],['画面上拖曳','畫面上拖曳'],['拖曳摆放','拖曳擺放'],['平面图','平面圖'],['复制','複製'],['删除','刪除'],['清空','清空'],['占地面积','占地面積'],['适应','符合'],['默认','預設'],['恢复为','還原成'],['恢复','還原'],['測量','量測'],['测量','量測'],['贴墙吸附','貼齊牆面']];
 const s2t = s => {
   const localized = TW_TERMS.reduce((a, [from, to]) => a.replaceAll(from, to), String(s ?? ''));
-  return S2T_PHRASES.reduce((a, [from, to]) => a.replaceAll(from, to), localized).replace(/[\u3400-\u9fff]/g, c => S2T.get(c) || c);
+  return S2T_PHRASES.reduce((a, [from, to]) => a.replaceAll(from, to), localized).replace(/[\u3400-\u9fff]/g, c => S2T.get(c) || c).replaceAll('滑鼠滑鼠', '滑鼠');
 };
 const tr = (zh, en) => {
   const translate = window.floorplanTranslate;
   const fallback = en || zh;
+  if (LANG === 'en') {
+    if (!translate) return fallback;
+    const fromEnglish = translate(fallback);
+    return fromEnglish !== fallback ? fromEnglish : fallback;
+  }
+  if (LANG === 'zh-TW' || LANG === 'zht') {
+    const target = s2t(zh);
+    if (!translate) return target;
+    const fromTarget = translate(target);
+    if (fromTarget !== target) return fromTarget;
+    const fromZh = translate(zh);
+    if (fromZh !== zh) return fromZh;
+    return target;
+  }
+  if (LANG === 'zh') {
+    if (!translate) return zh;
+    const fromZh = translate(zh);
+    if (fromZh !== zh) return fromZh;
+    return zh;
+  }
   if (!translate) return fallback;
   const fromEnglish = translate(fallback);
   if (fromEnglish !== fallback) return fromEnglish;
   const fromChinese = translate(zh);
-  // Never send Chinese originals back into the English UI when no key exists.
-  if (LANG === 'en') return fallback;
-  return fromChinese !== zh ? fromChinese : fallback;
+  if (fromChinese !== zh) return fromChinese;
+  return fallback;
 };
 const T = (key, params) => window.floorplanTranslate?.(key, params) ?? key;
 const money = value => formatCurrency(value, LANG);
@@ -256,7 +275,7 @@ if(!initialStoredProject){
   recoverProject().then(recovered=>{
     if(!recovered||state!==initialState||undoStack.length||redoStack.length)return;
     replaceProject(fixState(recovered));setPlanBounds(state.layoutType);renderAll();
-    toast('已從本機備份還原方案');
+    toast(tr('已從本機備份還原方案', 'Plan restored from local backup'));
   }).catch(e=>console.warn('無法載入方案備份',e));
 }
 
@@ -275,12 +294,12 @@ function includeFurnitureGroup(id){const item=getF(id);return item?.groupId?stat
 function updateMultiSelection(){syncMultiSelection();refreshArrangementButtons();refreshGroupButtons();}
 function syncMultiSelection(){ selectionManager.reconcile(ui.sel); }
 function selectFurniture(id, additive=false){ui.sel=selectionManager.selectFurniture(id,{additive,groupIds:includeFurnitureGroup(id)});svgRenderer.invalidate([8,10]);svgRenderer.renderDirty();renderPanel();refreshGroupButtons();}
-function applyFurnitureArrangement(mode){const items=selectedFurniture();if(items.length<2){toast('請按住 Shift 選取至少 2 件家具');return;}const changes=mode.startsWith('distribute')?distributeFurniture(items,mode):alignFurniture(items,mode);if(!changes.length){toast('此功能至少需要 3 件家具');return;}mutate(()=>{for(const change of changes){const f=getF(change.id);if(f){f.cx=change.cx;f.cy=change.cy;}}});toast('已完成家具排列');}
+function applyFurnitureArrangement(mode){const items=selectedFurniture();if(items.length<2){toast(tr('請按住 Shift 選取至少 2 件家具', 'Hold Shift to select at least 2 items'));return;}const changes=mode.startsWith('distribute')?distributeFurniture(items,mode):alignFurniture(items,mode);if(!changes.length){toast(tr('此功能至少需要 3 件家具', 'This feature requires at least 3 items'));return;}mutate(()=>{for(const change of changes){const f=getF(change.id);if(f){f.cx=change.cx;f.cy=change.cy;}}});toast(tr('已完成家具排列', 'Furniture arranged'));}
 function refreshArrangementButtons(){document.querySelectorAll('[data-furn-arrange]').forEach(b=>{b.disabled=multiFurniture.size<2;});}
 function refreshGroupButtons(){const n=selectedFurniture().length;document.querySelectorAll('[data-furn-group]').forEach(b=>{b.disabled=b.dataset.furnGroup==='create'?n<2:!selectedFurniture().some(f=>f.groupId);});}
-function rotateFurnitureSelection(degrees){const selected=selectedFurniture();if(!selected.length)return toast('請先選取家具');if(!Number.isFinite(degrees))return toast('請輸入有效的角度');const changes=rotateFurnitureSet(selected,degrees);mutate(()=>{for(const change of changes){const f=getF(change.id);if(f)Object.assign(f,change);}});}
-function groupFurnitureSelection(){const selected=selectedFurniture();if(selected.length<2)return toast('請至少選取兩件家具');const groupId=uid();mutate(()=>{const oldGroups=new Set(selected.map(f=>f.groupId).filter(Boolean));const all=state.furniture.filter(f=>selected.some(x=>x.id===f.id)||oldGroups.has(f.groupId));makeFurnitureGroup(all,groupId);for(const item of all)multiFurniture.add(item.id);});toast('已建立家具群組');}
-function ungroupFurnitureSelection(){const selected=selectedFurniture(),ids=new Set(selected.map(f=>f.groupId).filter(Boolean));if(!ids.size)return toast('所選家具尚未群組');mutate(()=>clearFurnitureGroup(state.furniture,ids));toast('已解除群組');}
+function rotateFurnitureSelection(degrees){const selected=selectedFurniture();if(!selected.length)return toast(tr('請先選取家具', 'Please select furniture first'));if(!Number.isFinite(degrees))return toast(tr('請輸入有效的角度', 'Please enter a valid angle'));const changes=rotateFurnitureSet(selected,degrees);mutate(()=>{for(const change of changes){const f=getF(change.id);if(f)Object.assign(f,change);}});}
+function groupFurnitureSelection(){const selected=selectedFurniture();if(selected.length<2)return toast(tr('請至少選取兩件家具', 'Please select at least 2 items'));const groupId=uid();mutate(()=>{const oldGroups=new Set(selected.map(f=>f.groupId).filter(Boolean));const all=state.furniture.filter(f=>selected.some(x=>x.id===f.id)||oldGroups.has(f.groupId));makeFurnitureGroup(all,groupId);for(const item of all)multiFurniture.add(item.id);});toast(tr('已建立家具群組', 'Furniture grouped'));}
+function ungroupFurnitureSelection(){const selected=selectedFurniture(),ids=new Set(selected.map(f=>f.groupId).filter(Boolean));if(!ids.size)return toast(tr('所選家具尚未群組', 'Selected furniture is not grouped'));mutate(()=>clearFurnitureGroup(state.furniture,ids));toast(tr('已解除群組', 'Group disbanded'));}
 
 
 function save(){
@@ -296,7 +315,7 @@ function save(){
   } catch (error) {
     reportBackupError(error);
   }
-  if(!legacyOK) toast('本機儲存空間不足，正嘗試 IndexedDB 備份');
+  if(!legacyOK) toast(tr('本機儲存空間不足，正嘗試 IndexedDB 備份', 'Local storage low; attempting IndexedDB backup'));
 }
 const snap = () => history.snapshot(state);
 // 拖曳 / 導入 / 重設共用同一筆提交機制，未改變內容不會清空 redo。
@@ -1348,12 +1367,20 @@ function moveConnectedAngledEndpoints(oldPoint, newPoint, excludedIndex=-1){
 }
 function angledWallPanel(index){
   const w=ANGLED_WALLS[index];if(!w)return '';
-  return `<section><h3>斜牆屬性</h3><div class="form"><label>起點 X<input id="ax0" type="number" value="${Math.round(w.start.x)}"></label><label>起點 Y<input id="ay0" type="number" value="${Math.round(w.start.y)}"></label><label>終點 X<input id="ax1" type="number" value="${Math.round(w.end.x)}"></label><label>終點 Y<input id="ay1" type="number" value="${Math.round(w.end.y)}"></label><label>牆厚 (mm)<input id="at" type="number" value="${w.thickness}" min="50"></label><label>牆高 (mm)<input id="ah" type="number" value="${w.height}" min="100"></label><label>長度 (mm)<input value="${Math.round(segmentLength(w.start,w.end))}" disabled></label></div><div class="actions"><button class="btn danger" id="aDel">刪除牆面</button><button class="btn" id="back">← 返回</button></div></section>`;
+  return `<section><h3>${tr('斜牆屬性','Angled wall properties')}</h3><div class="form">
+    <label>${tr('起點 X','Start X')}<input id="ax0" type="number" value="${Math.round(w.start.x)}"></label>
+    <label>${tr('起點 Y','Start Y')}<input id="ay0" type="number" value="${Math.round(w.start.y)}"></label>
+    <label>${tr('終點 X','End X')}<input id="ax1" type="number" value="${Math.round(w.end.x)}"></label>
+    <label>${tr('終點 Y','End Y')}<input id="ay1" type="number" value="${Math.round(w.end.y)}"></label>
+    <label>${tr('牆厚','Thickness')} (mm)<input id="at" type="number" value="${w.thickness}" min="50"></label>
+    <label>${tr('牆高','Height')} (mm)<input id="ah" type="number" value="${w.height}" min="100"></label>
+    <label>${tr('長度','Length')} (mm)<input value="${Math.round(segmentLength(w.start,w.end))}" disabled></label>
+  </div><div class="actions"><button class="btn danger" id="aDel">${tr('刪除牆面','Delete wall')}</button><button class="btn" id="back">${tr('← 返回','← Back')}</button></div></section>`;
 }
 function bindAngledWallPanel(index){
-  const edit=()=>{const w=ANGLED_WALLS[index];const a={x:+$('#ax0').value,y:+$('#ay0').value},b={x:+$('#ax1').value,y:+$('#ay1').value};if(![a.x,a.y,b.x,b.y].every(Number.isFinite)||segmentLength(a,b)<100)return toast('牆體長度不可小於 100 mm');mutate(()=>{moveConnectedAngledEndpoints(w.start,a,index);moveConnectedAngledEndpoints(w.end,b,index);w.start=a;w.end=b;w.thickness=Math.max(50,+$('#at').value||180);w.height=Math.max(100,+$('#ah').value||2800);state.archVersion++;});};
+  const edit=()=>{const w=ANGLED_WALLS[index];const a={x:+$('#ax0').value,y:+$('#ay0').value},b={x:+$('#ax1').value,y:+$('#ay1').value};if(![a.x,a.y,b.x,b.y].every(Number.isFinite)||segmentLength(a,b)<100)return toast(tr('牆體長度不可小於 100 mm', 'Wall length cannot be less than 100 mm'));mutate(()=>{moveConnectedAngledEndpoints(w.start,a,index);moveConnectedAngledEndpoints(w.end,b,index);w.start=a;w.end=b;w.thickness=Math.max(50,+$('#at').value||180);w.height=Math.max(100,+$('#ah').value||2800);state.archVersion++;});};
   ['ax0','ay0','ax1','ay1','at','ah'].forEach(id=>$('#'+id).onchange=edit);
-  $('#aDel').onclick=()=>{mutate(()=>ANGLED_WALLS.splice(index,1));select(null);};$('#back').onclick=()=>select(null);
+  $('#aDel').onclick=()=>{if(confirm(tr('移除此牆面？','Remove this wall?'))){mutate(()=>ANGLED_WALLS.splice(index,1));select(null);}};$('#back').onclick=()=>select(null);
 }
 function wallPanel(index){
   const w = WALLS[index]; if (!w) return '';
@@ -1378,7 +1405,7 @@ function bindWallPanel(index){
 }
 
 function furnPanel(f){
-  return `<section><h3>${tr('家具屬性','Furniture')}</h3>
+  return `<section><h3>${tr('家具屬性','Furniture Properties')}</h3>
     <div class="form">
       <label class="full">${tr('名稱','Name')}<input id="fName" value="${esc(nm(f.name))}"></label>
       <label>${tr('寬','Width')} (mm)<input type="number" id="fW" value="${f.w}" min="50" step="10"></label>
@@ -1412,7 +1439,7 @@ function bindFurnPanel(f){
   if (isOpening(f)) $('#embedWin').onclick = () => mutate(() => {
     const g=getF(f.id);
     const position=placeOpening(g,wallCentreLines(WALLS,ANGLED_WALLS,state.demolished));
-    if(!position){toast('找不到可容納這個門窗的牆段');return;}
+    if(!position){toast(tr('找不到可容納這個門窗的牆段', 'No wall section found to fit this opening'));return;}
     Object.assign(g,{cx:position.cx,cy:position.cy,rot:position.rot});
     if(!['windowbay','windowproject'].includes(g.type))g.d=Math.max(50,position.depth);
   });
@@ -1627,12 +1654,12 @@ function snapDrawWallPoint(p){
   return snapToJunction(q,WALLS,ANGLED_WALLS,tolerance);
 }
 function splitSelectedWall(){
-  if(ui.sel?.kind!=='wall')return toast('請先選取要分割的牆體');
+  if(ui.sel?.kind!=='wall')return toast(tr('請先選取要分割的牆體', 'Please select a wall to split first'));
   const index=ui.sel.index,w=WALLS[index]; if(!w)return;
-  if(wallHasOpening(w))return toast('這面牆含門窗開口，請先調整門窗位置再分割');
+  if(wallHasOpening(w))return toast(tr('這面牆含門窗開口，請先調整門窗位置再分割', 'This wall contains openings; move openings before splitting'));
   const horizontal=(w[2]-w[0])>=(w[3]-w[1]);
   const axis=horizontal?0:1, mid=Math.round((w[axis]+w[axis+2])/20)*10;
-  if(mid-w[axis]<100 || w[axis+2]-mid<100)return toast('牆體太短，無法分割');
+  if(mid-w[axis]<100 || w[axis+2]-mid<100)return toast(tr('牆體太短，無法分割', 'Wall too short to split'));
   mutate(()=>{
     const first=[...w], second=[...w]; first[axis+2]=mid;second[axis]=mid;
     WALLS.splice(index,1,first,second);
@@ -1654,8 +1681,8 @@ function setTool(t){
 }
 function syncModeHint(){
   const hints = {select:'',
-    wallDraw:'點兩下畫任意角度牆；Shift 限制水平／垂直，靠近端點自動接合，Esc 取消。',
-    wallMove:'按住牆體拖曳以平移；包含門窗開口的牆體暫時禁止平移。',
+    wallDraw:tr('點兩點畫任意角度牆；Shift 限制水平／垂直，靠近端點自動接合，Esc 取消。', 'Click two points to draw a wall; Shift locks ortho, auto-snaps to ends, Esc cancels.'),
+    wallMove:tr('按住牆體拖曳以平移；包含門窗開口的牆體暫時禁止平移。', 'Drag wall to move; walls with openings cannot be moved.'),
     measure:COARSE ? tr('按住拖出量測線，或依次點兩點 · 靠近牆面自動吸附 · 點「選取」退出', 'Hold and drag a line, or tap two points · snaps to walls · tap "Select" to exit')
       : tr('點擊兩點（或按住拖曳）量測距離 · 靠近牆面自動吸附 · Shift 鎖定水平/垂直 · Esc 取消', 'Click two points (or drag) to measure · snaps to walls · Shift locks horizontal/vertical · Esc cancels'),
     demolish:tr('點擊灰色非承重牆標記拆除，再次點擊還原 · 黑色承重牆不可拆', 'Click a grey non-bearing wall to remove it, click again to restore · black bearing walls cannot be removed')};
@@ -1703,10 +1730,10 @@ function renderFurnitureGuides(){
  g.innerHTML=furnitureGuides.map(guide=>{
   if(guide.axis==='wall'){
     const {a,b,position}=guide;
-    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1d93bb" stroke-width="${2/view.s}" stroke-dasharray="${6/view.s} ${4/view.s}"/><circle cx="${position.x}" cy="${position.y}" r="${4/view.s}" fill="#1d93bb"/><text x="${position.x+8/view.s}" y="${position.y-8/view.s}" font-size="${12/view.s}" fill="#087293" stroke="#fff" stroke-width="${3/view.s}" paint-order="stroke">貼齊牆面</text>`;
+    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1d93bb" stroke-width="${2/view.s}" stroke-dasharray="${6/view.s} ${4/view.s}"/><circle cx="${position.x}" cy="${position.y}" r="${4/view.s}" fill="#1d93bb"/><text x="${position.x+8/view.s}" y="${position.y-8/view.s}" font-size="${12/view.s}" fill="#087293" stroke="#fff" stroke-width="${3/view.s}" paint-order="stroke">${tr('貼齊牆面','Wall Snap')}</text>`;
   }
   const vertical=guide.axis==='x',x1=vertical?guide.position:guide.from,y1=vertical?guide.from:guide.position,x2=vertical?guide.position:guide.to,y2=vertical?guide.to:guide.position;
-  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1d93bb" stroke-width="${1.5/view.s}" stroke-dasharray="${5/view.s} ${4/view.s}"/><text x="${x2+5/view.s}" y="${y2-5/view.s}" font-size="${11/view.s}" fill="#087293" stroke="#fff" stroke-width="${3/view.s}" paint-order="stroke">對齊</text>`;
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1d93bb" stroke-width="${1.5/view.s}" stroke-dasharray="${5/view.s} ${4/view.s}"/><text x="${x2+5/view.s}" y="${y2-5/view.s}" font-size="${11/view.s}" fill="#087293" stroke="#fff" stroke-width="${3/view.s}" paint-order="stroke">${tr('對齊','Align')}</text>`;
  }).join('');
 }
 function collisionWalls(){
@@ -1722,7 +1749,7 @@ function renderCollisionWarnings(){
  const errors=hits.filter(h=>h.severity==='collision'),clear=hits.filter(h=>h.severity==='clearance');
  if(!hits.length){g.innerHTML='';return;}
  const severity=errors.length?'collision':'clearance',color=errors.length?'#dc4e4a':'#e4a12b';
- const label=errors.length?`碰撞警告 ${errors.length} 處`:`安全距離不足 ${clear.length} 處`;
+ const label=errors.length?tr(`碰撞警告 ${errors.length} 處`,`${errors.length} Collision Warning${errors.length>1?'s':''}`):tr(`安全距離不足 ${clear.length} 處`,`${clear.length} Clearance Warning${clear.length>1?'s':''}`);
  const escLabel=esc(label);
  const r=Math.max(12,11/view.s),px=f.cx,py=f.cy-(Math.max(f.w,f.d)/2)-22/view.s;
  g.innerHTML=`<polygon points="${poly}" fill="${color}" fill-opacity=".12" stroke="${color}" stroke-width="${2/view.s}" stroke-dasharray="${6/view.s} ${4/view.s}"/>`+
@@ -1742,9 +1769,10 @@ function renderPlanDiagnostics(){
    return `<g transform="translate(${issue.x} ${issue.y})" pointer-events="none"><circle r="${11*k}" fill="${color}" stroke="white" stroke-width="${2*k}"/><text y="${4*k}" text-anchor="middle" font-size="${11*k}" fill="white" font-weight="bold">${i+1}</text></g>`;
  }).join('');
  list.hidden=false;
- list.innerHTML=`<div class="diag-head"><b>空間檢查</b><button type="button" id="diagClose" aria-label="關閉空間檢查">×</button></div><div class="diag-summary">碰撞 ${summary.collisions} · 間距 ${summary.clearances} · 通道提醒 ${summary.walkways}</div>` +
- (issues.length?issues.slice(0,40).map((issue,i)=>`<button type="button" class="diag-issue" data-diag-fid="${esc(issue.furnitureId)}"><b>${i+1}. ${esc(issue.title)}</b><small>${esc(issue.detail)}</small></button>`).join(''):'<p class="diag-empty">目前沒有發現需要提醒的家具碰撞或間距問題。</p>') +
- (issues.length>40?`<p class="diag-empty">尚有 ${issues.length-40} 項，請先處理已顯示的問題。</p>`:'');
+ const diagTitle = issue => issue.severity==='collision' ? tr('物件重疊','Object Overlap') : issue.severity==='clearance' ? tr('家具間距不足','Insufficient Clearance') : tr('可能的狹窄通道','Possible Narrow Passage');
+ list.innerHTML=`<div class="diag-head"><b>${tr('空間檢查','Space Diagnostics')}</b><button type="button" id="diagClose" aria-label="${tr('關閉空間檢查','Close Diagnostics')}">×</button></div><div class="diag-summary">${tr(`碰撞 ${summary.collisions} · 間距 ${summary.clearances} · 通道提醒 ${summary.walkways}`, `Collisions: ${summary.collisions} · Clearances: ${summary.clearances} · Walkways: ${summary.walkways}`)}</div>` +
+ (issues.length?issues.slice(0,40).map((issue,i)=>`<button type="button" class="diag-issue" data-diag-fid="${esc(issue.furnitureId)}"><b>${i+1}. ${esc(diagTitle(issue))}</b><small>${esc(issue.detail)}</small></button>`).join(''):`<p class="diag-empty">${tr('目前沒有發現需要提醒的家具碰撞或間距問題。','No furniture collisions or clearance issues detected.')}</p>`) +
+ (issues.length>40?`<p class="diag-empty">${tr(`尚有 ${issues.length-40} 項，請先處理已顯示的問題。`, `${issues.length-40} more items; please resolve displayed issues first.`)}</p>`:'');
  list.querySelector('#diagClose').onclick=()=>{ui.layers.diagnostics=false;syncLayerButtons();renderPlanDiagnostics();};
  list.querySelectorAll('[data-diag-fid]').forEach(el=>el.onclick=()=>{
    const id=el.dataset.diagFid,f=state.furniture.find(x=>String(x.id)===id);if(!f)return;
@@ -1852,7 +1880,7 @@ const onEditorPointerDown = e => {
   }
   if(ui.tool==='wallMove' && t.closest('[data-wall]')){
     const index=Number(t.closest('[data-wall]').dataset.wall.slice(1));
-    if(wallHasOpening(WALLS[index])){toast('這面牆含門窗開口，請先調整門窗位置再移動');return;}
+    if(wallHasOpening(WALLS[index])){toast(tr('這面牆含門窗開口，請先調整門窗位置再移動', 'This wall contains openings; move openings before moving wall'));return;}
     select({kind:'wall',index});
     drag={kind:'wallMove',index,wall:[...WALLS[index]],origin:p,sx:e.clientX,sy:e.clientY,before:snap(),moved:false};
     svg.setPointerCapture(e.pointerId);return;
@@ -2259,7 +2287,7 @@ function houseDimensions() {
   const width=Number($('#houseWidth').value)*1000,depth=Number($('#houseDepth').value)*1000;
   return Number.isFinite(width)&&Number.isFinite(depth)&&width>=1000&&depth>=1000&&width<=50000&&depth<=50000 ? [width,depth] : null;
 }
-function previewHouseArea(){const dims=houseDimensions();$('#houseArea').textContent=dims?`地坪範圍：${areaUnit(dims[0]*dims[1]/1e6)}`:'';}
+function previewHouseArea(){const dims=houseDimensions();$('#houseArea').textContent=dims?`${tr('地坪範圍：','Floor area:')} ${areaUnit(dims[0]*dims[1]/1e6)}`:'';}
 $('#houseSettings').onclick=()=>{
   const [x,y,x1,y1]=houseBounds(ROOMS);
   $('#houseWidth').value=((x1-x)/1000).toFixed(2);$('#houseDepth').value=((y1-y)/1000).toFixed(2);
@@ -2361,7 +2389,7 @@ furnitureRotationForm?.addEventListener('submit', event => {
 });
 document.querySelectorAll('[data-furn-rotate]').forEach(button => button.addEventListener('click', () => {
   if (button.dataset.furnRotate === 'custom') {
-    if (!selectedFurniture().length) { toast('請先選取家具'); return; }
+    if (!selectedFurniture().length) { toast(tr('請先選取家具', 'Please select furniture first')); return; }
     furnitureRotationInput.value = '45';
     furnitureRotationError.hidden = true;
     furnitureRotationDialog.showModal();
@@ -2394,4 +2422,4 @@ window.addEventListener('floorplan:studio-restore', event => {
     renderAll();
   }
 });
-window.addEventListener('floorplan:storage-error',event=>{ toast(event.detail?.message||'儲存失敗，請匯出備份'); });
+window.addEventListener('floorplan:storage-error',event=>{ toast(event.detail?.message || tr('儲存失敗，請匯出備份', 'Save failed; please export a backup')); });
