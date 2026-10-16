@@ -307,18 +307,18 @@ header.office-ribbon .ribbon-section .grp button.btn:hover{
 }
 header.office-ribbon .ribbon-section button.btn.on,
 header.office-ribbon .ribbon-section .grp button.btn.on{
-  background:#b5653a;color:#fff;border-color:#b5653a;
-  box-shadow:0 2px 5px rgba(181,101,58,.15);
+  background:#fbf5ee;color:#8f4828;border:2px solid #b5653a;
+  box-shadow:0 0 0 1px #b5653a inset,0 2px 6px rgba(181,101,58,.18);
 }
 header.office-ribbon .ribbon-section button.btn.on:hover,
 header.office-ribbon .ribbon-section .grp button.btn.on:hover{
-  background:#944d2b;color:#fff;border-color:#944d2b;
+  background:#f4ebe1;color:#73391e;border-color:#944d2b;
 }
 header.office-ribbon .ribbon-section button.btn.chip.on,
 header.office-ribbon .ribbon-section .grp button.btn.chip.on{
-  background:#f8e9dd;color:#98502e;border-color:#edcfb8;box-shadow:none;
+  background:#fdf8f4;color:#8f4828;border:1.5px solid #d88a5c;box-shadow:0 1px 3px rgba(181,101,58,.12);
 }
-header.office-ribbon .ribbon-section button.btn.chip.on:hover{background:#f2d9c6;color:#81401f}
+header.office-ribbon .ribbon-section button.btn.chip.on:hover{background:#f7ede3;color:#7a3a1b;border-color:#b5653a}
 header.office-ribbon .ribbon-section button.btn.danger{background:#fff;color:#aa4133;border-color:#eed9d3}
 header.office-ribbon .ribbon-section button.btn.danger:hover{background:#fff0ed;color:#952f24;border-color:#e9aca2}
 header.office-ribbon .ribbon-section button.btn:disabled{background:#f8f6f3;color:#a99e93;border-color:#ebe4dc;box-shadow:none;cursor:not-allowed}
@@ -341,28 +341,75 @@ header.office-ribbon .range input{accent-color:#b5653a}
 @media(max-width:600px){.ribbon-brand{display:none}.ribbon-topline{min-height:46px}.ribbon-content,.ribbon-page{min-height:93px}}
 @media(prefers-reduced-motion:reduce){header.office-ribbon .btn,.ribbon-tab{transition:none}}
 
-/* Ribbon 首頁常用工具與一致的圖示/狀態色 */
+/* Ribbon 首頁常用工具與彩色圖示/狀態色 */
 header.office-ribbon .ribbon-tab{display:inline-flex;align-items:center;justify-content:center;gap:7px}
-.ribbon-tab-icon{font-size:17px;line-height:1;color:#9b6849;min-width:16px;text-align:center}
+.ribbon-tab-icon{font-size:17px;line-height:1;min-width:16px;text-align:center;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',system-ui,sans-serif}
 .ribbon-home-section{min-width:140px;max-width:420px}
 .ribbon-home-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px;max-width:360px}
-header.office-ribbon .ribbon-home-actions .ribbon-quick-action{min-height:39px;padding:7px 11px}
-header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active{background:#b5653a;color:#fff;border-color:#b5653a}
-header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover{background:#944d2b;color:#fff}
-header.office-ribbon .ribbon-section button.btn[data-ribbon-icon]::before{font-family:system-ui,'Segoe UI Symbol',sans-serif;font-size:16px;line-height:1;flex:none}
-header.office-ribbon .ribbon-top-actions button[data-ribbon-icon]::before{content:attr(data-ribbon-icon);margin-right:5px;font-weight:600}
-header.office-ribbon button.btn:disabled{opacity:.54;cursor:not-allowed}
-/* Ribbon hotfix: shortcuts stay readable and icons render in home buttons. */
 header.office-ribbon .ribbon-home-actions .ribbon-quick-action{
-  display:inline-flex;align-items:center;gap:7px;
+  min-height:39px;padding:7px 11px;display:inline-flex;align-items:center;gap:7px;
   background:#fff;color:#44372d;border:1px solid #e6d9ca;
 }
-header.office-ribbon .ribbon-home-actions .ribbon-quick-action::before{
-  content:attr(data-ribbon-icon);font:600 16px/1 system-ui,'Segoe UI Symbol',sans-serif;
-}
 header.office-ribbon .ribbon-home-actions .ribbon-quick-action:hover:not(:disabled){background:#f6e9dd;color:#8f4828}
-header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active,
-header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover:not(:disabled){background:#b5653a;color:#fff;border-color:#b5653a}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active{
+  background:#fbf5ee;color:#8f4828;border:2px solid #b5653a;
+  box-shadow:0 0 0 1px #b5653a inset,0 2px 6px rgba(181,101,58,.18);
+}
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover:not(:disabled){
+  background:#f4ebe1;color:#73391e;border-color:#944d2b;
+}
+
+header.office-ribbon .ribbon-section button.btn[data-ribbon-icon]::before,
+header.office-ribbon .ribbon-home-actions .ribbon-quick-action::before,
+header.office-ribbon .ribbon-top-actions button[data-ribbon-icon]::before{
+  content:attr(data-ribbon-icon);
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',system-ui,sans-serif;
+  font-size:16px;line-height:1;flex:none;
+}
+header.office-ribbon .ribbon-top-actions button[data-ribbon-icon]::before{margin-right:5px;font-weight:600}
+header.office-ribbon button.btn:disabled{opacity:.54;cursor:not-allowed}
+
+/* Ribbon 分區頂部色彩線條與標籤色系，增進視覺區分 */
+header.office-ribbon .ribbon-home .ribbon-layout-section{border-top:3px solid #b5653a}
+header.office-ribbon .ribbon-home .ribbon-layout-section .ribbon-section-label{color:#8f4828}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(2){border-top:3px solid #3b82f6}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(2) .ribbon-section-label{color:#1d4ed8}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(3){border-top:3px solid #10b981}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(3) .ribbon-section-label{color:#047857}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(4){border-top:3px solid #8b5cf6}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(4) .ribbon-section-label{color:#6d28d9}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(5){border-top:3px solid #f59e0b}
+header.office-ribbon .ribbon-home .ribbon-home-section:nth-of-type(5) .ribbon-section-label{color:#b45309}
+
+/* 其他分頁之分區色彩 */
+header.office-ribbon .ribbon-page:nth-child(2) .ribbon-section:first-child{border-top:3px solid #3b82f6}
+header.office-ribbon .ribbon-page:nth-child(2) .ribbon-section:first-child .ribbon-section-label{color:#1d4ed8}
+header.office-ribbon .ribbon-page:nth-child(2) .ribbon-section:last-child{border-top:3px solid #ef4444}
+header.office-ribbon .ribbon-page:nth-child(2) .ribbon-section:last-child .ribbon-section-label{color:#b91c1c}
+
+header.office-ribbon .ribbon-page:nth-child(3) .ribbon-section:first-child{border-top:3px solid #10b981}
+header.office-ribbon .ribbon-page:nth-child(3) .ribbon-section:first-child .ribbon-section-label{color:#047857}
+header.office-ribbon .ribbon-page:nth-child(3) .ribbon-section:last-child{border-top:3px solid #06b6d4}
+header.office-ribbon .ribbon-page:nth-child(3) .ribbon-section:last-child .ribbon-section-label{color:#0e7490}
+
+header.office-ribbon .ribbon-page:nth-child(4) .ribbon-section:nth-child(1){border-top:3px solid #f59e0b}
+header.office-ribbon .ribbon-page:nth-child(4) .ribbon-section:nth-child(1) .ribbon-section-label{color:#b45309}
+header.office-ribbon .ribbon-page:nth-child(4) .ribbon-section:nth-child(2){border-top:3px solid #6366f1}
+header.office-ribbon .ribbon-page:nth-child(4) .ribbon-section:nth-child(2) .ribbon-section-label{color:#4338ca}
+header.office-ribbon .ribbon-page:nth-child(4) .ribbon-section:nth-child(3){border-top:3px solid #10b981}
+header.office-ribbon .ribbon-page:nth-child(4) .ribbon-section:nth-child(3) .ribbon-section-label{color:#047857}
+
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(1){border-top:3px solid #8b5cf6}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(1) .ribbon-section-label{color:#6d28d9}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(2){border-top:3px solid #0ea5e9}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(2) .ribbon-section-label{color:#0284c7}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(3){border-top:3px solid #a855f7}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(3) .ribbon-section-label{color:#7e22ce}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(4){border-top:3px solid #64748b}
+header.office-ribbon .ribbon-page:nth-child(5) .ribbon-section:nth-child(4) .ribbon-section-label{color:#475569}
+
+header.office-ribbon .ribbon-page:nth-child(6) .ribbon-section{border-top:3px solid #f59e0b}
+header.office-ribbon .ribbon-page:nth-child(6) .ribbon-section .ribbon-section-label{color:#b45309}
 
 /* 家具庫 3D 預覽 - 懸停微互動膠囊 */
 .preview3d-btn{position:absolute;top:2px;right:2px;display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border:1px solid rgba(181,101,58,.28);border-radius:6px;background:rgba(255,255,255,.94);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:#7e4a2d;font-family:inherit;font-size:10px;font-weight:700;line-height:1.2;letter-spacing:.3px;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 5px rgba(45,35,25,.08);opacity:0;transform:translateY(-2px) scale(.92);pointer-events:none;transition:opacity .18s cubic-bezier(.2,.8,.2,1),transform .18s cubic-bezier(.2,.8,.2,1),background .15s,border-color .15s,box-shadow .15s;z-index:3}

@@ -12,9 +12,20 @@
       <section class="fp-help-modal" role="dialog" aria-modal="true" :aria-label="settingsOpen ? t('ui.tutorial.settings.2') : t('ui.user.guide')">
         <header><h2>{{ settingsOpen ? '⚙ ' + t('ui.tutorial.settings.2') : '📖 ' + t('ui.user.guide') }}</h2><button type="button" @click="closeDialogs" :aria-label="t('ui.close')">✕</button></header>
         <template v-if="settingsOpen">
-          <p>{{ t('ui.guide.settings.description') }}</p>
-          <label class="fp-guide-switch"><input type="checkbox" v-model="autoGuide" @change="savePreferences"/> <span>{{ t('ui.guide.settings.enable') }}</span></label>
-          <p class="fp-help-muted">{{ t('ui.guide.settings.disabled.notice') }}</p>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="fp-settings-card">
+              <label class="fp-guide-switch">
+                <input type="checkbox" :checked="editorPreferences.ribbonShowLabels" @change="toggleRibbonLabels($event.target.checked)"/>
+                <span>{{ t('ui.ribbon.show.labels') }}（{{ localeState.locale.startsWith('zh') ? '圖＋文' : t('ui.ribbon.show.labels') }}）</span>
+              </label>
+              <p class="fp-help-muted" style="margin:6px 0 0 4px;">{{ t('ui.ribbon.show.labels.description') }}</p>
+            </div>
+            <div class="fp-settings-card">
+              <label class="fp-guide-switch"><input type="checkbox" v-model="autoGuide" @change="savePreferences"/> <span>{{ t('ui.guide.settings.enable') }}</span></label>
+              <p class="fp-help-muted" style="margin:6px 0 0 4px;">{{ t('ui.guide.settings.description') }}</p>
+              <p class="fp-help-muted" style="margin:4px 0 0 4px;">{{ t('ui.guide.settings.disabled.notice') }}</p>
+            </div>
+          </div>
           <div class="fp-help-footer"><button type="button" @click="startTour">▶ {{ t('ui.guide.replay') }}</button><button type="button" class="primary" @click="closeDialogs">{{ t('ui.guide.done') }}</button></div>
         </template>
         <template v-else>
@@ -32,6 +43,8 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { t, localeState } from '../i18n/index.js';
+import { editorPreferences, setRibbonShowLabels } from '../services/editorPreferences.js';
+function toggleRibbonLabels(val) { setRibbonShowLabels(val); }
 const preferenceKey='floorplan:guide-enabled:v1';
 const completedKey='floorplan:guide-seen:v1';
 const tourOpen=ref(false),helpOpen=ref(false),settingsOpen=ref(false),autoGuide=ref(true),stepIndex=ref(0),currentRect=ref(null),search=ref('');
