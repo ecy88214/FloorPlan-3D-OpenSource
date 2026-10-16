@@ -14,6 +14,30 @@
         <template v-if="settingsOpen">
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div class="fp-settings-card">
+              <div class="fp-settings-card-head">
+                <strong>🎨 {{ t('ui.style.title') }}</strong>
+              </div>
+              <p class="fp-help-muted" style="margin:4px 0 10px 0;">{{ t('ui.style.description') }}</p>
+              <div class="fp-style-grid">
+                <button type="button" class="fp-style-card" :class="{ selected: editorPreferences.renderStyle !== 'handDrawn' }" @click="changeRenderStyle('default')">
+                  <div class="fp-style-card-badge">📐</div>
+                  <div class="fp-style-card-body">
+                    <strong>{{ t('ui.style.default.name') }}</strong>
+                    <p>{{ t('ui.style.default.desc') }}</p>
+                  </div>
+                  <div class="fp-style-check" aria-hidden="true">{{ editorPreferences.renderStyle !== 'handDrawn' ? '✓' : '' }}</div>
+                </button>
+                <button type="button" class="fp-style-card" :class="{ selected: editorPreferences.renderStyle === 'handDrawn' }" @click="changeRenderStyle('handDrawn')">
+                  <div class="fp-style-card-badge">🎨</div>
+                  <div class="fp-style-card-body">
+                    <strong>{{ t('ui.style.handdrawn.name') }}</strong>
+                    <p>{{ t('ui.style.handdrawn.desc') }}</p>
+                  </div>
+                  <div class="fp-style-check" aria-hidden="true">{{ editorPreferences.renderStyle === 'handDrawn' ? '✓' : '' }}</div>
+                </button>
+              </div>
+            </div>
+            <div class="fp-settings-card">
               <label class="fp-guide-switch">
                 <input type="checkbox" :checked="editorPreferences.ribbonShowLabels" @change="toggleRibbonLabels($event.target.checked)"/>
                 <span>{{ t('ui.ribbon.show.labels') }}（{{ localeState.locale.startsWith('zh') ? '圖＋文' : t('ui.ribbon.show.labels') }}）</span>
@@ -43,8 +67,9 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { t, localeState } from '../i18n/index.js';
-import { editorPreferences, setRibbonShowLabels } from '../services/editorPreferences.js';
+import { editorPreferences, setRibbonShowLabels, setRenderStyle } from '../services/editorPreferences.js';
 function toggleRibbonLabels(val) { setRibbonShowLabels(val); }
+function changeRenderStyle(style) { setRenderStyle(style); }
 const preferenceKey='floorplan:guide-enabled:v1';
 const completedKey='floorplan:guide-seen:v1';
 const tourOpen=ref(false),helpOpen=ref(false),settingsOpen=ref(false),autoGuide=ref(true),stepIndex=ref(0),currentRect=ref(null),search=ref('');

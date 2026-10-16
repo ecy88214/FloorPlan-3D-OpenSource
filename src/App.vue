@@ -1,5 +1,5 @@
 <template>
-  <div class="app" :data-view="viewState.mode" :data-language="viewState.language">
+  <div class="app" :data-view="viewState.mode" :data-language="viewState.language" :class="{ 'style-hand-drawn': editorPreferences.renderStyle === 'handDrawn' }">
     <EditorToolbar />
     <FurnitureLibrary />
     <FloorPlannerView />
@@ -21,9 +21,11 @@ import GuidedHelp from './components/GuidedHelp.vue';
 import DesignStudio from './components/DesignStudio.vue';
 import FloorPlannerView from './views/FloorPlannerView.vue';
 import { viewState } from './stores/viewState.js';
+import { editorPreferences, applyRenderStyleToDOM } from './services/editorPreferences.js';
 import { onMounted } from 'vue';
 
 onMounted(async () => {
+  applyRenderStyleToDOM(editorPreferences.renderStyle);
   await import('./editor/planEditor.js');
   await import('./scenes/threeScene.js');
 });

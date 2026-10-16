@@ -2,6 +2,7 @@ import { authorizeExport } from '../services/exportAccess.js';
 import {loadCustomFurniture} from '../furniture/models/modelLoader.js';
 import { wallCentreLines, openingInterval } from '../architecture/core/openingPlacement.js';
 import { registerScene } from '../services/sceneController.js';
+import { editorPreferences } from '../services/editorPreferences.js';
 import { ANGLED_WALLS, R, entry, WALLS, WINS, DOORS, SLIDES, ROOMS, tr, nm, COARSE, TAP, $, state, ui, view, snap, commit, cancelCommand as cancelDrag, getF, area, ln, renderAll, esc, drawer, closeDrawers, near, select, snapMove, drag, download } from '../editor/planEditor.js';
 
 /* ============================================================
@@ -93,6 +94,32 @@ function init(){
 
   archFloor = new THREE.Group(); archUp = new THREE.Group(); furnG = new THREE.Group(); labelG = new THREE.Group(); lampG = new THREE.Group();
   scene.add(archFloor, archUp, furnG, labelG, lampG);
+
+  function applyRenderStyle3D(style = editorPreferences.renderStyle){
+    const isHand = style === 'handDrawn';
+    if (!renderer) return;
+    if (isHand){
+      renderer.setClearColor(0xf6ede0, 1);
+      if (ground) ground.material.color.set(0xf6ede0);
+      if (sun) sun.color.set(0xffebd2);
+      if (hemi){ hemi.color.set(0xfff4df); hemi.groundColor.set(0xd8c2a8); }
+      if (wallMat) wallMat.color.set('#f9f4ec');
+      if (capMat) capMat.color.set('#4a3e35');
+    } else {
+      renderer.setClearColor(0xf8f6f0, 1);
+      if (ground) ground.material.color.set(0xf8f6f0);
+      if (sun) sun.color.set(0xfff1dd);
+      if (hemi){ hemi.color.set(0xfff8ee); hemi.groundColor.set(0xb9a88f); }
+      if (wallMat) wallMat.color.set(studio.wallColor || '#f4eee5');
+      if (capMat) capMat.color.set('#3f3c38');
+    }
+    if (scene && camera) {
+      renderer.render(scene, camera);
+      labelRenderer?.render(scene, camera);
+    }
+  }
+  applyRenderStyle3D();
+  window.addEventListener('floorplan:render-style-changed', e => applyRenderStyle3D(e.detail));
 
   const cv = renderer.domElement; let downAt = null, look = null;
   cv.addEventListener('pointerdown', e => {

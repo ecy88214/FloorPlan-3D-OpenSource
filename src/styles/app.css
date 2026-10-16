@@ -549,3 +549,195 @@ header.office-ribbon.show-ribbon-labels .ribbon-top-actions button[data-ribbon-i
   header.office-ribbon #viewSeg .pill{width:46px}
   body.m3d header.office-ribbon #viewSeg .pill{transform:translateX(48px)}
 }
+
+/* ============================================================
+ *  手繪風格 (Hand-Drawn / Watercolor Presentation Style)
+ * ============================================================ */
+
+/* 設定彈窗中的風格選擇卡片 */
+.fp-settings-card-head strong{
+  font-size: 14px;
+  color: #3d3227;
+}
+.fp-style-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 6px;
+}
+.fp-style-card{
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fdfbf7;
+  border: 1.5px solid #e5dccf;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all .16s ease;
+  position: relative;
+}
+.fp-style-card:hover{
+  background: #fcf6ee;
+  border-color: #b5653a;
+  box-shadow: 0 3px 10px rgba(181,101,58,0.12);
+}
+.fp-style-card.selected{
+  background: #fdf5ee;
+  border-color: #b5653a;
+  border-width: 2px;
+  box-shadow: 0 0 0 1px #b5653a inset, 0 3px 12px rgba(181,101,58,0.16);
+}
+.fp-style-card-badge{
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.fp-style-card-body strong{
+  display: block;
+  font-size: 13px;
+  color: #3f3226;
+  margin-bottom: 3px;
+}
+.fp-style-card-body p{
+  font-size: 11px;
+  color: #7b6d60;
+  line-height: 1.4;
+  margin: 0;
+}
+.fp-style-check{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #b5653a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fp-style-card:not(.selected) .fp-style-check{
+  display: none;
+}
+
+/* 2D 平面圖手繪風格 (Style 3 — 手繪呈現風格) */
+.style-hand-drawn #stage{
+  background-color: #f5eee3;
+}
+.style-hand-drawn #plan{
+  background-color: #f5eee3 !important;
+  background-image: 
+    radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.75) 0%, rgba(240,230,215,0.65) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.045'/%3E%3C/svg%3E") !important;
+}
+.style-hand-drawn #plan .furn{
+  filter: drop-shadow(4px 7px 8px rgba(65, 45, 25, 0.28)) drop-shadow(0 1px 3px rgba(65, 45, 25, 0.16)) !important;
+  transition: filter .18s ease;
+}
+@media (hover:hover){
+  .style-hand-drawn #plan .furn:hover{
+    filter: drop-shadow(6px 12px 14px rgba(181, 101, 58, 0.42)) !important;
+  }
+}
+.style-hand-drawn #gFurn path,
+.style-hand-drawn #gFurn rect,
+.style-hand-drawn #gFurn circle,
+.style-hand-drawn #gFurn polygon,
+.style-hand-drawn #gFurn ellipse{
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.style-hand-drawn #gWalls .wall{
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.style-hand-drawn #gDims text,
+.style-hand-drawn #gLabels text{
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  letter-spacing: 0.5px;
+}
+.style-hand-drawn #gDims line,
+.style-hand-drawn #gDims path{
+  stroke: #7c6451;
+  stroke-linecap: round;
+}
+
+/* 家具圖庫手繪風格 (Style 3) */
+.style-hand-drawn .lib{
+  background: #fbf7f0;
+  border-right-color: #ebdccb;
+}
+.style-hand-drawn .lib-hero-header{
+  background: linear-gradient(135deg, #fffdf8 0%, #f6ece0 100%);
+  border: 1px solid #e5d4be;
+  box-shadow: 0 3px 10px rgba(181, 101, 58, 0.10);
+}
+.style-hand-drawn .lib-hero-badge{
+  background: #b5653a;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.style-hand-drawn .lib-hero-tag{
+  color: #8c4a25;
+}
+.style-hand-drawn .lib-hero-desc{
+  color: #7d6b5c;
+  font-weight: 500;
+}
+.style-hand-drawn .lib-accordion-header{
+  background: #f8f1e5;
+  border-color: #e8dccb;
+  color: #4a3e33;
+}
+.style-hand-drawn .lib .item{
+  background: #fffdf9;
+  border: 1px solid #ebd9c7;
+  border-radius: 10px;
+  box-shadow: 0 2px 7px rgba(84, 62, 40, 0.08);
+  transition: all .18s cubic-bezier(.2,.8,.2,1);
+}
+.style-hand-drawn .lib .item:hover{
+  background: #fffefb;
+  border-color: #b5653a;
+  box-shadow: 0 8px 18px rgba(181, 101, 58, 0.20);
+  transform: translateY(-2px);
+}
+.style-hand-drawn .lib .item-preview{
+  background: radial-gradient(circle at center, #ffffff 40%, #f4e8dc 100%);
+  border-radius: 8px;
+  padding: 4px;
+}
+.style-hand-drawn .lib .item-preview svg{
+  filter: drop-shadow(3px 5px 6px rgba(75, 52, 33, 0.24));
+}
+.style-hand-drawn .lib .item-name{
+  color: #45362a;
+  font-weight: 600;
+}
+.style-hand-drawn .lib .item-dim{
+  color: #887464;
+  background: #f4ecdf;
+}
+
+/* 3D 空間手繪水彩風格 */
+.style-hand-drawn #view3d canvas{
+  filter: contrast(114%) saturate(88%) sepia(20%) brightness(102%);
+}
+.style-hand-drawn #view3d::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 65%, rgba(110, 75, 45, 0.16) 100%),
+              url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  box-shadow: inset 0 0 80px rgba(90, 60, 35, 0.14);
+  z-index: 5;
+}
+

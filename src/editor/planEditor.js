@@ -18,6 +18,7 @@ import { calculateFurnitureSnap, wallSegmentsFromPlan } from '../furniture/core/
 import { isOpening, wallCentreLines, placeOpening } from '../architecture/core/openingPlacement.js';
 import { showFurniturePreview } from '../services/furniturePreview3d.js';
 import { sceneController } from '../services/sceneController.js';
+import { editorPreferences } from '../services/editorPreferences.js';
 import { synchronizeWallSegments, normalizeArchitecture } from '../architecture/core/wallEngine.js';
 import { segmentFootprint, length as segmentLength } from '../architecture/core/geometry.js';
 import { snapEndpoint, joinFootprints } from '../architecture/core/cornerEngine.js';
@@ -367,6 +368,7 @@ function hex2rgb(h){ h = h.replace('#',''); if (h.length===3) h = h.split('').ma
 function shade(h,k){ const f = v => Math.max(0,Math.min(255,Math.round(k>1 ? v+(255-v)*(k-1)*2 : v*k))); return '#'+hex2rgb(h).map(v=>f(v).toString(16).padStart(2,'0')).join(''); }
 
 function buildDefs(){
+  const isHand = editorPreferences.renderStyle === 'handDrawn';
   const plank = (id,base,line) => `<pattern id="m-${id}" patternUnits="userSpaceOnUse" width="1800" height="360">
       <rect width="1800" height="360" fill="${base}"/>
       <path d="M0 0H1800M0 180H1800M1200 0V180M600 180V360" stroke="${line}" stroke-width="8"/>
@@ -374,19 +376,29 @@ function buildDefs(){
   const tile = (id,size,base,line) => `<pattern id="m-${id}" patternUnits="userSpaceOnUse" width="${size}" height="${size}">
       <rect width="${size}" height="${size}" fill="${base}"/><path d="M0 0H${size}M0 0V${size}" stroke="${line}" stroke-width="8"/></pattern>`;
   $('#defs').innerHTML =
-    plank('wood','#eedecb','#d8c2aa') + plank('walnut','#bda188','#9d8169') +
-    tile('tile800',800,'#f6f3ed','#e5dfd5') + tile('tile600',600,'#eef1ef','#d7ddd9') + tile('antislip',300,'#e5ebea','#cbd4d2') +
+    plank('wood', isHand ? '#f2e5d5' : '#eedecb', isHand ? '#ddcbb6' : '#d8c2aa') +
+    plank('walnut', isHand ? '#c7b29c' : '#bda188', isHand ? '#a8947e' : '#9d8169') +
+    tile('tile800', 800, isHand ? '#f7f4ed' : '#f6f3ed', isHand ? '#e3dcd1' : '#e5dfd5') +
+    tile('tile600', 600, isHand ? '#f1f3f0' : '#eef1ef', isHand ? '#dadfd9' : '#d7ddd9') +
+    tile('antislip', 300, isHand ? '#e8edec' : '#e5ebea', isHand ? '#d0d8d6' : '#cbd4d2') +
     `<pattern id="m-marble" patternUnits="userSpaceOnUse" width="1200" height="1200">
-      <rect width="1200" height="1200" fill="#faf8f5"/><path d="M0 0H1200M0 0V1200" stroke="#e8dfd5" stroke-width="8"/>
-      <path d="M-50 300C250 260 380 520 700 470S1100 640 1260 600M200 1200C300 950 520 980 640 820" stroke="#ded5c7" stroke-width="8" fill="none"/></pattern>
+      <rect width="1200" height="1200" fill="${isHand ? '#faf7f2' : '#faf8f5'}"/><path d="M0 0H1200M0 0V1200" stroke="${isHand ? '#e7dec9' : '#e8dfd5'}" stroke-width="8"/>
+      <path d="M-50 300C250 260 380 520 700 470S1100 640 1260 600M200 1200C300 950 520 980 640 820" stroke="${isHand ? '#dcd2bf' : '#ded5c7'}" stroke-width="8" fill="none"/></pattern>
     <pattern id="m-terrazzo" patternUnits="userSpaceOnUse" width="500" height="500">
-      <rect width="500" height="500" fill="#ece5da"/>
+      <rect width="500" height="500" fill="${isHand ? '#ece3d6' : '#ece5da'}"/>
       <circle cx="60" cy="80" r="18" fill="#b9a58c"/><circle cx="310" cy="140" r="14" fill="#8fa3a0"/><circle cx="190" cy="330" r="22" fill="#c9b7a2"/>
       <circle cx="420" cy="400" r="16" fill="#a88f76"/><circle cx="90" cy="440" r="11" fill="#8fa3a0"/><circle cx="440" cy="40" r="9" fill="#b9a58c"/></pattern>
     <pattern id="m-carpet" patternUnits="userSpaceOnUse" width="120" height="120">
-      <rect width="120" height="120" fill="#d9d4cc"/><circle cx="30" cy="30" r="8" fill="#c9c3ba"/><circle cx="90" cy="90" r="8" fill="#c9c3ba"/></pattern>
+      <rect width="120" height="120" fill="${isHand ? '#ded8ce' : '#d9d4cc'}"/><circle cx="30" cy="30" r="8" fill="#c9c3ba"/><circle cx="90" cy="90" r="8" fill="#c9c3ba"/></pattern>
     <pattern id="grid" patternUnits="userSpaceOnUse" width="1000" height="1000">
-      <path d="M500 0V1000M0 500H1000" stroke="#eae4d8" stroke-width="8"/><path d="M0 0V1000M0 0H1000" stroke="#ddd6c9" stroke-width="14"/></pattern>
+      <path d="M500 0V1000M0 500H1000" stroke="${isHand ? '#eae1d2' : '#eae4d8'}" stroke-width="8"/><path d="M0 0V1000M0 0H1000" stroke="${isHand ? '#dbd1c0' : '#ddd6c9'}" stroke-width="14"/></pattern>
+    <filter id="handDrawnFilter" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <filter id="handDrawnShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="8" dy="12" stdDeviation="8" flood-color="#543d2b" flood-opacity="0.25" />
+    </filter>
     <filter id="furn-shadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#2a2219" flood-opacity="0.14"/>
     </filter>`;
@@ -441,7 +453,497 @@ function laptopSvg(cx, cy, w = 240, d = 160) {
     <rect x="${tx}" y="${ty}" width="${tw}" height="${th}" rx="2" fill="#cbd5e1" ${ST_FAINT}/>`;
 }
 
-function furnSVG(t,w,d,c){
+/* ======================= 手繪水彩風格 (Style 3 — 手繪呈現風格) ======================= */
+const HD_ST = 'stroke="#43362a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+const HD_FINE = 'stroke="#6c5a48" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+const HD_FAINT = 'stroke="#9c8774" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+const hdRc = (x, y, w, h, f, ex = '') => `<rect x="${x}" y="${y}" width="${Math.max(0, w)}" height="${Math.max(0, h)}" fill="${f}" ${HD_ST} ${ex}/>`;
+const hdEc = (cx, cy, rx, ry, f, ex = '') => `<ellipse cx="${cx}" cy="${cy}" rx="${Math.max(0, rx)}" ry="${Math.max(0, ry)}" fill="${f}" ${HD_ST} ${ex}/>`;
+const hdLn = (x1, y1, x2, y2, ex = '') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${HD_ST} ${ex}/>`;
+const hdPa = (d, f = 'none', ex = '') => `<path d="${d}" fill="${f}" ${HD_ST} ${ex}/>`;
+
+function hdPlantSvg(cx, cy, r, potCol = '#bf7049', leafCol = '#4d7553') {
+  let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${potCol}" ${HD_ST}/>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="${r * 0.82}" fill="#543825" ${HD_FINE}/>`;
+  const leaves = [
+    { a: 0, scale: 1.0, col: '#466f4c' },
+    { a: 45, scale: 0.9, col: '#5b8761' },
+    { a: 90, scale: 1.05, col: '#3d6343' },
+    { a: 135, scale: 0.88, col: '#729e78' },
+    { a: 180, scale: 1.0, col: '#4e7754' },
+    { a: 225, scale: 0.92, col: '#5b8761' },
+    { a: 270, scale: 1.05, col: '#3a5e3f' },
+    { a: 315, scale: 0.88, col: '#6a9670' },
+  ];
+  for (const l of leaves) {
+    const lr = r * 0.95 * l.scale, lw = r * 0.44 * l.scale;
+    s += `<g transform="rotate(${l.a} ${cx} ${cy})">
+      <path d="M${cx} ${cy} C${cx - lw} ${cy - lr * 0.4} ${cx - lw * 0.8} ${cy - lr * 0.85} ${cx} ${cy - lr} C${cx + lw * 0.8} ${cy - lr * 0.85} ${cx + lw} ${cy - lr * 0.4} ${cx} ${cy} Z" fill="${l.col}" ${HD_ST}/>
+      <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - lr * 0.88}" stroke="#2a452e" stroke-width="0.8" vector-effect="non-scaling-stroke"/>
+    </g>`;
+  }
+  s += `<circle cx="${cx}" cy="${cy}" r="${r * 0.22}" fill="#2a452e"/>`;
+  return s;
+}
+
+function hdPillow(px, py, pw, ph, col, rot = 0) {
+  const trans = rot ? `transform="rotate(${rot} ${px + pw / 2} ${py + ph / 2})"` : '';
+  return `<g ${trans}>
+    <rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="14" fill="${col}" ${HD_ST}/>
+    <line x1="${px + pw * 0.25}" y1="${py + ph / 2}" x2="${px + pw * 0.75}" y2="${py + ph / 2}" stroke="${shade(col, 0.78)}" stroke-width="1.2" stroke-linecap="round"/>
+  </g>`;
+}
+
+function hdBook(bx, by, bw, bh, col = '#bf624b', rot = 0) {
+  const trans = rot ? `transform="rotate(${rot} ${bx + bw / 2} ${by + bh / 2})"` : '';
+  return `<g ${trans}>
+    <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="3" fill="${col}" ${HD_ST}/>
+    <rect x="${bx + 2}" y="${by + 2}" width="${bw - 4}" height="${bh - 4}" fill="#faf6ee" opacity="0.95"/>
+    <line x1="${bx + bw * 0.45}" y1="${by}" x2="${bx + bw * 0.45}" y2="${by + bh}" stroke="${col}" stroke-width="1"/>
+    <line x1="${bx + bw * 0.58}" y1="${by + bh * 0.25}" x2="${bx + bw * 0.85}" y2="${by + bh * 0.25}" ${HD_FAINT}/>
+    <line x1="${bx + bw * 0.58}" y1="${by + bh * 0.5}" x2="${bx + bw * 0.85}" y2="${by + bh * 0.5}" ${HD_FAINT}/>
+  </g>`;
+}
+
+function hdCup(cx, cy, r = 26) {
+  return `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r * 0.9}" fill="#fcf9f2" ${HD_ST}/>
+    <ellipse cx="${cx}" cy="${cy}" rx="${r * 0.72}" ry="${r * 0.65}" fill="#6b462c"/>
+    <ellipse cx="${cx - r * 0.18}" cy="${cy - r * 0.18}" rx="${r * 0.22}" ry="${r * 0.16}" fill="#a37651" opacity="0.65"/>
+    <path d="M${cx + r * 0.85} ${cy - r * 0.3} Q${cx + r * 1.55} ${cy} ${cx + r * 0.85} ${cy + r * 0.3}" fill="none" ${HD_ST}/>`;
+}
+
+function handDrawnFurnSVG(t, w, d, c) {
+  if (t === 'customglb') return hdRc(-w/2, -d/2, w, d, '#e1ebf2') + hdLn(-w/2, -d/2, w/2, d/2, 'stroke="#547ca0"') + hdLn(w/2, -d/2, -w/2, d/2, 'stroke="#547ca0"');
+  const x = -w/2, y = -d/2, m = Math.min(w, d);
+  switch (t) {
+    case 'balconyutility': case 'balconylounge': case 'balconygarden': case 'roomzone':
+      return hdRc(x, y, w, d, c) + hdRc(x + w * 0.08, y + d * 0.08, w * 0.84, d * 0.84, 'none', DASH)
+        + (t === 'balconylounge' ? hdEc(0, 0, w * 0.14, d * 0.23, '#ede3d1')
+          : t === 'balconygarden' ? hdPlantSvg(-w * 0.22, 0, w * 0.12) + hdPlantSvg(w * 0.22, 0, w * 0.12)
+          : t === 'balconyutility' ? hdRc(x + w * 0.1, y + d * 0.15, w * 0.25, d * 0.5, '#f8fafc') : '');
+    case 'bench':
+      return hdRc(x, y, w, d, '#cfae8d', 'rx="8"') + hdLn(x + 20, y + d/3, x + w - 20, y + d/3, HD_FINE) + hdLn(x + 20, y + d * 2/3, x + w - 20, y + d * 2/3, HD_FINE);
+    case 'wallbearing': case 'wallexterior': case 'wallpillar':
+      return hdRc(x, y, w, d, t === 'wallbearing' ? '#38322c' : t === 'wallexterior' ? '#544d45' : '#38322c');
+    case 'wall':
+      return hdRc(x, y, w, d, c || '#7d7468', 'rx="4"') + hdLn(x, y + d * 0.25, x + w, y + d * 0.25, 'opacity=".4"') + hdLn(x, y + d * 0.75, x + w, y + d * 0.75, 'opacity=".4"');
+    case 'walllow':
+      return hdRc(x, y, w, d, c || '#b0a598', 'rx="4"') + hdLn(x, y + d * 0.5, x + w, y + d * 0.5, 'opacity=".4"');
+    case 'wallglass':
+      return hdRc(x, y, w, d, 'rgba(190,230,245,.48)') + hdLn(x + w * 0.33, y, x + w * 0.33, y + d, 'stroke="#5d7285"') + hdLn(x + w * 0.66, y, x + w * 0.66, y + d, 'stroke="#5d7285"');
+    case 'wallcurve':
+      return hdPa(`M${x} ${y+d}Q0 ${y-d*.4} ${x+w} ${y+d}`, c || '#7d7468');
+    case 'door': case 'dooropen': case 'doorentry': case 'doordouble': case 'doorslide': case 'doorfold': case 'doorglass': {
+      const s = hdRc(x, y, w, d, '#eedecb');
+      if (t === 'dooropen' || t === 'doorentry') {
+        const entry = t === 'doorentry';
+        const hingeX = x, baseY = y + d / 2, r = w;
+        const thickness = Math.min(Math.max(d * 0.85, 58), entry ? 145 : 115);
+        const wallShade = entry ? '#a68c74' : '#c8ab8d';
+        const doorShade = entry ? '#7d634d' : '#9e856e';
+        const openLeaf = `<rect x="${hingeX}" y="${baseY-r}" width="${thickness}" height="${r}" fill="${wallShade}" ${HD_ST}/>`
+          + `<rect x="${hingeX}" y="${baseY-r}" width="${Math.max(thickness*.25,12)}" height="${r}" fill="${doorShade}" opacity=".85"/>`;
+        const threshold = `<line x1="${hingeX}" y1="${baseY}" x2="${hingeX+r}" y2="${baseY}" stroke="${entry ? '#be6e3b' : '#c6794b'}" stroke-width="${entry?5:4}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+        const swing = `<path d="M ${hingeX} ${baseY-r} A ${r} ${r} 0 0 1 ${hingeX+r} ${baseY}" fill="none" stroke="#77716b" stroke-width="1.2" stroke-dasharray="6 5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+        return openLeaf + threshold + swing;
+      }
+      if (t === 'doorslide' || t === 'doorglass') return hdRc(x, y, w, d, t === 'doorglass' ? 'rgba(190,230,245,.48)' : '#eedecb') + hdLn(0, y, 0, y + d, 'stroke="#7b5638"') + hdLn(x, y + d * 0.25, x + w, y + d * 0.25, 'stroke="#7b5638"') + hdLn(x, y + d * 0.75, x + w, y + d * 0.75, 'stroke="#7b5638"');
+      if (t === 'doorfold') return s + hdLn(x + w * 0.33, y, x + w * 0.33, y + d, 'stroke="#7b5638"') + hdLn(x + w * 0.66, y, x + w * 0.66, y + d, 'stroke="#7b5638"');
+      if (t === 'doordouble') return s + hdLn(0, y, 0, y + d, 'stroke="#7b5638"') + hdPa(`M${x} ${y+d}A${w/2} ${w/2} 0 0 1 0 ${y}`, 'none', 'stroke="#7b5638"') + hdPa(`M${x+w} ${y+d}A${w/2} ${w/2} 0 0 0 0 ${y}`, 'none', 'stroke="#7b5638"');
+      return s + hdPa(`M${x} ${y+d}A${w} ${w} 0 0 1 ${x+w} ${y}`, 'none', 'stroke="#7b5638"') + hdLn(x, y + d, x + w, y, 'stroke="#7b5638"');
+    }
+    case 'windowproject': {
+      const side = Math.min(w * 0.1, 140), back = Math.min(d * 0.18, 95);
+      return hdRc(x, y, w, d, '#f5efe8')
+        + hdRc(x + side, y + back, w - side * 2, d - back * 2, '#e8f4f8')
+        + hdRc(x, y, side, d, '#c4b5a7') + hdRc(x + w - side, y, side, d, '#c4b5a7')
+        + hdRc(x, y + d - back, w, back, '#c4e8eb')
+        + hdLn(0, y + d - back, 0, y + d, 'stroke="#5d7285"')
+        + hdLn(x, y, x + w, y, 'stroke="#756b62" stroke-dasharray="18 10"');
+    }
+    case 'windowbuilt': case 'window': case 'windowwide': case 'windowslide': case 'windowbay': case 'windowcorner': {
+      let s = hdRc(x, y, w, d, '#eaf5fb');
+      const n = t === 'window' ? 1 : t === 'windowcorner' ? 3 : 2;
+      for (let i = 1; i < n; i++) s += hdLn(x + w * i / n, y, x + w * i / n, y + d, 'stroke="#5d7285"');
+      return s + hdLn(x, y + d * 0.25, x + w, y + d * 0.25, 'stroke="#5d7285"') + hdLn(x, y + d * 0.75, x + w, y + d * 0.75, 'stroke="#5d7285"');
+    }
+    case 'bed': {
+      if (w < 1350) {
+        // 單人床 (Style 3 手繪單人床：橡木床框、白枕頭、暖粉綠棉被反折與裝飾縫線)
+        const pw = Math.min(w - 160, 520), ph = Math.min(270, d * 0.16);
+        const px = x + (w - pw) / 2, py = y + 105;
+        const by = y + d * 0.46, bh = y + d - 28 - by;
+        return hdRc(x, y, w, 72, '#bfa182', 'rx="8"')
+          + hdRc(x + 10, y + 62, w - 20, d - 72, '#cca986', 'rx="16"')
+          + hdRc(x + 20, y + 72, w - 40, d - 92, '#faf6ef', 'rx="12"')
+          + hdRc(px, py, pw, ph, '#ffffff', 'rx="26"')
+          + hdLn(px + pw * 0.3, py + ph / 2, px + pw * 0.7, py + ph / 2, 'stroke="#b0a294" stroke-width="0.9"')
+          + hdRc(x + 20, by, w - 40, bh, '#728970', 'rx="14"')
+          + hdRc(x + 20, by, w - 40, 75, '#879e85', 'rx="8"')
+          + hdLn(x + 28, by + 75, x + w - 28, by + 75, 'stroke="#566e54" stroke-dasharray="8 6"')
+          + hdRc(x + 10, y + d - 18, w - 20, 14, '#bfa182', 'rx="4"');
+      }
+      // 雙人床 (Style 3 手繪雙人床：溫潤橡木床頭板、雙白枕、橄欖綠被褶、焦糖暖橘床尾飾巾)
+      const pw = (w - 160) / 2, ph = Math.min(300, d * 0.17), py = y + 115;
+      const dy = py + ph + 35;
+      const ry = y + d * 0.62, rh = y + d - 28 - ry;
+      return hdRc(x, y, w, 82, '#bfa182', 'rx="10"')
+        + hdRc(x + 10, y + 72, w - 20, d - 82, '#cca986', 'rx="18"')
+        + hdRc(x + 20, y + 82, w - 40, d - 102, '#faf6ef', 'rx="14"')
+        + hdRc(x + 32, py, pw - 18, ph, '#ffffff', 'rx="28"')
+        + hdLn(x + 55, py + ph / 2, x + 15 + pw, py + ph / 2, 'stroke="#b0a294" stroke-width="0.9"')
+        + hdRc(x + 50 + pw, py, pw - 18, ph, '#ffffff', 'rx="28"')
+        + hdLn(x + 72 + pw, py + ph / 2, x + 32 + 2 * pw, py + ph / 2, 'stroke="#b0a294" stroke-width="0.9"')
+        + hdRc(x + 20, dy, w - 40, y + d - 28 - dy, '#728970', 'rx="14"')
+        + hdRc(x + 20, dy, w - 40, 80, '#869d84', 'rx="8"')
+        + hdLn(x + 28, dy + 80, x + w - 28, dy + 80, 'stroke="#566e54" stroke-dasharray="8 6"')
+        + hdRc(x + 20, ry, w - 40, rh, '#be654d', 'rx="12"')
+        + hdRc(x + 20, ry, w - 40, 65, '#cb7962', 'rx="8"')
+        + hdLn(x + 28, ry + 65, x + w - 28, ry + 65, 'stroke="#9e4a33" stroke-dasharray="10 8"')
+        + hdRc(x + 10, y + d - 18, w - 20, 14, '#bfa182', 'rx="4"');
+    }
+    case 'sofa': {
+      // Style 3 手繪亞麻沙發：溫潤燕麥棉麻底座、豐厚飽滿靠背、角落焦糖紅與鼠尾草綠雙抱枕
+      const col = c || '#eae2d5';
+      const aw = Math.min(180, Math.max(110, w * 0.11)), bd = Math.min(220, Math.max(140, d * 0.25));
+      const n = w >= 1900 ? 3 : 2, cw = (w - 2 * aw - 28) / n;
+      let s = hdRc(x, y, w, d, '#d6ccbe', 'rx="24"')
+        + hdRc(x + 10, y + 10, w - 20, bd, col, 'rx="18"')
+        + hdRc(x + 10, y + 10, aw, d - 20, col, 'rx="18"')
+        + hdRc(x + w - aw - 10, y + 10, aw, d - 20, col, 'rx="18"');
+      for (let i = 0; i < n; i++) {
+        const cx_i = x + aw + 14 + i * cw;
+        s += hdRc(cx_i, y + bd + 10, cw, d - bd - 22, shade(col, 1.04), 'rx="16"')
+          + hdLn(cx_i + 14, y + d - 24, cx_i + cw - 14, y + d - 24, HD_FAINT);
+      }
+      const pw = Math.min(220, w * 0.13), ph = Math.min(170, d * 0.22);
+      s += hdPillow(x + aw + 14, y + bd + 18, pw, ph, '#be654d', 18);
+      s += hdPillow(x + w - aw - pw - 14, y + bd + 18, pw, ph, '#6b846b', -18);
+      return s;
+    }
+    case 'cornersofa': {
+      // Style 3 手繪轉角沙發：L型燕麥米白座墊、飽滿圓角轉角、點綴三顆焦糖與灰綠抱枕
+      const col = c || '#eae2d5';
+      const cw = Math.min(1050, w * 0.38), sd = Math.min(950, d * 0.48), b = 180;
+      let s = hdPa(`M${x+30} ${y} H${x+w-50} Q${x+w} ${y} ${x+w} ${y+50} V${y+d-30} Q${x+w} ${y+d} ${x+w-30} ${y+d} H${x+w-cw+30} Q${x+w-cw} ${y+d} ${x+w-cw} ${y+d-30} V${y+sd+30} Q${x+w-cw} ${y+sd} ${x+w-cw-30} ${y+sd} H${x+30} Q${x} ${y+sd} ${x} ${y+sd-30} V${y+30} Q${x} ${y} ${x+30} ${y} Z`, '#d6ccbe');
+      s += hdRc(x + 10, y + 10, w - 20, b, col, 'rx="16"')
+        + hdRc(x + w - b - 10, y + 10, b, d - 20, col, 'rx="16"')
+        + hdRc(x + 10, y + 10, b, sd - 20, col, 'rx="16"');
+      const n = 2, mw = (w - cw - b - 20) / n;
+      for (let i = 0; i < n; i++) s += hdRc(x + b + 10 + i * mw, y + b + 10, mw, sd - b - 20, shade(col, 1.04), 'rx="14"');
+      s += hdRc(x + w - cw + 10, y + b + 10, cw - b - 20, d - b - 20, shade(col, 1.04), 'rx="16"');
+      s += hdPillow(x + b + 16, y + b + 24, 150, 125, '#6b846b', 20);
+      s += hdPillow(x + w - cw - 40, y + b + 24, 150, 125, '#be654d', -24);
+      s += hdPillow(x + w - b - 20, y + d * 0.48, 140, 115, '#c99a4e', 12);
+      return s;
+    }
+    case 'armchair': {
+      // Style 3 手繪單人休閒沙發：草綠／燕麥色飽滿軟包、圓潤扶手與跳色焦糖抱枕
+      const col = c || '#728970';
+      const aw = Math.min(150, Math.max(100, w * 0.17)), bd = Math.min(200, Math.max(120, d * 0.25));
+      const cw = w - 2 * aw - 24;
+      const pillowCol = (col === '#728970' || col === '#76937f') ? '#be654d' : '#728970';
+      let s = hdRc(x, y, w, d, shade(col, 0.90), 'rx="20"')
+        + hdRc(x + 10, y + 10, w - 20, bd, col, 'rx="16"')
+        + hdRc(x + 10, y + 10, aw, d - 20, col, 'rx="14"')
+        + hdRc(x + w - aw - 10, y + 10, aw, d - 20, col, 'rx="14"')
+        + hdRc(x + aw + 12, y + bd + 10, cw, d - bd - 22, shade(col, 1.06), 'rx="14"')
+        + hdLn(x + aw + 24, y + d - 24, x + w - aw - 24, y + d - 24, HD_FAINT);
+      const pw = Math.min(240, w * 0.34), ph = Math.min(170, d * 0.22);
+      s += hdPillow(x + w/2 - pw/2 + 8, y + bd + 15, pw, ph, pillowCol, -14);
+      return s;
+    }
+    case 'nightstand': {
+      // Style 3 手繪床頭櫃：暖橡木邊几、溫潤發光陶瓷小夜燈、手繪小書本
+      return hdRc(x, y, w, d, '#cca986', 'rx="16"')
+        + hdRc(x + 10, y + 10, w - 20, d - 20, '#dbbfa0', 'rx="12"')
+        + `<circle cx="${x + w * 0.72}" cy="${y + d * 0.35}" r="${w * 0.22}" fill="#fff4d4" ${HD_ST}/>`
+        + `<circle cx="${x + w * 0.72}" cy="${y + d * 0.35}" r="${w * 0.13}" fill="#ffe1a8"/>`
+        + hdBook(x + w * 0.14, y + d * 0.48, w * 0.38, d * 0.36, '#be654d', -12);
+    }
+    case 'wardrobe': {
+      // Style 3 手繪大衣櫃：溫潤原木質感、門縫線與精緻金屬把手
+      const n = w >= 1500 ? 3 : 2, pw = (w - 20) / n;
+      let s = hdRc(x, y, w, d, '#cca986', 'rx="8"');
+      for (let i = 0; i < n; i++) {
+        const px = x + 10 + i * pw;
+        s += hdRc(px, y + 10, pw, d - 20, '#dfcbb5', 'rx="4"')
+          + hdLn(px + pw - 24, y + d/2 - 40, px + pw - 24, y + d/2 + 40, 'stroke="#614a38" stroke-width="2.5"')
+          + hdLn(px + 28, y + 28, px + pw - 28, y + d - 28, HD_FAINT);
+      }
+      return s;
+    }
+    case 'desk': {
+      // Style 3 手繪書桌：溫暖橡木桌面、筆電、熱咖啡馬克杯、多肉植物盆栽
+      const lw = Math.min(320, w * 0.26), ld = Math.min(200, d * 0.4);
+      return hdRc(x, y, w, d, '#cca986', 'rx="12"')
+        + hdRc(x + 10, y + 10, w - 20, d - 20, '#dbbfa0', 'rx="8"')
+        + laptopSvg(0, 0, lw, ld)
+        + hdCup(x + w - 160, 0, Math.min(34, d * 0.08))
+        + hdPlantSvg(x + 160, 0, Math.min(68, d * 0.14), '#bf7049', '#4d7553');
+    }
+    case 'officechair': {
+      // Style 3 手繪人體工學椅：五星滾輪底座、深藍灰圓角軟包與透氣靠背
+      let s = '';
+      for (let k = 0; k < 5; k++) s += `<line x1="0" y1="0" x2="0" y2="${m * 0.48}" transform="rotate(${k * 72})" stroke="#43362a" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+        <circle cx="0" cy="${m * 0.48}" r="12" transform="rotate(${k * 72})" fill="#2d2218"/>`;
+      return s + hdRc(x + w * 0.14, y + d * 0.22, w * 0.72, d * 0.56, '#728192', 'rx="30"')
+        + hdRc(x + w * 0.18, y + d * 0.06, w * 0.64, d * 0.18, '#596778', 'rx="14"')
+        + hdRc(x + w * 0.3, y - d * 0.04, w * 0.4, d * 0.1, '#445161', 'rx="8"')
+        + hdRc(x + w * 0.04, y + d * 0.3, w * 0.1, d * 0.36, '#384350', 'rx="12"')
+        + hdRc(x + w * 0.86, y + d * 0.3, w * 0.1, d * 0.36, '#384350', 'rx="12"');
+    }
+    case 'chair': {
+      // Style 3 手繪餐椅：弧形原木椅背、焦糖紅／鼠尾草綠溫潤軟墊
+      return hdRc(x + 20, y, w - 40, d * 0.22, '#5c4634', 'rx="12"')
+        + hdRc(x + 24, y + d * 0.18, w - 48, d * 0.76, c || '#be654d', 'rx="20"')
+        + hdLn(x + 36, y + d - 20, x + w - 36, y + d - 20, HD_FAINT);
+    }
+    case 'table': {
+      // Style 3 手繪餐桌：長圓角原木長餐桌、中央尤加利綠葉花瓶、四把焦糖與灰綠餐椅
+      const col = c || '#cca986';
+      let s = hdRc(x + w * 0.05, y, w * 0.9, d, col, 'rx="24"')
+        + hdRc(x + w * 0.05 + 10, y + 10, w * 0.9 - 20, d - 20, '#dbbfa0', 'rx="18"')
+        + hdPlantSvg(0, 0, Math.min(w, d) * 0.18, '#bf7049', '#4d7553');
+      const cw = Math.min(280, w * 0.22), cd = Math.min(160, d * 0.22);
+      s += hdRc(-w * 0.28, y - cd * 0.55, cw, cd, '#be654d', 'rx="18"')
+        + hdRc(w * 0.06, y - cd * 0.55, cw, cd, '#6b846b', 'rx="18"')
+        + hdRc(-w * 0.28, y + d - cd * 0.45, cw, cd, '#6b846b', 'rx="18"')
+        + hdRc(w * 0.06, y + d - cd * 0.45, cw, cd, '#be654d', 'rx="18"');
+      if (w >= 1700) {
+        s += hdRc(x - cd * 0.4, -cw * 0.5, cd, cw, '#be654d', 'rx="18"')
+          + hdRc(x + w - cd * 0.6, -cw * 0.5, cd, cw, '#6b846b', 'rx="18"');
+      }
+      return s;
+    }
+    case 'roundtable': {
+      // Style 3 手繪圓桌：橡木圓桌、中央綠葉陶瓶、四向焦糖紅餐椅
+      let s = hdEc(0, 0, w/2, d/2, '#cca986') + hdEc(0, 0, w/2 - 14, d/2 - 14, '#dbbfa0')
+        + hdPlantSvg(0, 0, w * 0.18, '#bf7049', '#4d7553');
+      const r = w/2, cr = w * 0.16;
+      s += hdEc(0, -r - cr * 0.3, cr * 1.3, cr * 0.7, '#be654d')
+        + hdEc(0, r + cr * 0.3, cr * 1.3, cr * 0.7, '#be654d')
+        + hdEc(-r - cr * 0.3, 0, cr * 0.7, cr * 1.3, '#6b846b')
+        + hdEc(r + cr * 0.3, 0, cr * 0.7, cr * 1.3, '#6b846b');
+      return s;
+    }
+    case 'coffeetable': {
+      if (Math.abs(w - d) < 120) {
+        // Style 3 圓形茶几 (Ø 80 手繪風)：白大理石紋圓台面、書籍、咖啡杯、多肉植物
+        return hdEc(0, 0, w/2, d/2, '#f6efe6')
+          + hdPa(`M${-w*0.2} ${-d*0.3} Q0 ${-d*0.1} ${w*0.3} ${-d*0.25}`, 'none', 'stroke="#ded3c3" stroke-width="1.5"')
+          + hdBook(-w * 0.28, -d * 0.12, w * 0.28, d * 0.36, '#475569', -12)
+          + hdCup(0, d * 0.22, Math.min(22, w * 0.12))
+          + hdPlantSvg(w * 0.2, -d * 0.14, w * 0.15, '#bf7049', '#4d7553');
+      }
+      // Style 3 花生豆型茶几：柔和天然原木曲面、藝術書本與咖啡杯
+      return `<path d="M${x+w*0.2} ${y+12} C${x+w*0.5} ${y+d*0.22} ${x+w*0.8} ${y+12} ${x+w-20} ${y+d*0.35} C${x+w} ${y+d*0.75} ${x+w*0.75} ${y+d-12} ${x+w*0.48} ${y+d-28} C${x+w*0.25} ${y+d-15} ${x+15} ${y+d*0.8} ${x+15} ${y+d*0.4} C${x+15} ${y+d*0.15} ${x+w*0.08} ${y+12} ${x+w*0.2} ${y+12}Z" fill="#cca986" ${HD_ST}/>`
+        + hdBook(-w * 0.1, -d * 0.12, w * 0.24, d * 0.38, '#be654d', -15)
+        + hdCup(w * 0.18, d * 0.1, Math.min(24, d * 0.12));
+    }
+    case 'sidetable': {
+      // Style 3 手繪邊几：圓形石面邊几與翠綠小植栽
+      return hdEc(0, 0, w/2, d/2, '#f6efe6') + hdEc(0, 0, w/2 - 10, d/2 - 10, '#ede4d8')
+        + hdPlantSvg(0, 0, w * 0.22, '#bf7049', '#4d7553');
+    }
+    case 'tvstand': {
+      // Style 3 手繪電視櫃：淡木櫃體、極窄邊框電視、端側翠綠小盆栽
+      return hdRc(x, y, w, d, '#cca986', 'rx="10"')
+        + hdRc(x + 10, y + 10, w - 20, d - 20, '#dbbfa0', 'rx="6"')
+        + hdRc(-180, y + d * 0.44, 360, d * 0.14, '#2d2218', 'rx="4"')
+        + hdRc(-w * 0.28, y + d * 0.4, w * 0.56, d * 0.1, '#1a1918', 'rx="3"')
+        + hdPlantSvg(x + w - 180, 0, d * 0.24, '#bf7049', '#4d7553');
+    }
+    case 'bookshelf': {
+      // Style 3 手繪書架：多彩大地色書脊、中央點綴綠植
+      let s = hdRc(x, y, w, d, '#cca986', 'rx="6"');
+      const bookCols = ['#faf6ee','#475569','#be654d','#6b846b','#cca986','#334155','#e2e8f0','#bf7049'];
+      let bx = x + 30;
+      while (bx < -120) {
+        const bw = 35 + ((bx * 7) % 25);
+        s += hdRc(bx, y + 10, bw, d - 20, bookCols[Math.abs(bx) % bookCols.length], 'rx="2"');
+        bx += bw + 8;
+      }
+      s += hdPlantSvg(0, 0, d * 0.32, '#bf7049', '#4d7553');
+      bx = 120;
+      while (bx < x + w - 40) {
+        const bw = 35 + ((bx * 11) % 25);
+        s += hdRc(bx, y + 10, bw, d - 20, bookCols[Math.abs(bx) % bookCols.length], 'rx="2"');
+        bx += bw + 8;
+      }
+      return s;
+    }
+    case 'cabinet': case 'shoecab': {
+      // Style 3 手繪收納櫃／玄關櫃：木質收納格、溫暖格柵門、桌面綠植
+      let s = hdRc(x, y, w, d, '#cca986', 'rx="8"')
+        + hdRc(x + 10, y + 10, w * 0.38, d - 20, '#dbbfa0', 'rx="4"')
+        + hdRc(x + w * 0.38 + 15, y + 10, w * 0.62 - 25, d - 20, '#eae0d2', 'rx="4"');
+      for (let fx = x + w * 0.38 + 35; fx < x + w - 25; fx += 35) {
+        s += hdLn(fx, y + 12, fx, y + d - 12, HD_FAINT);
+      }
+      return s + hdPlantSvg(x + w - 140, 0, d * 0.22, '#bf7049', '#4d7553');
+    }
+    case 'dresser': {
+      return hdRc(x, y, w, d, '#cca986', 'rx="10"')
+        + hdRc(x + 10, y + 10, w - 20, d - 20, '#dbbfa0', 'rx="6"')
+        + hdLn(x + w * 0.15, y + 25, x + w * 0.85, y + 25, 'stroke="#614a38" stroke-width="2"')
+        + hdEc(0, d/2 + 180, 160, 140, '#dbbfa0');
+    }
+    case 'counter': {
+      // Style 3 手繪廚房檯面：白大理石台面、嵌入式不銹鋼水槽、雙口黑晶瓦斯爐
+      return hdRc(x, y, w, d, '#f6efe6', 'rx="8"')
+        + hdRc(x + 120, y + 70, 560, d - 140, '#cbd5e1', 'rx="16"')
+        + hdRc(x + 140, y + 90, 520, d - 180, '#94a3b8', 'rx="12"')
+        + `<circle cx="${x + 400}" cy="0" r="32" fill="#e2e8f0" ${HD_FINE}/>`
+        + `<circle cx="${x + 400}" cy="${y + 45}" r="24" fill="#cbd5e1" ${HD_ST}/>`
+        + hdRc(x + w - 850, y + 65, 720, d - 130, '#1f2937', 'rx="12"')
+        + `<circle cx="${x + w - 670}" cy="0" r="140" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${x + w - 670}" cy="0" r="65" fill="#374151" ${HD_FINE}/>`
+        + `<circle cx="${x + w - 310}" cy="0" r="140" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${x + w - 310}" cy="0" r="65" fill="#374151" ${HD_FINE}/>`;
+    }
+    case 'island': {
+      // Style 3 手繪中島：瀑布石材島台、嵌入式洗水槽、3 張草綠高腳吧椅
+      return hdRc(x, y, w, d, '#f6efe6', 'rx="12"')
+        + hdRc(-300, y + 100, 600, 400, '#cbd5e1', 'rx="16"')
+        + `<circle cx="0" cy="${y + 300}" r="30" fill="#e2e8f0" ${HD_FINE}/>`
+        + `<circle cx="0" cy="${y + 60}" r="24" fill="#94a3b8" ${HD_ST}/>`
+        + hdEc(-w * 0.28, y + d + 30, 150, 95, '#6b846b')
+        + hdEc(0, y + d + 30, 150, 95, '#6b846b')
+        + hdEc(w * 0.28, y + d + 30, 150, 95, '#6b846b');
+    }
+    case 'barstool': {
+      return hdEc(0, 0, w/2, d/2, '#6b846b') + hdEc(0, -d * 0.12, w * 0.38, d * 0.22, '#879e85');
+    }
+    case 'stove': {
+      return hdRc(x, y, w, d, '#1f2937', 'rx="12"')
+        + `<circle cx="${-w/4}" cy="0" r="${m*0.3}" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${-w/4}" cy="0" r="${m*0.14}" fill="#374151"/>`
+        + `<circle cx="${w/4}" cy="0" r="${m*0.3}" fill="none" stroke="#4b5563" stroke-width="2" vector-effect="non-scaling-stroke"/>`
+        + `<circle cx="${w/4}" cy="0" r="${m*0.14}" fill="#374151"/>`;
+    }
+    case 'ksink': {
+      return hdRc(x, y, w, d, '#d5d9dd', 'rx="12"')
+        + hdRc(x + 50, y + 60, w - 100, d - 120, '#94a3b8', 'rx="14"')
+        + `<circle cx="0" cy="0" r="30" fill="#e2e8f0" ${HD_FINE}/>`
+        + `<circle cx="0" cy="${y + 35}" r="22" fill="#cbd5e1" ${HD_ST}/>`;
+    }
+    case 'fridge': {
+      // Style 3 手繪冰箱：拉絲淡灰、冷凍層縫線、精巧把手
+      return hdRc(x, y, w, d, '#d5d9dd', 'rx="14"')
+        + hdLn(x + 10, y + d * 0.68, x + w - 10, y + d * 0.68, 'stroke="#7c858e" stroke-width="2.5"')
+        + hdRc(x + w * 0.2, y + d * 0.64, w * 0.6, 20, '#586576', 'rx="4"');
+    }
+    case 'washer': case 'dryer': {
+      // Style 3 手繪洗衣機：純白機身、大圓深色玻璃蓋、金屬圈反光
+      return hdRc(x, y, w, d, '#ffffff', 'rx="14"')
+        + hdLn(x + 10, y + 100, x + w - 10, y + 100, HD_FINE)
+        + `<circle cx="${x + w - 130}" cy="${y + 50}" r="24" fill="#e2e8f0" ${HD_FINE}/>`
+        + hdRc(x + 40, y + 36, 120, 28, '#1e293b', 'rx="3"')
+        + `<circle cx="0" cy="${y + 340}" r="210" fill="#cbd5e1" ${HD_ST}/>`
+        + `<circle cx="0" cy="${y + 340}" r="175" fill="${t==='dryer'?'#374151':'#1e293b'}"/>`
+        + hdEc(30, y + 310, 120, 80, 'rgba(255,255,255,0.22)', `transform="rotate(-25 30 ${y+310})"`);
+    }
+    case 'toilet': case 'bidettoilet': {
+      // Style 3 手繪馬桶：方正水箱、流線陶瓷座圈、雙沖水按鈕
+      return hdRc(x + 20, y, w - 40, 200, '#ffffff', 'rx="16"')
+        + hdRc(-35, y + 80, 70, 36, '#e2e8f0', 'rx="8"')
+        + hdEc(0, y + 440, w * 0.46, d * 0.34, '#ffffff')
+        + hdEc(0, y + 440, w * 0.36, d * 0.26, '#f8fafc')
+        + hdEc(0, y + 460, w * 0.24, d * 0.16, '#e2e8f0');
+    }
+    case 'vanity': {
+      // Style 3 手繪浴室櫃：暖橡木邊櫃、陶瓷下嵌面盆、水龍頭
+      return hdRc(x, y, w, d, '#cca986', 'rx="10"')
+        + hdRc(x + 50, y + 60, w - 100, d - 120, '#ffffff', 'rx="12"')
+        + hdRc(x + 75, y + 85, w - 150, d - 170, '#f1f5f9', 'rx="8"')
+        + `<circle cx="0" cy="${y + d * 0.58}" r="20" fill="#cbd5e1"/>`
+        + hdRc(-15, y + 30, 30, 50, '#cbd5e1', 'rx="6"');
+    }
+    case 'shower': {
+      // Style 3 手繪淋浴間：清透水藍玻璃隔屏、底盆與頂噴花灑
+      return hdRc(x, y, w, d, '#f1f5f9', 'rx="8"')
+        + hdRc(x, y, 20, d, 'rgba(186,230,253,0.5)', 'stroke="#5d7285"')
+        + hdRc(x, y + d - 20, w * 0.7, 20, 'rgba(186,230,253,0.5)', 'stroke="#5d7285"')
+        + `<circle cx="${x + w - 180}" cy="${y + 180}" r="70" fill="#cbd5e1" ${HD_ST}/>`
+        + `<circle cx="${x + w - 180}" cy="${y + 180}" r="25" fill="#94a3b8"/>`
+        + hdRc(x + w - 210, y + 150, 60, 60, '#cbd5e1', 'rx="4"');
+    }
+    case 'bathtub': {
+      // Style 3 手繪浴缸 (海報亮點)：獨立蛋型圓角浴缸、清澈水綠波光、溫暖木質浴缸托盤、白毛巾與香氛蠟燭
+      return hdRc(x, y, w, d, '#ffffff', 'rx="120"')
+        + hdRc(x + 35, y + 30, w - 70, d - 60, '#c2e9eb', 'rx="95"')
+        + hdRc(x + 70, y + 55, w - 140, d - 110, '#aee0e3', 'rx="80"')
+        + hdRc(x + w * 0.38, y + 18, w * 0.24, d - 36, '#cca986', 'rx="6"')
+        + hdRc(x + w * 0.42, y + d * 0.22, w * 0.16, d * 0.26, '#ffffff', 'rx="4"')
+        + `<circle cx="${x + w * 0.5}" cy="${y + d * 0.72}" r="16" fill="#fff4d4" ${HD_FINE}/>`
+        + `<circle cx="${x + w * 0.5}" cy="${y + d * 0.72}" r="6" fill="#d97736"/>`
+        + `<circle cx="${x + 110}" cy="0" r="24" fill="#cbd5e1" ${HD_FINE}/>`;
+    }
+    case 'plant': {
+      // Style 3 手繪植栽 (海報標誌性多層次綠植)：向外層層綻放的翠綠與深綠葉片、陶盆
+      return hdPlantSvg(0, 0, m / 2, '#bf7049', '#4d7553');
+    }
+    case 'rug': {
+      // Style 3 手繪地毯：溫潤燕麥色天然棉麻織紋、流蘇與細膩幾何針腳
+      return hdRc(x, y, w, d, '#eae2d5', 'rx="30"')
+        + hdRc(x + 70, y + 70, w - 140, d - 140, 'none', 'rx="20" stroke="#cbbfae" stroke-dasharray="8 6"');
+    }
+    case 'floorlamp': {
+      return `<circle cx="0" cy="0" r="${m * 0.45}" fill="#fff4d4" ${HD_ST}/>`
+        + `<circle cx="0" cy="0" r="${m * 0.28}" fill="none" stroke="#eed8aa" stroke-dasharray="4 3"/>`
+        + `<circle cx="0" cy="0" r="${m * 0.1}" fill="#d9894f"/>`;
+    }
+    case 'piano': {
+      const kx = x + 80, kw = w - 160, kd = d * 0.24;
+      let s = hdRc(x, y, w, d * 0.58, '#242322', 'rx="8"')
+        + hdRc(x + 40, y + d * 0.58, w - 80, d * 0.38, '#32302e', 'rx="8"')
+        + hdRc(kx, y + d * 0.58, kw, kd, '#faf8f5');
+      for (let i = 1; i < 26; i++) s += hdLn(kx + kw * i / 26, y + d * 0.58, kx + kw * i / 26, y + d * 0.58 + kd, HD_FAINT);
+      return s;
+    }
+    case 'treadmill': {
+      return hdRc(x, y, w, d, '#374151', 'rx="40"')
+        + hdRc(x + 90, y + 300, w - 180, d - 420, '#111827', 'rx="20"')
+        + hdRc(x, y, w, 240, '#4b5563', 'rx="30"');
+    }
+    case 'crib': {
+      let s = hdRc(x, y, w, d, '#dfcbba', 'rx="16"') + hdRc(x + 40, y + 40, w - 80, d - 80, '#ffffff', 'rx="12"');
+      for (let sx = x + 80; sx < x + w - 50; sx += 80) s += hdLn(sx, y, sx, y + 40, HD_FAINT) + hdLn(sx, y + d - 40, sx, y + d, HD_FAINT);
+      return s;
+    }
+    case 'beanbag': {
+      return hdEc(0, 0, w/2, d/2, '#eae2d5') + hdEc(-w * 0.06, -d * 0.06, w * 0.32, d * 0.28, '#cca986', 'opacity=".8"');
+    }
+    case 'waterheater': {
+      return hdRc(x, y, w, d, '#f8fafc', `rx="${d/2}"`) + hdRc(x + w * 0.2, y + 10, w * 0.6, d - 20, 'none', 'stroke="#cbd5e1" stroke-dasharray="4 3"');
+    }
+    case 'aircon': {
+      return hdRc(x, y, w, d, '#ffffff', 'rx="20"') + hdLn(x + 30, y + d * 0.7, x + w - 30, y + d * 0.7, HD_FINE);
+    }
+    case 'acwall': {
+      return hdRc(x, y, w, d, '#ffffff', 'rx="16"') + hdLn(x + 30, y + d * 0.65, x + w - 30, y + d * 0.65, HD_FINE);
+    }
+    case 'dishwasher': {
+      return hdRc(x, y, w, d, '#d5d9dd', 'rx="12"') + hdLn(x + 10, y + d - 70, x + w - 10, y + d - 70, HD_FINE) + hdRc(x + w * 0.3, y + d - 45, w * 0.4, 20, '#586576', 'rx="3"');
+    }
+    case 'ovencol': {
+      return hdRc(x, y, w, d, '#dfcbba', 'rx="8"') + hdRc(x + 40, y + 40, w - 80, d * 0.45, '#1e293b', 'rx="6"') + hdRc(x + 40, y + d * 0.52, w - 80, d * 0.42, '#1e293b', 'rx="6"');
+    }
+    case 'purifier': {
+      return hdRc(x, y, w, d, '#ffffff', 'rx="30"') + hdRc(x + 30, y + 30, w - 60, d - 60, 'none', 'rx="20" stroke="#cbd5e1" stroke-dasharray="3 3"');
+    }
+    case 'tv': {
+      return hdRc(x, y, w, d, '#1a1918', 'rx="3"') + hdRc(x + 6, y + 2, w - 12, d - 4, '#2d2b29', 'rx="2"');
+    }
+    case 'baycushion': {
+      return hdRc(x, y, w, d, '#e4d8c8', 'rx="12"') + hdPillow(x + 20, y + 20, Math.min(180, w - 40), Math.min(120, d - 40), '#be654d', 12);
+    }
+    default: return hdRc(x, y, w, d, c || '#cca986', 'rx="8"');
+  }
+}
+
+function defaultFurnSVG(t,w,d,c){
   if(t==='customglb')return rc(-w/2,-d/2,w,d,'#dae7f2')+ln(-w/2,-d/2,w/2,d/2,'stroke="#547ca0"')+ln(w/2,-d/2,-w/2,d/2,'stroke="#547ca0"');
   const x = -w/2, y = -d/2, m = Math.min(w,d);
   switch (t){
@@ -867,6 +1369,13 @@ function furnSVG(t,w,d,c){
     }
     default: return rc(x, y, w, d, c, 'rx="8"');
   }
+}
+
+function furnSVG(t, w, d, c) {
+  if (editorPreferences.renderStyle === 'handDrawn') {
+    return handDrawnFurnSVG(t, w, d, c);
+  }
+  return defaultFurnSVG(t, w, d, c);
 }
 
 /* ======================= 渲染 ======================= */
@@ -2049,13 +2558,14 @@ document.addEventListener('keydown', e => {
 function buildLib(){
   const previouslyOpen = [...$('#lib').querySelectorAll('.lib-accordion[open]')].map(el => Number(el.dataset.group));
   const hasPreviousGroups = $('#lib').querySelector('.lib-accordion') !== null;
+  const isHandDrawn = editorPreferences.renderStyle === 'handDrawn';
   const heroBadge = `
     <div class="lib-hero-header">
       <div class="lib-hero-top">
-        <span class="lib-hero-badge">${T('ui.catalog.hero.style.2')}</span>
-        <span class="lib-hero-tag">${T('ui.catalog.hero.title')}</span>
+        <span class="lib-hero-badge">${isHandDrawn ? T('ui.catalog.hero.style.3') : T('ui.catalog.hero.style.2')}</span>
+        <span class="lib-hero-tag">${isHandDrawn ? T('ui.catalog.hero.title.handdrawn') : T('ui.catalog.hero.title')}</span>
       </div>
-      <div class="lib-hero-desc">${T('ui.catalog.hero.desc')}</div>
+      <div class="lib-hero-desc">${isHandDrawn ? T('ui.catalog.hero.desc.handdrawn') : T('ui.catalog.hero.desc')}</div>
     </div>
   `;
   const glbBtn = `
@@ -2092,6 +2602,11 @@ function buildLib(){
     libDrag = {el, id:e.pointerId, sx:e.clientX, sy:e.clientY, it:itemOf(el), ghost:null};
   }));
 }
+window.addEventListener('floorplan:render-style-changed', () => {
+  buildDefs();
+  buildLib();
+  svgRenderer.render();
+});
 const itemOf = el => { const [ci, ii] = el.dataset.key.split(':').map(Number); return LIB[ci].items[ii]; };
 
 // 家具庫拖放：用 pointer 事件實現（iPad 上 HTML5 拖放不可靠）。
