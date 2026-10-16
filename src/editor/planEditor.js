@@ -1224,10 +1224,10 @@ function renderFab(){
   const fab = $('#fab'), f = ui.sel?.kind === 'furn' && getF(ui.sel.id), r = ui.sel?.kind === 'room' && ROOMS.find(r => r.id === ui.sel.id);
   if (!f && !r){ fab.classList.remove('show'); return; }
   fab.innerHTML = f
-    ? `<span class="name">${esc(nm(f.name))}</span><button class="btn" data-a="rotL">↺</button><button class="btn" data-a="rotR">↻ ${tr('旋轉','Rotate')}</button>
-       <button class="btn" data-a="dup">${tr('複製','Duplicate')}</button><button class="btn danger" data-a="del">${tr('刪除','Delete')}</button><span class="sep"></span>
-       <button class="btn narrow-only" data-a="prop">${tr('屬性','Properties')}</button><button class="btn" data-a="done">${tr('完成','Done')}</button>`
-    : `<span class="name">${esc(nm(state.rooms[r.id].name))}</span><button class="btn narrow-only" data-a="prop">${tr('地面 / 屬性','Floor / Properties')}</button><button class="btn" data-a="done">${tr('完成','Done')}</button>`;
+    ? `<span class="name">${esc(nm(f.name))}</span><button class="btn" data-a="rotL">↺</button><button class="btn" data-a="rotR">↻ ${T('ui.prop.rotate')}</button>
+       <button class="btn" data-a="dup">${T('ui.keyboard.copy.description')}</button><button class="btn danger" data-a="del">${T('ui.keyboard.delete.description')}</button><span class="sep"></span>
+       <button class="btn narrow-only" data-a="prop">${T('ui.properties')}</button><button class="btn" data-a="done">${T('ui.guide.done')}</button>`
+    : `<span class="name">${esc(nm(state.rooms[r.id].name))}</span><button class="btn narrow-only" data-a="prop">${tr('地面 / 屬性','Floor / Properties')}</button><button class="btn" data-a="done">${T('ui.guide.done')}</button>`;
   fab.classList.add('show');
   fab.querySelectorAll('[data-a]').forEach(b => b.onclick = () => ({
     rotL:() => rotateSel(-90), rotR:() => rotateSel(90), dup:duplicateSel, del:deleteSel,
@@ -1405,23 +1405,23 @@ function bindWallPanel(index){
 }
 
 function furnPanel(f){
-  return `<section><h3>${tr('家具屬性','Furniture Properties')}</h3>
+  return `<section><h3>${T('ui.furniture.properties')}</h3>
     <div class="form">
-      <label class="full">${tr('名稱','Name')}<input id="fName" value="${esc(nm(f.name))}"></label>
-      <label>${tr('寬','Width')} (mm)<input type="number" id="fW" value="${f.w}" min="50" step="10"></label>
-      <label>${tr('深','Depth')} (mm)<input type="number" id="fD" value="${f.d}" min="50" step="10"></label>
-      <label>${tr('中心','Center')} X (mm)<input type="number" id="fX" value="${Math.round(f.cx)}" step="10"></label>
-      <label>${tr('中心','Center')} Y (mm)<input type="number" id="fY" value="${Math.round(f.cy)}" step="10"></label>
-      <label>${tr('旋轉','Rotation')} (°)<input type="number" id="fR" value="${f.rot}" step="15"></label>
-      <label>${tr('顏色','Color')}<input type="color" id="fC" value="${f.color}"></label>
+      <label class="full">${T('ui.prop.name')}<input id="fName" value="${esc(nm(f.name))}"></label>
+      <label>${T('ui.prop.width')} (mm)<input type="number" id="fW" value="${f.w}" min="50" step="10"></label>
+      <label>${T('ui.prop.depth')} (mm)<input type="number" id="fD" value="${f.d}" min="50" step="10"></label>
+      <label>${T('ui.prop.center')} X (mm)<input type="number" id="fX" value="${Math.round(f.cx)}" step="10"></label>
+      <label>${T('ui.prop.center')} Y (mm)<input type="number" id="fY" value="${Math.round(f.cy)}" step="10"></label>
+      <label>${T('ui.prop.rotation')} (°)<input type="number" id="fR" value="${f.rot}" step="15"></label>
+      <label>${T('ui.furniture.color')}<input type="color" id="fC" value="${f.color}"></label>
     </div>
-    <div class="muted" style="margin-top:8px">${tr('佔地面積','Footprint')} ${areaUnit(f.w*f.d/1e6)}</div>
+    <div class="muted" style="margin-top:8px">${T('ui.prop.footprint')} ${areaUnit(f.w*f.d/1e6)}</div>
     <div class="actions">
-      <button class="btn" id="aRot">${tr('旋轉 90°','Rotate 90°')}</button><button class="btn" id="aDup">${tr('複製','Duplicate')}</button>${(f.type.startsWith('window') || f.type.startsWith('door')) ? `<button class="btn primary" id="embedWin">${tr('嵌入最近牆面','Embed in nearest wall')}</button>` : ''}
-      <button class="btn" id="aTop">${tr('置於頂層','Bring to front')}</button><button class="btn" id="aBot">${tr('置於底層','Send to back')}</button>
-      <button class="btn danger" id="aDel">${tr('刪除','Delete')}</button><button class="btn" id="back">${tr('← 返回','← Back')}</button>
+      <button class="btn" id="aRot">${T('ui.prop.rotate.90')}</button><button class="btn" id="aDup">${T('ui.keyboard.copy.description')}</button>${(f.type.startsWith('window') || f.type.startsWith('door')) ? `<button class="btn primary" id="embedWin">${T('ui.prop.embed.wall')}</button>` : ''}
+      <button class="btn" id="aTop">${T('ui.prop.bring.to.front')}</button><button class="btn" id="aBot">${T('ui.prop.send.to.back')}</button>
+      <button class="btn danger" id="aDel">${T('ui.keyboard.delete.description')}</button><button class="btn" id="back">${T('ui.back')}</button>
     </div></section>
-  <section class="muted" style="font-size:12px">${tr('拖曳家具移動；拖曳上方圓點旋轉；拖曳右下角方塊調整尺寸。開啟「貼齊牆面」後靠近牆面會自動貼齊。', 'Drag to move; drag the top dot to rotate; drag the bottom-right square to resize. With "Wall snap" on, items snap flush to nearby walls.')}</section>`;
+  <section class="muted" style="font-size:12px">${T('ui.prop.furniture.hint')}</section>`;
 }
 function bindFurnPanel(f){
   const upd = (fn) => mutate(() => { const g = getF(f.id); if (g) fn(g); });
@@ -2052,10 +2052,10 @@ function buildLib(){
   const heroBadge = `
     <div class="lib-hero-header">
       <div class="lib-hero-top">
-        <span class="lib-hero-badge">${tr('風格 2','Style 2')}</span>
-        <span class="lib-hero-tag">${tr('現代簡約 · 平面色塊風','Modern Minimalist · Flat Color Block')}</span>
+        <span class="lib-hero-badge">${T('ui.catalog.hero.style.2')}</span>
+        <span class="lib-hero-tag">${T('ui.catalog.hero.title')}</span>
       </div>
-      <div class="lib-hero-desc">${tr('柔和配色 · 清晰易辨識 · 空間規劃標準件','Soft Palette · Clean Legibility · Standard Units')}</div>
+      <div class="lib-hero-desc">${T('ui.catalog.hero.desc')}</div>
     </div>
   `;
   const glbBtn = `
