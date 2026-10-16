@@ -2058,15 +2058,28 @@ function buildLib(){
       <div class="lib-hero-desc">${tr('柔和配色 · 清晰易辨識 · 空間規劃標準件','Soft Palette · Clean Legibility · Standard Units')}</div>
     </div>
   `;
-  $('#lib').innerHTML = heroBadge + `<button type="button" class="f5-manager-btn">${T('ui.import.manage.glb.models')}</button>` + LIB.map((c,ci) => `<details class="lib-accordion" data-group="${ci}" ${hasPreviousGroups ? (previouslyOpen.includes(ci) ? 'open' : '') : (ci === 0 ? 'open' : '')}><summary class="lib-accordion-header"><span class="lib-accordion-arrow" aria-hidden="true"></span><span class="lib-accordion-title">${esc(nm(c.cat))}</span><span class="lib-accordion-count">${c.items.length}</span></summary><div class="lib-grid">${c.items.map((it,ii) => {
+  const glbBtn = `
+    <button type="button" class="f5-manager-btn" aria-label="${T('ui.import.manage.glb.models')}">
+      <svg class="f5-manager-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </svg>
+      <span>${T('ui.import.manage.glb.models')}</span>
+    </button>
+  `;
+  $('#lib').innerHTML = heroBadge + glbBtn + LIB.map((c,ci) => `<details class="lib-accordion" data-group="${ci}" ${hasPreviousGroups ? (previouslyOpen.includes(ci) ? 'open' : '') : (ci === 0 ? 'open' : '')}><summary class="lib-accordion-header"><span class="lib-accordion-arrow" aria-hidden="true"></span><span class="lib-accordion-title">${esc(nm(c.cat))}</span><span class="lib-accordion-count">${c.items.length}</span></summary><div class="lib-grid">${c.items.map((it,ii) => {
     const [t,n,w,d,col] = it, pad = Math.max(w,d)*.1;
     return `<div class="item" data-key="${ci}:${ii}" title="${T('ui.catalog.add.hint')}">
       <div class="item-preview">
         <svg viewBox="${-w/2-pad} ${-d/2-pad} ${w+2*pad} ${d+2*pad}">${furnSVG(t,w,d,col)}</svg>
+        <button type="button" class="preview3d-btn" title="${T('ui.catalog.preview.tooltip')}" aria-label="${T('ui.catalog.preview.tooltip')} ${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}">
+          <svg class="preview3d-icon" viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <span>3D</span>
+        </button>
       </div>
       <b class="item-name">${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}</b>
       <small class="item-dim">${w} × ${d}</small>
-      <button type="button" class="preview3d-btn" title="${T('ui.catalog.preview.tooltip')}" aria-label="${T('ui.catalog.preview.tooltip')} ${esc(window.floorplanTranslate?.(`ui.catalog.item.${ci}.${ii}`) ?? nm(n))}">◈ ${T('ui.three.d.preview')}</button>
     </div>`;
   }).join('')}</div></details>`).join('') + `<div class="hint">${T(COARSE ? 'ui.catalog.instructions.touch' : 'ui.catalog.instructions.desktop')}</div>`;
   $('#lib').querySelector('.f5-manager-btn').onclick=()=>openModelManager({onChange:buildLib});

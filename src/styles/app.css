@@ -54,11 +54,11 @@ aside.right{border-right:0;border-left:1px solid var(--line)}
 .lib-hero-tag{font-size:12px;font-weight:700;color:#2e2a26;letter-spacing:.3px}
 .lib-hero-desc{font-size:10.5px;color:#8c8172;line-height:1.4}
 .lib h4{position:sticky;top:0;z-index:1;background:var(--panel)}
-.item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 8px;border:1px solid #e7ded2;
+.item{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px 10px;border:1px solid #e7ded2;
   border-radius:11px;background:#fff;cursor:grab;user-select:none;touch-action:pan-y;transition:border-color .18s,transform .18s,box-shadow .18s;box-shadow:0 1px 3px rgba(45,35,25,.04)}
 .item.dragging{border-color:var(--accent);opacity:.5}
 @media (hover:hover){.item:hover{border-color:#b87462;transform:translateY(-2px);box-shadow:0 6px 14px rgba(45,35,25,.09)}}
-.item-preview{width:100%;height:58px;display:flex;align-items:center;justify-content:center;padding:2px}
+.item-preview{position:relative;width:100%;height:58px;display:flex;align-items:center;justify-content:center;padding:2px}
 #ghost{position:fixed;left:0;top:0;z-index:30;pointer-events:none;opacity:.9;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 16px rgba(40,30,20,.28))}
 #ghost svg{width:100%;height:100%;display:block;overflow:visible}
 .item svg{width:100%;height:100%;max-height:52px;display:block;overflow:visible;filter:drop-shadow(0 2px 4px rgba(45,35,25,.13))}
@@ -364,10 +364,15 @@ header.office-ribbon .ribbon-home-actions .ribbon-quick-action:hover:not(:disabl
 header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active,
 header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover:not(:disabled){background:#b5653a;color:#fff;border-color:#b5653a}
 
-/* 家具庫 3D 預覽 */
-.preview3d-btn{margin-top:5px;border:1px solid #dec8b8;border-radius:6px;background:#fcf6ef;color:#7e4a2d;font:600 11px/1.4 inherit;padding:4px 7px;cursor:pointer;touch-action:manipulation}
-.preview3d-btn:hover{background:#f0dfce;border-color:#b5653a}
-.preview3d-btn:focus-visible{outline:2px solid #b5653a;outline-offset:2px}
+/* 家具庫 3D 預覽 - 懸停微互動膠囊 */
+.preview3d-btn{position:absolute;top:2px;right:2px;display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border:1px solid rgba(181,101,58,.28);border-radius:6px;background:rgba(255,255,255,.94);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:#7e4a2d;font-family:inherit;font-size:10px;font-weight:700;line-height:1.2;letter-spacing:.3px;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 5px rgba(45,35,25,.08);opacity:0;transform:translateY(-2px) scale(.92);pointer-events:none;transition:opacity .18s cubic-bezier(.2,.8,.2,1),transform .18s cubic-bezier(.2,.8,.2,1),background .15s,border-color .15s,box-shadow .15s;z-index:3}
+.preview3d-btn .preview3d-icon{flex-shrink:0;color:#b5653a;transition:transform .15s ease}
+.item:hover .preview3d-btn,.item:focus-within .preview3d-btn{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.preview3d-btn:hover{background:#b5653a;border-color:#b5653a;color:#fff;box-shadow:0 3px 8px rgba(181,101,58,.32)}
+.preview3d-btn:hover .preview3d-icon{color:#fff;transform:scale(1.1)}
+.preview3d-btn:active{transform:translateY(0) scale(.96)}
+.preview3d-btn:focus-visible{opacity:1;pointer-events:auto;outline:2px solid #b5653a;outline-offset:1px}
+@media (hover:none),(pointer:coarse){.preview3d-btn{opacity:.72;pointer-events:auto;transform:none}.preview3d-btn:active{opacity:1;background:#b5653a;color:#fff}.preview3d-btn:active .preview3d-icon{color:#fff}}
 .furniture-preview-overlay{position:fixed;inset:0;z-index:9999;background:rgba(28,25,22,.58);display:grid;place-items:center;padding:16px}
 .furniture-preview-dialog{width:min(580px,96vw);max-height:94vh;background:#fff;border:1px solid #ddd2c6;border-radius:15px;box-shadow:0 20px 60px #0005;overflow:hidden;display:flex;flex-direction:column}
 .furniture-preview-dialog header{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ece6df;gap:10px}
@@ -394,8 +399,13 @@ header.office-ribbon .ribbon-home-actions .ribbon-quick-action.is-active:hover:n
 #rotateFurnitureDialog .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
 #rotateFurnitureDialog .rotate-furniture-error{color:#b3372a;margin:7px 0 0}
 
-/* F5: custom GLB model manager */
-.f5-manager-btn{width:calc(100% - 20px);margin:10px;border:1px solid #6a91b7;border-radius:9px;background:#e5effb;color:#234c75;padding:10px;cursor:pointer;font-weight:650}
+/* F5: custom GLB model manager - 溫潤極簡次級動作列 */
+.f5-manager-btn{box-sizing:border-box;width:calc(100% - 20px);margin:4px 10px 10px;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 12px;border:1px dashed #dec8b8;border-radius:9px;background:#fdfbf7;color:#7e4a2d;font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.2px;cursor:pointer;box-shadow:0 1px 3px rgba(45,35,25,.04);transition:all .18s ease}
+.f5-manager-btn .f5-manager-icon{flex-shrink:0;color:#b5653a;transition:transform .18s ease}
+.f5-manager-btn:hover{background:#fbf5ee;border-color:#b5653a;border-style:solid;color:#944d2b;box-shadow:0 3px 8px rgba(181,101,58,.12);transform:translateY(-1px)}
+.f5-manager-btn:hover .f5-manager-icon{transform:rotate(8deg) scale(1.08)}
+.f5-manager-btn:active{transform:translateY(0);background:#f4eee5}
+.f5-manager-btn:focus-visible{outline:2px solid #b5653a;outline-offset:2px}
 .f5-overlay{position:fixed;inset:0;z-index:110000;background:rgba(10,22,38,.64);display:flex;align-items:center;justify-content:center;padding:16px}
 .f5-dialog{box-sizing:border-box;width:min(650px,100%);max-height:92vh;overflow:auto;border-radius:15px;padding:20px;background:#fff;color:#253548;box-shadow:0 20px 55px #0005;display:flex;flex-direction:column;gap:13px}
 .f5-dialog header{display:flex;align-items:center;justify-content:space-between;font-size:20px}.f5-dialog header button{font-size:24px}.f5-dialog p,.f5-dialog footer{font-size:13px;color:#647388;margin:0}
