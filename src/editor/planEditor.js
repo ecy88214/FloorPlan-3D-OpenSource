@@ -1367,29 +1367,29 @@ function moveConnectedAngledEndpoints(oldPoint, newPoint, excludedIndex=-1){
 }
 function angledWallPanel(index){
   const w=ANGLED_WALLS[index];if(!w)return '';
-  return `<section><h3>${tr('斜牆屬性','Angled wall properties')}</h3><div class="form">
-    <label>${tr('起點 X','Start X')}<input id="ax0" type="number" value="${Math.round(w.start.x)}"></label>
-    <label>${tr('起點 Y','Start Y')}<input id="ay0" type="number" value="${Math.round(w.start.y)}"></label>
-    <label>${tr('終點 X','End X')}<input id="ax1" type="number" value="${Math.round(w.end.x)}"></label>
-    <label>${tr('終點 Y','End Y')}<input id="ay1" type="number" value="${Math.round(w.end.y)}"></label>
-    <label>${tr('牆厚','Thickness')} (mm)<input id="at" type="number" value="${w.thickness}" min="50"></label>
-    <label>${tr('牆高','Height')} (mm)<input id="ah" type="number" value="${w.height}" min="100"></label>
-    <label>${tr('長度','Length')} (mm)<input value="${Math.round(segmentLength(w.start,w.end))}" disabled></label>
-  </div><div class="actions"><button class="btn danger" id="aDel">${tr('刪除牆面','Delete wall')}</button><button class="btn" id="back">${tr('← 返回','← Back')}</button></div></section>`;
+  return `<section><h3>${T('ui.wall.angled.properties')}</h3><div class="form">
+    <label>${T('ui.wall.start.x')}<input id="ax0" type="number" value="${Math.round(w.start.x)}"></label>
+    <label>${T('ui.wall.start.y')}<input id="ay0" type="number" value="${Math.round(w.start.y)}"></label>
+    <label>${T('ui.wall.end.x')}<input id="ax1" type="number" value="${Math.round(w.end.x)}"></label>
+    <label>${T('ui.wall.end.y')}<input id="ay1" type="number" value="${Math.round(w.end.y)}"></label>
+    <label>${T('ui.wall.thickness')} (mm)<input id="at" type="number" value="${w.thickness}" min="50"></label>
+    <label>${T('ui.wall.height')} (mm)<input id="ah" type="number" value="${w.height}" min="100"></label>
+    <label>${T('ui.wall.length')} (mm)<input value="${Math.round(segmentLength(w.start,w.end))}" disabled></label>
+  </div><div class="actions"><button class="btn danger" id="aDel">${T('ui.wall.delete')}</button><button class="btn" id="back">${T('ui.back')}</button></div></section>`;
 }
 function bindAngledWallPanel(index){
   const edit=()=>{const w=ANGLED_WALLS[index];const a={x:+$('#ax0').value,y:+$('#ay0').value},b={x:+$('#ax1').value,y:+$('#ay1').value};if(![a.x,a.y,b.x,b.y].every(Number.isFinite)||segmentLength(a,b)<100)return toast(tr('牆體長度不可小於 100 mm', 'Wall length cannot be less than 100 mm'));mutate(()=>{moveConnectedAngledEndpoints(w.start,a,index);moveConnectedAngledEndpoints(w.end,b,index);w.start=a;w.end=b;w.thickness=Math.max(50,+$('#at').value||180);w.height=Math.max(100,+$('#ah').value||2800);state.archVersion++;});};
   ['ax0','ay0','ax1','ay1','at','ah'].forEach(id=>$('#'+id).onchange=edit);
-  $('#aDel').onclick=()=>{if(confirm(tr('移除此牆面？','Remove this wall?'))){mutate(()=>ANGLED_WALLS.splice(index,1));select(null);}};$('#back').onclick=()=>select(null);
+  $('#aDel').onclick=()=>{if(confirm(T('ui.wall.confirm.remove'))){mutate(()=>ANGLED_WALLS.splice(index,1));select(null);}};$('#back').onclick=()=>select(null);
 }
 function wallPanel(index){
   const w = WALLS[index]; if (!w) return '';
   const [x0,y0,x1,y1,k] = w, thickness = Math.min(Math.abs(x1-x0), Math.abs(y1-y0));
-  return `<section><h3>${tr('牆面屬性','Wall properties')}</h3><div class="form">
-    <label>${tr('起點 X','Start X')}<input id="wx0" type="number" value="${x0}" step="10"></label><label>${tr('起點 Y','Start Y')}<input id="wy0" type="number" value="${y0}" step="10"></label>
-    <label>${tr('終點 X','End X')}<input id="wx1" type="number" value="${x1}" step="10"></label><label>${tr('終點 Y','End Y')}<input id="wy1" type="number" value="${y1}" step="10"></label>
-    <label>${tr('牆厚','Thickness')} (mm)<input id="wThick" type="number" value="${thickness}" min="50" step="10"></label><label class="full">${tr('牆體類型','Wall type')}<select id="wType"><option value="n">${tr('隔間牆','Partition')}</option><option value="b">${tr('承重牆','Bearing')}</option><option value="e">${tr('外牆','Exterior')}</option><option value="low">${tr('矮牆','Low wall')}</option></select></label>
-  </div><div class="actions"><button class="btn danger" id="wDel">${tr('移除牆面','Remove wall')}</button><button class="btn" id="back">${tr('← 返回','← Back')}</button></div></section>`;
+  return `<section><h3>${T('ui.wall.properties')}</h3><div class="form">
+    <label>${T('ui.wall.start.x')}<input id="wx0" type="number" value="${x0}" step="10"></label><label>${T('ui.wall.start.y')}<input id="wy0" type="number" value="${y0}" step="10"></label>
+    <label>${T('ui.wall.end.x')}<input id="wx1" type="number" value="${x1}" step="10"></label><label>${T('ui.wall.end.y')}<input id="wy1" type="number" value="${y1}" step="10"></label>
+    <label>${T('ui.wall.thickness')} (mm)<input id="wThick" type="number" value="${thickness}" min="50" step="10"></label><label class="full">${T('ui.wall.type')}<select id="wType"><option value="n">${T('ui.wall.type.partition')}</option><option value="b">${T('ui.wall.type.bearing')}</option><option value="e">${T('ui.wall.type.exterior')}</option><option value="low">${T('ui.wall.type.low')}</option></select></label>
+  </div><div class="actions"><button class="btn danger" id="wDel">${T('ui.wall.remove')}</button><button class="btn" id="back">${T('ui.back')}</button></div></section>`;
 }
 function bindWallPanel(index){
   $('#wType').value = WALLS[index][4];
@@ -1400,7 +1400,7 @@ function bindWallPanel(index){
     w[4] = $('#wType').value; updateRoomsForMovedWall(before,w); state.archVersion = (state.archVersion || 0) + 1;
   });
   ['#wx0','#wy0','#wx1','#wy1','#wThick','#wType'].forEach(id => $(id).onchange = edit);
-  $('#wDel').onclick = () => { if (confirm(tr('移除此牆面？','Remove this wall?'))) { mutate(() => { mergeRoomsAcrossWall(WALLS[index]); WALLS.splice(index,1); state.archVersion = (state.archVersion || 0) + 1; }); select(null); } };
+  $('#wDel').onclick = () => { if (confirm(T('ui.wall.confirm.remove'))) { mutate(() => { mergeRoomsAcrossWall(WALLS[index]); WALLS.splice(index,1); state.archVersion = (state.archVersion || 0) + 1; }); select(null); } };
   $('#back').onclick = () => select(null);
 }
 
