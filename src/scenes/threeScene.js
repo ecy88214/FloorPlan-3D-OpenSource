@@ -28,7 +28,7 @@ const studio = {tool:'translate',quality:'medium',lighting:'day',wallColor:'#f4e
 let transform = null, transformBefore = null, transformFid = null;
 
 let inited = false, active = false, raf = 0, anim = null, fly = null;
-let renderer, labelRenderer, scene, camera, orbit, walkCtl, hemi, sun, ground, glassMat, wallMat, capMat, frameMat;
+let renderer, labelRenderer, scene, camera, orbit, walkCtl, hemi, sun, ground, glassMat, wallMat, capMat, frameMat, hdEdgeMat;
 let archFloor, archUp, furnG, labelG, lampG, colliders = [], selKey = null, selHelper = null;
 let sigArch = '', sigFurn = '', sigLabels = '', grow = 1, furnGrow = 1;
 const doors = [], keys = {};
@@ -91,35 +91,12 @@ function init(){
   const pm = new THREE.PMREMGenerator(renderer); envTex = pm.fromScene(new RoomEnvironment(), .04).texture; pm.dispose();
   glassMat = new THREE.MeshPhysicalMaterial({color:0xcfe6ef, roughness:.05, transparent:true, opacity:.28, depthWrite:false, side:THREE.DoubleSide});
   wallMat = mat('#f4eee5', {roughness:.92}); capMat = mat('#3f3c38', {roughness:.9}); frameMat = mat('#5c5750', {roughness:.5, metalness:.4});
+  hdEdgeMat = new THREE.LineBasicMaterial({color:0x3d3024, transparent:true, opacity:.72});
 
   archFloor = new THREE.Group(); archUp = new THREE.Group(); furnG = new THREE.Group(); labelG = new THREE.Group(); lampG = new THREE.Group();
   scene.add(archFloor, archUp, furnG, labelG, lampG);
 
-  function applyRenderStyle3D(style = editorPreferences.renderStyle){
-    const isHand = style === 'handDrawn';
-    if (!renderer) return;
-    if (isHand){
-      renderer.setClearColor(0xf6ede0, 1);
-      if (ground) ground.material.color.set(0xf6ede0);
-      if (sun) sun.color.set(0xffebd2);
-      if (hemi){ hemi.color.set(0xfff4df); hemi.groundColor.set(0xd8c2a8); }
-      if (wallMat) wallMat.color.set('#f9f4ec');
-      if (capMat) capMat.color.set('#4a3e35');
-    } else {
-      renderer.setClearColor(0xf8f6f0, 1);
-      if (ground) ground.material.color.set(0xf8f6f0);
-      if (sun) sun.color.set(0xfff1dd);
-      if (hemi){ hemi.color.set(0xfff8ee); hemi.groundColor.set(0xb9a88f); }
-      if (wallMat) wallMat.color.set(studio.wallColor || '#f4eee5');
-      if (capMat) capMat.color.set('#3f3c38');
-    }
-    if (scene && camera) {
-      renderer.render(scene, camera);
-      labelRenderer?.render(scene, camera);
-    }
-  }
   applyRenderStyle3D();
-  window.addEventListener('floorplan:render-style-changed', e => applyRenderStyle3D(e.detail));
 
   const cv = renderer.domElement; let downAt = null, look = null;
   cv.addEventListener('pointerdown', e => {
@@ -208,39 +185,85 @@ const TEX = {
 const floorMats = {};
 function floorMat(kind){
   if (floorMats[kind]) return floorMats[kind];
+  const isHand = editorPreferences.renderStyle === 'handDrawn';
   const s = TEX[kind] || TEX.tile800, R = rng(kind.length*977 + 13), cv = document.createElement('canvas');
   const wood = kind === 'wood' || kind === 'walnut';
   cv.width = wood ? 1024 : 512; cv.height = wood ? 205 : 512;
   const g = cv.getContext('2d'), W = cv.width, Hh = cv.height;
-  g.fillStyle = s.base; g.fillRect(0, 0, W, Hh);
+  const baseColor = isHand ? (wood ? (kind === 'walnut' ? '#a5866d' : '#e6d5bf') : (kind === 'carpet' ? '#dfd6c8' : '#f5eee3')) : s.base;
+  g.fillStyle = baseColor; g.fillRect(0, 0, W, Hh);
   if (wood){
     const rowH = Hh/2, joints = [[W*2/3], [W/3]];
     for (let r = 0; r < 2; r++){
       let x0 = 0;
       [...joints[r], W].forEach(x1 => {
-        g.fillStyle = rgbK(s.base, .9 + R()*.2); g.fillRect(x0, r*rowH, x1-x0, rowH);
-        g.strokeStyle = rgbK(s.base, .8); g.globalAlpha = .35; g.lineWidth = 1.2;
+        g.fillStyle = rgbK(baseColor, .9 + R()*.2); g.fillRect(x0, r*rowH, x1-x0, rowH);
+        g.strokeStyle = rgbK(baseColor, .8); g.globalAlpha = .35; g.lineWidth = 1.2;
         for (let k = 0; k < 7; k++){ const y = r*rowH + 6 + R()*(rowH-12); g.beginPath(); g.moveTo(x0, y);
           for (let x = x0; x <= x1; x += 40) g.lineTo(x, y + Math.sin(x*.02 + k)*2.5); g.stroke(); }
-        g.globalAlpha = 1; g.fillStyle = rgbK(s.base, .62); g.fillRect(x1-1.5, r*rowH, 3, rowH); x0 = x1;
+        g.globalAlpha = 1; g.fillStyle = rgbK(baseColor, .62); g.fillRect(x1-1.5, r*rowH, 3, rowH); x0 = x1;
       });
-      g.fillStyle = rgbK(s.base, .62); g.fillRect(0, r*rowH, W, 2.5);
+      g.fillStyle = rgbK(baseColor, .62); g.fillRect(0, r*rowH, W, 2.5);
     }
   } else if (kind === 'marble'){
-    g.strokeStyle = 'rgba(160,150,135,.35)';
+    g.strokeStyle = isHand ? 'rgba(175,155,135,.4)' : 'rgba(160,150,135,.35)';
     for (let k = 0; k < 6; k++){ g.lineWidth = 1 + R()*3; g.beginPath(); g.moveTo(R()*W, 0); g.bezierCurveTo(R()*W, R()*Hh, R()*W, R()*Hh, R()*W, Hh); g.stroke(); }
   } else if (kind === 'terrazzo'){
-    const cs = ['#b9a58c','#8fa3a0','#c9b7a2','#a88f76','#7e8a86'];
+    const cs = isHand ? ['#c4b097','#9db2af','#d4c2ad','#b59c83','#8a9692'] : ['#b9a58c','#8fa3a0','#c9b7a2','#a88f76','#7e8a86'];
     for (let k = 0; k < 160; k++){ g.fillStyle = cs[k%5]; g.beginPath(); g.arc(R()*W, R()*Hh, 2 + R()*7, 0, 7); g.fill(); }
   } else {
     for (let k = 0; k < 1500; k++){ g.fillStyle = `rgba(0,0,0,${R()*.04})`; g.fillRect(R()*W, R()*Hh, 2, 2); }
   }
-  if (s.grout){ g.fillStyle = s.grout; g.fillRect(0, 0, W, 3); g.fillRect(0, 0, 3, Hh); }
+  if (isHand) {
+    g.fillStyle = 'rgba(235, 215, 190, 0.22)';
+    for (let k = 0; k < 14; k++) {
+      g.beginPath();
+      g.arc(R() * W, R() * Hh, 20 + R() * 45, 0, Math.PI * 2);
+      g.fill();
+    }
+  }
+  if (s.grout){ g.fillStyle = isHand ? '#ded3c2' : s.grout; g.fillRect(0, 0, W, 3); g.fillRect(0, 0, 3, Hh); }
   const t = new THREE.CanvasTexture(cv);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1/s.sx, 1/s.sy);
   t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  return floorMats[kind] = new THREE.MeshStandardMaterial({map:t, roughness:s.rough});
+  return floorMats[kind] = new THREE.MeshStandardMaterial({map:t, roughness: isHand ? Math.min(1, s.rough + .32) : s.rough});
 }
+
+function applyRenderStyle3D(style = editorPreferences.renderStyle){
+  const isHand = style === 'handDrawn';
+  if (!renderer) return;
+  if (isHand){
+    renderer.setClearColor(0xf6ede0, 1);
+    if (ground) ground.material.color.set(0xf6ede0);
+    if (sun) sun.color.set(0xffebd2);
+    if (hemi){ hemi.color.set(0xfff4df); hemi.groundColor.set(0xd8c2a8); }
+    if (wallMat) wallMat.color.set('#f9f4ec');
+    if (capMat) capMat.color.set('#4a3e35');
+    if (hdEdgeMat) hdEdgeMat.color.set(0x3d3024);
+  } else {
+    renderer.setClearColor(0xf8f6f0, 1);
+    if (ground) ground.material.color.set(0xf8f6f0);
+    if (sun) sun.color.set(0xfff1dd);
+    if (hemi){ hemi.color.set(0xfff8ee); hemi.groundColor.set(0xb9a88f); }
+    if (wallMat) wallMat.color.set(studio.wallColor || '#f4eee5');
+    if (capMat) capMat.color.set('#3f3c38');
+    if (hdEdgeMat) hdEdgeMat.color.set(0x6f675b);
+  }
+  for (const k in floorMats) {
+    if (floorMats[k]?.map) floorMats[k].map.dispose();
+    floorMats[k]?.dispose?.();
+    delete floorMats[k];
+  }
+  sigArch = ''; sigFurn = ''; sigLabels = '';
+  if (inited && active) {
+    sync(true);
+  }
+  if (scene && camera) {
+    renderer.render(scene, camera);
+    labelRenderer?.render(scene, camera);
+  }
+}
+window.addEventListener('floorplan:render-style-changed', e => applyRenderStyle3D(e.detail));
 
 /* ======================= 几何小工具（y = 底面高度） ======================= */
 const asMat = m => typeof m === 'string' ? mat(m) : m;
@@ -421,19 +444,20 @@ function bayCushionHeightOffset(f){
 
 function buildFurniture(f){
   const g = new THREE.Group(), w = M(f.w), d = M(f.d), c = f.color || '#ddd', bz = -d/2, R = rng(Math.round(f.w*7 + f.d*13 + f.cx + f.cy));
-  const frCol = f.frameColor || '#c8ab8d';
+  const isHand = editorPreferences.renderStyle === 'handDrawn';
+  const frCol = isHand ? '#cca986' : (f.frameColor || '#c8ab8d');
   switch (f.type){
     case 'bench': {
-      g.add(rbox(w, .06, d, woodM(c || '#d8bea2'), 0, .42, 0, .015));
-      for(const x of [-w*.4,w*.4])for(const z of [-d*.32,d*.32])g.add(box(.05,.42,.05,blackMetal(),x,0,z));
+      g.add(rbox(w, .06, d, woodM(isHand ? '#cca986' : (c || '#d8bea2')), 0, .42, 0, .015));
+      for(const x of [-w*.4,w*.4])for(const z of [-d*.32,d*.32])g.add(box(.05,.42,.05,mat(isHand ? '#4a3b30' : '#1f2937', {roughness:.6}),x,0,z));
       break;
     }
     case 'wall': {
-      g.add(box(w, 2.8, d, mat(c, {roughness:.8}), 0, 0, 0));
+      g.add(box(w, 2.8, d, mat(isHand ? '#f9f4ec' : c, {roughness:.85}), 0, 0, 0));
       break;
     }
     case 'walllow': {
-      g.add(box(w, 1.1, d, mat(c, {roughness:.8}), 0, 0, 0));
+      g.add(box(w, 1.1, d, mat(isHand ? '#f9f4ec' : c, {roughness:.85}), 0, 0, 0));
       break;
     }
     case 'wallglass': {
@@ -441,40 +465,45 @@ function buildFurniture(f){
       break;
     }
     case 'wallcurve': {
-      g.add(box(w, 2.8, d, mat(c, {roughness:.8}), 0, 0, 0));
+      g.add(box(w, 2.8, d, mat(isHand ? '#f9f4ec' : c, {roughness:.85}), 0, 0, 0));
       break;
     }
     case 'door': {
-      g.add(box(w, 2.05, Math.max(d, .04), woodM(c), 0, 0, 0));
+      g.add(box(w, 2.05, Math.max(d, .04), woodM(isHand ? '#cca986' : c), 0, 0, 0));
       break;
     }
     case 'bed': {
-      const fr = woodM(frCol), fab = fabric(c || '#f4efe8'), fh = .28, mt = .22, top = fh + mt;
-      g.add(box(w - .12, .06, d - .14, '#3f3c38', 0, 0, .03), rbox(w, fh - .06, d - .08, fr, 0, .06, .04, .015));
+      const fr = woodM(isHand ? '#cca986' : frCol);
+      const baseFabric = isHand ? '#faf6ef' : (c || '#f4efe8');
+      const fab = fabric(baseFabric), fh = .28, mt = .22, top = fh + mt;
+      g.add(box(w - .12, .06, d - .14, isHand ? '#4a3b30' : '#3f3c38', 0, 0, .03), rbox(w, fh - .06, d - .08, fr, 0, .06, .04, .015));
       g.add(rbox(w, 1.05, .06, fr, 0, 0, bz + .03, .012));
-      g.add(rbox(w - .08, .62, .04, fabric('#f4efe8'), 0, .4, bz + .07, .02));
+      g.add(rbox(w - .08, .62, .04, fabric(isHand ? '#f5ede2' : '#f4efe8'), 0, .4, bz + .07, .02));
       const md = d - .13, dd = md*.65, dz = d/2 - .015 - dd/2;
       g.add(rbox(w - .06, mt, md, '#ffffff', 0, fh, bz + .11 + md/2, .07));
       if (w < 1.2) {
-        const throwColor = (c && c !== '#f4efe8') ? c : '#8ea896';
-        g.add(rbox(w + .01, .26, dd, fabric('#f4efe8'), 0, top - .2, dz, .04), rbox(w + .015, .05, .2, fabric('#ffffff'), 0, top + .025, dz - dd/2 + .1, .025));
+        const quiltColor = isHand ? '#728970' : ((c && c !== '#f4efe8') ? c : '#8ea896');
+        const throwColor = isHand ? '#be654d' : '#eedecb';
+        g.add(rbox(w + .01, .26, dd, fabric(quiltColor), 0, top - .2, dz, .04), rbox(w + .015, .05, .2, fabric('#ffffff'), 0, top + .025, dz - dd/2 + .1, .025));
         g.add(rbox(w + .02, .27, dd*.48, fabric(throwColor), 0, top - .195, d/2 - dd*.24 - .02, .03));
         g.add(rot(rbox(w*.6, .14, .38, fabric('#ffffff'), 0, top - .01, bz + .34, .07), -.28));
-        g.add(rot(rbox(w*.42, .24, .1, fabric('#eedecb'), 0, top + .02, bz + .48, .04), -.3));
+        g.add(rot(rbox(w*.42, .24, .1, fabric(isHand ? '#be654d' : '#eedecb'), 0, top + .02, bz + .48, .04), -.3));
       } else {
-        g.add(rbox(w + .02, .27, dd, fab, 0, top - .2, dz, .04), rbox(w + .024, .06, .22, fabric('#ffffff'), 0, top + .025, dz - dd/2 + .11, .025));
-        g.add(rbox(w + .04, .28, .44, fabric('#d5bfab'), 0, top - .205, d/2 - .34, .03));
+        const quiltColor = isHand ? '#728970' : fab;
+        const throwColor = isHand ? '#be654d' : '#d5bfab';
+        g.add(rbox(w + .02, .27, dd, typeof quiltColor === 'string' ? fabric(quiltColor) : quiltColor, 0, top - .2, dz, .04), rbox(w + .024, .06, .22, fabric('#ffffff'), 0, top + .025, dz - dd/2 + .11, .025));
+        g.add(rbox(w + .04, .28, .44, fabric(throwColor), 0, top - .205, d/2 - .34, .03));
         const pw = (w - .2) / 2;
         [-1, 1].forEach((s, idx) => {
           const px = s * (pw/2 + .04);
           g.add(rot(rbox(pw, .15, .4, fabric('#ffffff'), px, top - .01, bz + .34, .07), -.28));
-          g.add(rot(rbox(pw*.65, .28, .1, fabric(idx === 0 ? '#b87462' : '#76937f'), px, top + .02, bz + .52, .04), -.3));
+          g.add(rot(rbox(pw*.65, .28, .1, fabric(idx === 0 ? (isHand ? '#be654d' : '#b87462') : (isHand ? '#6b846b' : '#76937f')), px, top + .02, bz + .52, .04), -.3));
         });
       }
       break;
     }
     case 'armchair': {
-      const col = c || '#76937f';
+      const col = isHand ? '#6b846b' : (c || '#76937f');
       const fab = fabric(col), dk = fabric(darker(col, .9));
       const a = Math.min(.16, w * .18), bd = Math.min(.2, d * .24), lh = .14, sd = d - bd - .02, cw = w - 2*a;
       legs(g, w, d, lh, woodM(frCol), .07, .018);
@@ -485,12 +514,13 @@ function buildFurniture(f){
       // 中央厚實座墊與微傾靠墊
       g.add(rbox(cw - .015, .15, sd, fab, 0, lh + .16, bz + bd + sd/2, .055), rot(rbox(cw - .03, .44, .16, fab, 0, lh + .3, bz + bd + .08, .07), -.16));
       // 傾斜點綴的跳色抱枕 (鼠尾草綠椅配陶粉抱枕，米白椅配鼠尾草綠抱枕)
-      const pillowCol = (col === '#76937f' || col === '#5c8766') ? '#b87462' : '#76937f';
+      const pillowCol = isHand ? '#be654d' : ((col === '#76937f' || col === '#5c8766') ? '#b87462' : '#76937f');
       g.add(rot(rbox(.36, .34, .11, fabric(pillowCol), -w*.08, lh + .33, bz + bd + .16, .05), -.22, .2));
       break;
     }
     case 'sofa': {
-      const fab = fabric(c || '#ede8df'), dk = fabric(darker(c || '#ede8df', .92)), a = Math.min(.18, w*.14), n = w > 2.2 ? 3 : 2, cw = (w - 2*a)/n, bd = Math.min(.2, d*.24), lh = .14, sd = d - bd - .02;
+      const sofaCol = isHand ? '#eae2d5' : (c || '#ede8df');
+      const fab = fabric(sofaCol), dk = fabric(darker(sofaCol, .92)), a = Math.min(.18, w*.14), n = w > 2.2 ? 3 : 2, cw = (w - 2*a)/n, bd = Math.min(.2, d*.24), lh = .14, sd = d - bd - .02;
       legs(g, w, d, lh, woodM(frCol), .07, .018);
       g.add(rbox(w, .16, d, dk, 0, lh, 0, .03), rbox(w, .73, bd, dk, 0, lh, bz + bd/2, .06));
       [-1, 1].forEach(s => g.add(rbox(a, .5, d, dk, s*(w/2 - a/2), lh, 0, .07)));
@@ -498,11 +528,13 @@ function buildFurniture(f){
         const x = -w/2 + a + cw/2 + i*cw;
         g.add(rbox(cw - .012, .15, sd, fab, x, lh + .16, bz + bd + sd/2, .055), rot(rbox(cw - .03, .44, .16, fab, x, lh + .3, bz + bd + .08, .07), -.16));
       }
-      [-1, 1].forEach((s, idx) => g.add(rot(rbox(.42, .42, .12, fabric(idx === 0 ? '#b87462' : '#76937f'), s*(w/2 - a - .26), lh + .32, bz + bd + .22, .06), -.3, s*-.25)));
+      [-1, 1].forEach((s, idx) => g.add(rot(rbox(.42, .42, .12, fabric(idx === 0 ? (isHand ? '#be654d' : '#b87462') : (isHand ? '#6b846b' : '#76937f')), s*(w/2 - a - .26), lh + .32, bz + bd + .22, .06), -.3, s*-.25)));
       break;
     }
     case 'cornersofa': {
-      const k = Math.min(.95, d*.56, w*.4), b = .2, fab = fabric(c || '#ede8df'), dk = fabric(darker(c || '#ede8df', .92)), lh = .12, sw = (w - b - .2)/2;
+      const k = Math.min(.95, d*.56, w*.4), b = .2;
+      const sofaCol = isHand ? '#eae2d5' : (c || '#ede8df');
+      const fab = fabric(sofaCol), dk = fabric(darker(sofaCol, .92)), lh = .12, sw = (w - b - .2)/2;
       [[-w/2+.07, bz+.07], [w/2-.07, bz+.07], [w/2-.07, bz+k-.07], [-w/2+.07, d/2-.07], [-w/2+k-.07, d/2-.07], [-w/2+k-.07, bz+k-.07]]
         .forEach(([x, z]) => g.add(rod([x, 0, z], [x, lh, z], .012, woodM(frCol), .018)));
       g.add(rbox(w, .18, k, dk, 0, lh, bz + k/2, .03), rbox(k, .18, d - k + .02, dk, -w/2 + k/2, lh, bz + k + (d - k)/2 - .01, .03));
@@ -514,7 +546,7 @@ function buildFurniture(f){
       g.add(rbox(k - b - .02, .15, d - k - .22, fab, -w/2 + b + (k - b)/2, lh + .18, bz + k + (d - k - .2)/2, .055));
       const L = d - .2 - b - .18, nl = Math.max(1, Math.round(L/.75));
       for (let i = 0; i < nl; i++) g.add(rot(rbox(.16, .42, L/nl - .03, fab, -w/2 + b + .07, lh + .3, bz + b + .18 + L/nl*(i + .5), .07), 0, 0, .16));
-      g.add(rot(rbox(.42, .42, .12, fabric('#b87462'), -w/2 + b + .3, lh + .34, bz + b + .24, .06), -.35, .6), rot(rbox(.4, .4, .12, fabric('#76937f'), w/2 - .5, lh + .34, bz + b + .2, .06), -.3, -.25), rot(rbox(.38, .38, .11, fabric('#eedecb'), -w/2 + b + .25, lh + .34, d/2 - .45, .05), -.2, .4));
+      g.add(rot(rbox(.42, .42, .12, fabric(isHand ? '#be654d' : '#b87462'), -w/2 + b + .3, lh + .34, bz + b + .24, .06), -.35, .6), rot(rbox(.4, .4, .12, fabric(isHand ? '#6b846b' : '#76937f'), w/2 - .5, lh + .34, bz + b + .2, .06), -.3, -.25), rot(rbox(.38, .38, .11, fabric(isHand ? '#e2c99a' : '#eedecb'), -w/2 + b + .25, lh + .34, d/2 - .45, .05), -.2, .4));
       break;
     }
     case 'nightstand': {
@@ -630,32 +662,40 @@ function buildFurniture(f){
       mug3d(g, 0, .545, -d*.15, '#ffffff');
       break;
     case 'coffeetable': {
-      const tm = mat(c || '#f8f8f7', {roughness:.25}), lw = woodM('#c8ab8d');
+      const tm = mat(isHand ? '#f3ece1' : (c || '#f8f8f7'), {roughness: isHand ? .45 : .25}), lw = woodM(isHand ? '#cca986' : '#c8ab8d');
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rod([a*(w/2 - .05), 0, b*(d/2 - .05)], [a*(w/2 - .07), .365, b*(d/2 - .07)], .012, lw, .02)));
-      g.add(rbox(w, .035, d, tm, 0, .365, 0, .015), rbox(w - .12, .02, d - .12, woodM('#dfcbba'), 0, .12, 0, .006));
-      book3d(g, -w*.2, .4, 0, .2, .26, .026, '#76937f', -.15);
+      g.add(rbox(w, .035, d, tm, 0, .365, 0, .015), rbox(w - .12, .02, d - .12, woodM(isHand ? '#cca986' : '#dfcbba'), 0, .12, 0, .006));
+      book3d(g, -w*.2, .4, 0, .2, .26, .026, isHand ? '#6b846b' : '#76937f', -.15);
       plantPot(g, w*.22, .4, -.04, 1);
-      mug3d(g, 0, .4, .08, '#ffffff');
+      mug3d(g, 0, .4, .08, isHand ? '#be654d' : '#ffffff');
       break;
     }
     case 'tvstand': {
-      const sm = woodM(c || '#d8bea2'), n = Math.max(2, Math.round(w/.6));
-      legs(g, w, d, .1, blackMetal(), .08, .012);
+      const sm = woodM(isHand ? '#cca986' : (c || '#d8bea2')), n = Math.max(2, Math.round(w/.6));
+      legs(g, w, d, .1, mat(isHand ? '#4a3b30' : '#1f2937', {roughness:.5}), .08, .012);
       g.add(rbox(w, .4, d - .02, sm, 0, .1, -.01, .01));
       fronts(g, -w/2 + .005, .105, w - .01, .39, d/2 - .02, n, 1, sm, 'edge');
       g.add(rbox(1.45, .84, .025, mat('#18181a', {roughness:.4, metalness:.3}), 0, .95, bz + .03, .004), box(1.43, .81, .002, screenMat(), 0, .962, bz + .0435));
       g.add(rbox(.9, .06, .09, '#2a2a2c', 0, .5, -.02, .02), box(.86, .045, .002, fabric('#3a3a3c'), 0, .507, .026));
       plantPot(g, w/2 - .22, .5, 0, .95);
-      book3d(g, -w/2 + .25, .5, 0, .18, .24, .03, '#b87462', .1);
+      book3d(g, -w/2 + .25, .5, 0, .18, .24, .03, isHand ? '#be654d' : '#b87462', .1);
       break;
     }
-    case 'rug':
-      [[w, d, .01, c || '#ede7dc', 0], [w - .16, d - .16, .002, '#dfd7c9', .01], [w - .26, d - .26, .002, '#f4efe8', .0115]].forEach(([a, b, h, cc, y]) => {
+    case 'rug': {
+      const c1 = isHand ? '#ece3d4' : (c || '#ede7dc');
+      const c2 = isHand ? '#dfd0bb' : '#dfd7c9';
+      const c3 = isHand ? '#faf5ec' : '#f4efe8';
+      [[w, d, .01, c1, 0], [w - .16, d - .16, .002, c2, .01], [w - .26, d - .26, .002, c3, .0115]].forEach(([a, b, h, cc, y]) => {
         const r = box(a, h, b, mat(cc, {roughness:1}), 0, y + .002); r.castShadow = false; g.add(r);
       });
       break;
+    }
     case 'plant': {
-      const r = Math.min(w, d)/2, H = .9 + r*1.6, pot = mat('#d8bea2', {roughness:.6}), lm = [mat('#5c8766', {roughness:.6, side:THREE.DoubleSide}), mat('#76937f', {roughness:.6, side:THREE.DoubleSide})];
+      const r = Math.min(w, d)/2, H = .9 + r*1.6;
+      const pot = mat(isHand ? '#be654d' : '#d8bea2', {roughness:.65});
+      const lm = isHand
+        ? [mat('#587858', {roughness:.6, side:THREE.DoubleSide}), mat('#6b846b', {roughness:.6, side:THREE.DoubleSide})]
+        : [mat('#5c8766', {roughness:.6, side:THREE.DoubleSide}), mat('#76937f', {roughness:.6, side:THREE.DoubleSide})];
       g.add(lathe([[0, 0], [r*.4, 0], [r*.44, .02], [r*.54, .36], [r*.57, .4], [r*.52, .4], [r*.5, .37], [0, .37]], pot, 0, 0, 0, 36), cyl(r*.49, r*.49, .005, '#4a3a2c', 0, .368, 0, 28));
       g.add(rod([0, .37, 0], [.02, H*.62, -.01], .016, '#6b5540', .009));
       const N = 22 + Math.round(r*36), sc = Math.sqrt(r/.25);
@@ -663,15 +703,15 @@ function buildFurniture(f){
         const t = k/N, a = k*2.399 + R()*.3, len = (.14 + R()*.08)*(1.1 - t*.4)*sc, s0 = .03 + R()*.08*sc, p = new THREE.Group();
         p.position.set(0, H*(.42 + .58*t), 0); p.rotation.set(0, -a, .1 + t*.5 + R()*.3, 'YXZ');
         const lf = blob(len/2, .005, len*.27, lm[k % 2], s0 + len/2, 0, 0, 16); lf.rotation.z = -.3;
-        p.add(box(s0, .005, .005, '#5c8766', s0/2, 0, 0), lf); g.add(p);
+        p.add(box(s0, .005, .005, isHand ? '#587858' : '#5c8766', s0/2, 0, 0), lf); g.add(p);
       }
       break;
     }
     case 'table': {
-      const tm = woodM(c || '#d8bea2'), lw = woodM('#c8ab8d'), ns = Math.max(1, Math.round(w/.62)), top = .75;
+      const tm = woodM(isHand ? '#cca986' : (c || '#d8bea2')), lw = woodM(isHand ? '#cca986' : '#c8ab8d'), ns = Math.max(1, Math.round(w/.62)), top = .75;
       [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a, b]) => g.add(rod([a*(w/2 - .08), 0, b*(d/2 - .08)], [a*(w/2 - .1), .715, b*(d/2 - .1)], .016, lw, .026)));
       g.add(rbox(w, .035, d, tm, 0, .715, 0, .012), box(w - .22, .07, d - .22, lw, 0, .645));
-      g.add(box(w*.7, .003, .32, fabric('#ede8df'), 0, top, 0));
+      g.add(box(w*.7, .003, .32, fabric(isHand ? '#faf6ef' : '#ede8df'), 0, top, 0));
       for (let i = 0; i < ns; i++) [-1, 1].forEach(s => {
         const x = -w/2 + w/ns*(i + .5), z = s*(d/2 - .17);
         g.add(box(.36, .003, .26, fabric('#f4efe8'), x, top, z)); plate(g, .11, x, top + .003, z);
@@ -679,7 +719,8 @@ function buildFurniture(f){
         const cz = s*(d/2 + .16), cy = .44, cg = new THREE.Group();
         cg.position.set(x, 0, cz); cg.rotation.y = s > 0 ? Math.PI : 0;
         [[-.16, -.16], [.16, -.16], [-.16, .16], [.16, .16]].forEach(([cx, czz]) => cg.add(rod([cx, 0, czz], [cx*.85, cy, czz*.85], .01, lw, .015)));
-        cg.add(rbox(.38, .045, .38, fabric('#b87462'), 0, cy, 0, .02));
+        const chairFabric = isHand ? (i % 2 === 0 ? '#be654d' : '#6b846b') : '#b87462';
+        cg.add(rbox(.38, .045, .38, fabric(chairFabric), 0, cy, 0, .02));
         cg.add(rod([-.16, cy, -.15], [-.14, .82, -.15], .01, lw), rod([.16, cy, -.15], [.14, .82, -.15], .01, lw));
         cg.add(rbox(.36, .13, .02, lw, 0, .68, -.15, .01));
         g.add(cg);
@@ -688,8 +729,8 @@ function buildFurniture(f){
       break;
     }
     case 'roundtable': {
-      const b = Math.min(.25, w*.3), lw = woodM('#c8ab8d'), top = .75;
-      g.add(lathe([[b, 0], [b, .015], [b*.8, .035], [.06, .12], [.045, .35], [.05, .6], [.12, .69], [.18, .715]], lw, 0, 0, 0, 40), cyl(w/2, w/2, .035, woodM(c || '#d8bea2'), 0, .715, 0, 64));
+      const b = Math.min(.25, w*.3), lw = woodM(isHand ? '#cca986' : '#c8ab8d'), top = .75;
+      g.add(lathe([[b, 0], [b, .015], [b*.8, .035], [.06, .12], [.045, .35], [.05, .6], [.12, .69], [.18, .715]], lw, 0, 0, 0, 40), cyl(w/2, w/2, .035, woodM(isHand ? '#cca986' : (c || '#d8bea2')), 0, .715, 0, 64));
       for (let k = 0; k < 4; k++){ const a = k*Math.PI/2 + .4, rr = w/2 - .17; plate(g, .11, Math.cos(a)*rr, top + .0015, Math.sin(a)*rr); }
       plantPot(g, 0, top + .0015, 0, 1);
       break;
@@ -795,13 +836,22 @@ function buildFurniture(f){
       break;
     }
     case 'bathtub': {
-      const cer = ceramic(), h = .56, t = .07, cm = chrome();
+      const cer = isHand ? ceramic({roughness:.35}) : ceramic(), h = .56, t = .07, cm = isHand ? mat('#a89f91', {metalness:.4, roughness:.3}) : chrome();
       g.add(shell(w, d, h, t, .16, cer), box(w - .1, .12, d - .1, cer, 0, 0, 0));
-      g.add(box(w - 2*t + .004, .004, d - 2*t + .004, mat('#bae6fd', {roughness:.03, transparent:true, opacity:.72}), 0, .4, 0));
+      g.add(box(w - 2*t + .004, .004, d - 2*t + .004, mat(isHand ? '#9dcbe3' : '#bae6fd', {roughness:.06, transparent:true, opacity:.75}), 0, .4, 0));
       const fx = w/2 - t/2;
       g.add(tube([[fx, h - .02, 0], [fx, h + .12, 0], [fx - .06, h + .15, 0], [fx - .13, h + .1, 0]], .014, cm));
       [-1, 1].forEach(s => g.add(cyl(.02, .02, .04, cm, fx, h, s*.1, 16)));
-      g.add(rot(rbox(.08, .16, .3, cer, -w/2 + t + .06, h - .12, 0, .04), 0, 0, -.5), rbox(.22, .05, .16, fabric('#ede8df'), fx - .05, h, d/2 - .1, .02));
+      g.add(rot(rbox(.08, .16, .3, cer, -w/2 + t + .06, h - .12, 0, .04), 0, 0, -.5), rbox(.22, .05, .16, fabric(isHand ? '#faf6ef' : '#ede8df'), fx - .05, h, d/2 - .1, .02));
+      if (isHand) {
+        // Hand-drawn signature detail: Luxury wooden bath caddy tray across tub + towel + candle!
+        const caddy = rbox(Math.min(w * .3, .42), .022, d * .96, woodM('#cca986'), 0, h + .012, 0, .005);
+        const towel = cyl(.028, .028, .13, fabric('#faf6ef'), -.06, h + .035, 0, 16);
+        towel.rotation.z = Math.PI / 2;
+        const candle = cyl(.02, .02, .035, ceramic({roughness:.2}), .06, h + .03, 0, 16);
+        const flame = cyl(.004, .001, .012, glowMat('#ffdd88', '#ff9933', 1.5), .06, h + .052, 0, 8);
+        g.add(caddy, towel, candle, flame);
+      }
       break;
     }
     case 'washer': case 'dryer': {
@@ -994,13 +1044,34 @@ function buildFurniture(f){
   g.position.set(wx(f.cx), bayCushionHeightOffset(f), wz(f.cy));
   g.rotation.y = -f.rot * Math.PI/180;       // 平面順時針旋轉 → 繞 Y 軸負向
   g.userData.fid = f.id;
+  attachHandDrawnEdges(g);
   return g;
 }
 
 /* ======================= 建築 ======================= */
+function attachHandDrawnEdges(group){
+  const isHand = editorPreferences.renderStyle === 'handDrawn';
+  if (!isHand || !hdEdgeMat) return;
+  const meshes = [];
+  group.traverse(o => {
+    if (o.isMesh && o.geometry && !o.userData.skipEdge && !o.userData.hasEdges && o.material !== glassMat && !o.userData.isHdEdge) {
+      meshes.push(o);
+    }
+  });
+  for (const m of meshes) {
+    try {
+      const edges = new THREE.EdgesGeometry(m.geometry, 26);
+      const line = new THREE.LineSegments(edges, hdEdgeMat);
+      line.userData.isHdEdge = true;
+      line.raycast = () => {};
+      m.add(line);
+    } catch (e) {}
+  }
+}
+
 // Dispose scene-owned geometry/materials; GLB assets belong to the shared model cache.
 function clearGroup(g){
-  const sharedMaterials=new Set([...matCache.values(),...Object.values(floorMats),glassMat,wallMat,capMat,frameMat,edgeMat,skirtMat].filter(Boolean));
+  const sharedMaterials=new Set([...matCache.values(),...Object.values(floorMats),glassMat,wallMat,capMat,frameMat,edgeMat,skirtMat,hdEdgeMat].filter(Boolean));
   const disposedGeometries=new Set(),disposedMaterials=new Set();
   g.traverse(o=>{
     let parent=o;
@@ -1018,10 +1089,15 @@ function clearGroup(g){
 }
 function wallBox([x0, y0, x1, y1], yb, yt, m){
   if (yt - yb <= .001) return;
+  const isHand = editorPreferences.renderStyle === 'handDrawn';
   const o = new THREE.Mesh(new THREE.BoxGeometry(M(x1-x0), yt-yb, M(y1-y0)), m || [wallMat, wallMat, capMat, wallMat, wallMat, wallMat]);
-  o.position.set(wx((x0+x1)/2), (yb+yt)/2, wz((y0+y1)/2)); o.castShadow = o.receiveShadow = true; archUp.add(o);
-  // 漫遊輔助：牆體稜線 + 踢腳線，讓相鄰牆面、牆角一眼可分（僅漫遊模式顯示）
-  const ln = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry), edgeMat); ln.position.copy(o.position); ln.userData.walkOnly = true; ln.visible = opt.mode === 'walk'; archUp.add(ln);
+  o.position.set(wx((x0+x1)/2), (yb+yt)/2, wz((y0+y1)/2)); o.castShadow = o.receiveShadow = true; o.userData.hasEdges = true; archUp.add(o);
+  // 漫遊與手繪線稿：牆體稜線 + 踢腳線（手繪風格下在 3D 鳥瞰視角常駐顯示墨線）
+  const ln = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry), isHand ? hdEdgeMat : edgeMat);
+  ln.position.copy(o.position);
+  ln.userData.walkOnly = !isHand;
+  ln.visible = isHand || opt.mode === 'walk';
+  archUp.add(ln);
   if (yb <= .001){
     const p = o.geometry.parameters, sh = Math.min(.12, yt), sk = new THREE.Mesh(new THREE.BoxGeometry(p.width + .02, sh, p.depth + .02), skirtMat);
     sk.position.set(o.position.x, sh/2, o.position.z); sk.userData.walkOnly = true; sk.visible = opt.mode === 'walk'; archUp.add(sk);
@@ -1323,6 +1399,7 @@ function buildArch(){
       [-1, 1].forEach(e => { const fr = new THREE.Mesh(new THREE.BoxGeometry(.04, ph, .04), frameMat); fr.position.set(v ? x : x + e*pl/2, ph/2, v ? z + e*pl/2 : z); archUp.add(fr); });
     });
   });
+  attachHandDrawnEdges(archUp);
   applyLight(); applyGrow();
 }
 
@@ -1451,8 +1528,10 @@ function applyLight(){
   sun.color.setHSL(.09, .5 + warm*.4, .92 - warm*.12);
   sun.intensity = opt.night ? .05 : 1.4 + Math.sin(Math.PI*t)*1.6;
   hemi.intensity = opt.night ? .12 : 1.1;
-  scene.background = new THREE.Color(opt.night ? 0x1c2130 : 0xf8f6f0);
-  ground.material.color.set(opt.night ? 0x2a2e38 : 0xf8f6f0);
+  const isHand = editorPreferences.renderStyle === 'handDrawn';
+  const dayBg = isHand ? 0xf6ede0 : 0xf8f6f0;
+  scene.background = new THREE.Color(opt.night ? 0x1c2130 : dayBg);
+  ground.material.color.set(opt.night ? 0x2a2e38 : dayBg);
   lampG.children.forEach(o => { if (o.isPointLight) o.intensity = opt.night ? 6 : 0; else o.material.emissiveIntensity = opt.night ? 2 : .3; });
   furnG.traverse(o => {
     if (o.userData?.isLocalLamp) {
@@ -1507,6 +1586,7 @@ function flyToRoom(id){
 async function enter(){
   init(); active = true;
   renderer.setSize(SW(), SH()); labelRenderer.setSize(SW(), SH()); camera.aspect = SW()/SH(); camera.updateProjectionMatrix();
+  applyRenderStyle3D(editorPreferences.renderStyle);
   sync(true);
   opt.mode = 'orbit'; orbit.enabled = false; showLabels(false);
   const A = planPose(), B = isoFrom(A);
